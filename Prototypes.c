@@ -17,6 +17,11 @@ bool Prototypes_SetOption(Prototypes *this, String name, String value) {
 }
 
 void Prototypes_Generate(Prototypes *this) {
+	if (this->path.len == 0) {
+		String_Print($("Please specify a file.\n"));
+		return;
+	}
+
 	String s = File_GetContents(this->path);
 
 	StringArray arr = String_Split(&s, '\n');

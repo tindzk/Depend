@@ -24,10 +24,10 @@ void Deps_DestroyNode(Deps_Node *node) {
 }
 
 bool Deps_SetOption(Deps *this, String name, String value) {
-	if (String_Equals(&name, $("main"))) {
+	if (String_Equals(name, $("main"))) {
 		String_Copy(&this->main, value);
-	} else if (String_Equals(&name, $("include"))) {
-		this->include = String_Split(&value, ',');
+	} else if (String_Equals(name, $("include"))) {
+		this->include = String_Split(value, ',');
 	}
 
 	return true;
@@ -91,7 +91,7 @@ bool Deps_AddFile(Deps *this, String absPath) {
 	bool alreadyExistent = false;
 
 	for (size_t i = 0; i < this->deps.len; i++) {
-		if (String_Equals(&this->deps.buf[i]->path, absPath)) {
+		if (String_Equals(this->deps.buf[i]->path, absPath)) {
 			alreadyExistent = true;
 			break;
 		}
@@ -110,7 +110,7 @@ bool Deps_AddFile(Deps *this, String absPath) {
 void Deps_ScanFileDeps(Deps *this, String base, StringArray arr) {
 	for (size_t i = 0; i < arr.len; i++) {
 		String tmp;
-		if (!String_BeginsWith(&arr.buf[i], tmp = $("#include"))) {
+		if (!String_BeginsWith(arr.buf[i], tmp = $("#include"))) {
 			continue;
 		}
 
@@ -118,7 +118,7 @@ void Deps_ScanFileDeps(Deps *this, String base, StringArray arr) {
 			continue;
 		}
 
-		String type = String_Slice(&arr.buf[i], tmp.len + 1);
+		String type = String_Slice(arr.buf[i], tmp.len + 1);
 		String_Trim(&type);
 
 		String header;
@@ -126,10 +126,10 @@ void Deps_ScanFileDeps(Deps *this, String base, StringArray arr) {
 
 		if (type.buf[0] == '<') {
 			quotes = false;
-			header = String_Between(&arr.buf[i], $("<") , $(">"));
+			header = String_Between(arr.buf[i], $("<") , $(">"));
 		} else if (type.buf[0] == '"') {
 			quotes = true;
-			header = String_Between(&arr.buf[i], $("\""), $("\""));
+			header = String_Between(arr.buf[i], $("\""), $("\""));
 		} else {
 			Logger_LogFmt(&logger,
 				Logger_Level_Error,
@@ -177,7 +177,7 @@ void Deps_ScanFile(Deps *this, String file) {
 	Logger_LogFmt(&logger, Logger_Level_Debug, $("Adding '%'..."), file);
 
 	String s = File_GetContents(file);
-	StringArray arr = String_Split(&s, '\n');
+	StringArray arr = String_Split(s, '\n');
 	String_Destroy(&s);
 
 	String base = Path_GetDirectory(file);

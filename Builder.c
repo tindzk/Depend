@@ -38,10 +38,10 @@ void Builder_Destroy(Builder *this) {
 }
 
 bool Builder_SetOption(Builder *this, String name, String value) {
-	if (String_Equals(&name, $("output"))) {
+	if (String_Equals(name, $("output"))) {
 		String_Copy(&this->output, value);
-	} else if (String_Equals(&name, $("map"))) {
-		StringArray parts = String_Split(&value, ':');
+	} else if (String_Equals(name, $("map"))) {
+		StringArray parts = String_Split(value, ':');
 
 		if (parts.len < 2) {
 			Logger_Log(&logger, Logger_Level_Error,
@@ -80,22 +80,22 @@ bool Builder_SetOption(Builder *this, String name, String value) {
 		}
 
 		Array_Push(&this->mappings, insert);
-	} else if (String_Equals(&name, $("cc"))) {
+	} else if (String_Equals(name, $("cc"))) {
 		String_Copy(&this->cc, value);
-	} else if (String_Equals(&name, $("inclhdr"))) {
+	} else if (String_Equals(name, $("inclhdr"))) {
 		String_Copy(&this->inclhdr, value);
-	} else if (String_Equals(&name, $("dbgsym"))) {
-		this->dbgsym = String_Equals(&value, $("yes"));
-	} else if (String_Equals(&name, $("std"))) {
+	} else if (String_Equals(name, $("dbgsym"))) {
+		this->dbgsym = String_Equals(value, $("yes"));
+	} else if (String_Equals(name, $("std"))) {
 		String_Copy(&this->std, value);
-	} else if (String_Equals(&name, $("blocks"))) {
-		this->blocks = String_Equals(&value, $("yes"));
-	} else if (String_Equals(&name, $("optimlevel"))) {
+	} else if (String_Equals(name, $("blocks"))) {
+		this->blocks = String_Equals(value, $("yes"));
+	} else if (String_Equals(name, $("optimlevel"))) {
 		this->optmlevel = Integer_ParseString(value);
-	} else if (String_Equals(&name, $("link"))) {
+	} else if (String_Equals(name, $("link"))) {
 		StringArray_Destroy(&this->link);
-		this->link = String_Split(&value, ',');
-	} else if (String_Equals(&name, $("verbose"))) {
+		this->link = String_Split(value, ',');
+	} else if (String_Equals(name, $("verbose"))) {
 		this->verbose = true;
 	}
 
@@ -107,13 +107,13 @@ String Builder_ShrinkPathEx(String shortpath, String path) {
 
 	String res = HeapString(0);
 
-	if (String_BeginsWith(&path, realpath)) {
-		if (!String_Equals(&shortpath, $("."))) {
+	if (String_BeginsWith(path, realpath)) {
+		if (!String_Equals(shortpath, $("."))) {
 			String_Append(&res, shortpath);
 			String_Append(&res, '/');
 		}
 
-		String_Append(&res, String_FastSlice(&path, realpath.len + 1));
+		String_Append(&res, String_FastSlice(path, realpath.len + 1));
 	}
 
 	String_Destroy(&realpath);
@@ -141,13 +141,13 @@ String Builder_GetOutput(Builder *this, String path) {
 	for (size_t i = 0; i < this->mappings.len; i++) {
 		String mapping = Path_Resolve(this->mappings.buf[i].src);
 
-		if (String_BeginsWith(&realpath, mapping)) {
+		if (String_BeginsWith(realpath, mapping)) {
 			String out = String_Clone(this->mappings.buf[i].dest);
-			String_Append(&out, String_FastSlice(&realpath, mapping.len));
+			String_Append(&out, String_FastSlice(realpath, mapping.len));
 
-			if (String_EndsWith(&out, $(".cpp"))) {
+			if (String_EndsWith(out, $(".cpp"))) {
 				String_Crop(&out, 0, -4);
-			} else if (String_EndsWith(&out, $(".c"))) {
+			} else if (String_EndsWith(out, $(".c"))) {
 				String_Crop(&out, 0, -2);
 			}
 
@@ -168,22 +168,22 @@ String Builder_GetOutput(Builder *this, String path) {
 }
 
 String Builder_GetSource(String path) {
-	ssize_t pos = String_ReverseFindChar(&path, '.');
+	ssize_t pos = String_ReverseFindChar(path, '.');
 
 	if (pos == String_NotFound) {
 		return HeapString(0);
 	}
 
-	String ext = String_FastSlice(&path, pos);
+	String ext = String_FastSlice(path, pos);
 
-	if (String_Equals(&ext, $("c"))
-	 || String_Equals(&ext, $("cpp")))
+	if (String_Equals(ext, $("c"))
+	 || String_Equals(ext, $("cpp")))
 	{
 		/* Already a source file. */
 		return String_Clone(path);
 	}
 
-	String res = String_Slice(&path, 0, pos + 1);
+	String res = String_Slice(path, 0, pos + 1);
 
 	String_Append(&res, 'c');
 
@@ -200,7 +200,7 @@ String Builder_GetSource(String path) {
 
 void Builder_AddToQueue(Builder *this, String source, String output) {
 	for (size_t i = 0; i < this->queue.len; i++) {
-		if (String_Equals(&this->queue.buf[i].source, source)) {
+		if (String_Equals(this->queue.buf[i].source, source)) {
 			return;
 		}
 	}

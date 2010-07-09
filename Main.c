@@ -35,14 +35,14 @@ int main(int argc, char* argv[]) {
 	for (int i = 1; i < argc; i++) {
 		String arg = String_FromNul(argv[i]);
 
-		ssize_t pos = String_Find(&arg, '=');
+		ssize_t pos = String_Find(arg, '=');
 
 		if (pos == String_NotFound) {
 			continue;
 		}
 
-		String name  = String_FastSlice(&arg, 0, pos);
-		String value = String_FastSlice(&arg, pos + 1);
+		String name  = String_FastSlice(arg, 0, pos);
+		String value = String_FastSlice(arg, pos + 1);
 
 		success = Interface_SetOption(&itf, name, value);
 

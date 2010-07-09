@@ -9,7 +9,7 @@ void Prototypes_Destroy(Prototypes *this) {
 }
 
 bool Prototypes_SetOption(Prototypes *this, String name, String value) {
-	if (String_Equals(&name, $("file"))) {
+	if (String_Equals(name, $("file"))) {
 		String_Copy(&this->path, value);
 	}
 
@@ -24,7 +24,7 @@ void Prototypes_Generate(Prototypes *this) {
 
 	String s = File_GetContents(this->path);
 
-	StringArray arr = String_Split(&s, '\n');
+	StringArray arr = String_Split(s, '\n');
 
 	String_Destroy(&s);
 
@@ -40,18 +40,18 @@ void Prototypes_Generate(Prototypes *this) {
 
 		String_Trim(&arr.buf[i]);
 
-		if (String_BeginsWith(&arr.buf[i], $("/*"))
-		 || String_BeginsWith(&arr.buf[i], $("//"))
-		 || String_BeginsWith(&arr.buf[i], $("#"))) {
+		if (String_BeginsWith(arr.buf[i], $("/*"))
+		 || String_BeginsWith(arr.buf[i], $("//"))
+		 || String_BeginsWith(arr.buf[i], $("#"))) {
 			continue;
 		}
 
-		if (String_EndsWith(&arr.buf[i], $("}"))) {
+		if (String_EndsWith(arr.buf[i], $("}"))) {
 			String_Crop(&arr.buf[i], 0, -1);
 			String_Trim(&arr.buf[i]);
 		}
 
-		if (String_EndsWith(&arr.buf[i], $("{"))) {
+		if (String_EndsWith(arr.buf[i], $("{"))) {
 			String_Crop(&arr.buf[i], 0, -1);
 			String_Trim(&arr.buf[i]);
 

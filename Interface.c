@@ -17,24 +17,24 @@ void Interface_Destroy(Interface *this) {
 }
 
 void Interface_SetAction(Interface *this, String action) {
-	if (String_Equals(&action, $("build"))) {
+	if (String_Equals(action, $("build"))) {
 		this->action = Interface_Action_Build;
-	} else if (String_Equals(&action, $("listdeps"))) {
+	} else if (String_Equals(action, $("listdeps"))) {
 		this->action = Interface_Action_ListDeps;
-	} else if (String_Equals(&action, $("deptree"))) {
+	} else if (String_Equals(action, $("deptree"))) {
 		this->action = Interface_Action_DepTree;
-	} else if (String_Equals(&action, $("print-queue"))) {
+	} else if (String_Equals(action, $("print-queue"))) {
 		this->action = Interface_Action_PrintQueue;
-	} else if (String_Equals(&action, $("prototypes"))) {
+	} else if (String_Equals(action, $("prototypes"))) {
 		this->action = Interface_Action_Prototypes;
-	} else if (String_Equals(&action, $("help"))) {
+	} else if (String_Equals(action, $("help"))) {
 		this->action = Interface_Action_Help;
 	}
 }
 
 bool Interface_SetOption(Interface *this, String name, String value) {
-	if (String_Equals(&name, $("debug"))) {
-		if (String_Equals(&value, $("yes"))) {
+	if (String_Equals(name, $("debug"))) {
+		if (String_Equals(value, $("yes"))) {
 			BitMask_Set(logger.levels, Logger_Level_Debug);
 		} else {
 			BitMask_Clear(logger.levels, Logger_Level_Debug);

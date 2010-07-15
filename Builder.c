@@ -113,7 +113,7 @@ String Builder_ShrinkPathEx(String shortpath, String path) {
 			String_Append(&res, '/');
 		}
 
-		String_Append(&res, String_FastSlice(path, realpath.len + 1));
+		String_Append(&res, String_Slice(path, realpath.len + 1));
 	}
 
 	String_Destroy(&realpath);
@@ -143,7 +143,7 @@ String Builder_GetOutput(Builder *this, String path) {
 
 		if (String_BeginsWith(realpath, mapping)) {
 			String out = String_Clone(this->mappings.buf[i].dest);
-			String_Append(&out, String_FastSlice(realpath, mapping.len));
+			String_Append(&out, String_Slice(realpath, mapping.len));
 
 			if (String_EndsWith(out, $(".cpp"))) {
 				String_Crop(&out, 0, -4);
@@ -168,13 +168,13 @@ String Builder_GetOutput(Builder *this, String path) {
 }
 
 String Builder_GetSource(String path) {
-	ssize_t pos = String_ReverseFindChar(path, '.');
+	ssize_t pos = String_ReverseFind(path, '.');
 
 	if (pos == String_NotFound) {
 		return HeapString(0);
 	}
 
-	String ext = String_FastSlice(path, pos);
+	String ext = String_Slice(path, pos);
 
 	if (String_Equals(ext, $("c"))
 	 || String_Equals(ext, $("cpp")))
@@ -183,7 +183,7 @@ String Builder_GetSource(String path) {
 		return String_Clone(path);
 	}
 
-	String res = String_Slice(path, 0, pos + 1);
+	String res = String_Clone(String_Slice(path, 0, pos + 1));
 
 	String_Append(&res, 'c');
 

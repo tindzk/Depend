@@ -118,7 +118,7 @@ void Deps_ScanFileDeps(Deps *this, String base, StringArray arr) {
 			continue;
 		}
 
-		String type = String_Slice(arr.buf[i], tmp.len + 1);
+		String type = String_Clone(String_Slice(arr.buf[i], tmp.len + 1));
 		String_Trim(&type);
 
 		String header;

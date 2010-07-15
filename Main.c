@@ -41,8 +41,8 @@ int main(int argc, char* argv[]) {
 			continue;
 		}
 
-		String name  = String_FastSlice(arg, 0, pos);
-		String value = String_FastSlice(arg, pos + 1);
+		String name  = String_Slice(arg, 0, pos);
+		String value = String_Slice(arg, pos + 1);
 
 		success = Interface_SetOption(&itf, name, value);
 

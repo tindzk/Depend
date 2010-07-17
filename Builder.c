@@ -295,8 +295,22 @@ void Builder_Link(Builder *this, StringArray files) {
 	}
 
 	for (size_t i = 0; i < this->link.len; i++) {
+		if (this->link.buf[i].len == 0) {
+			continue;
+		}
+
+		if (this->link.buf[i].buf[0] == '@') {
+			Process_AddParameter(&proc, $("-Wl,-Bdynamic"));
+		} else {
+			Process_AddParameter(&proc, $("-Wl,-Bstatic"));
+		}
+
+		String lib = String_FastSlice(
+			this->link.buf[i],
+			this->link.buf[i].buf[0] == '@');
+
 		String tmp;
-		Process_AddParameter(&proc, tmp = String_Format($("-l%"), this->link.buf[i]));
+		Process_AddParameter(&proc, tmp = String_Format($("-l%"), lib));
 		String_Destroy(&tmp);
 	}
 

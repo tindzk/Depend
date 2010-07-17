@@ -24,7 +24,7 @@ $ ../../Jivai-Utils/jutils.bin \
 	map=.:build \
 	map=../src:build/Jivai \
 	inclhdr=config.h \
-	link=bfd \
+	link=@bfd \
 	dbgsym=yes \
 	optimlevel=0
 

@@ -13,9 +13,10 @@ void Builder_Init(Builder *this, Deps *deps) {
 	this->optmlevel = 0;
 	this->verbose   = false;
 
-	Array_Init(&this->link,     0);
-	Array_Init(&this->queue,    0);
-	Array_Init(&this->mappings, 0);
+	Array_Init(&this->link,      0);
+	Array_Init(&this->queue,     0);
+	Array_Init(&this->mappings,  0);
+	Array_Init(&this->linkpaths, 0);
 }
 
 void Builder_Destroy(Builder *this) {
@@ -25,6 +26,7 @@ void Builder_Destroy(Builder *this) {
 	String_Destroy(&this->std);
 
 	StringArray_Destroy(&this->link);
+	StringArray_Destroy(&this->linkpaths);
 
 	Array_Destroy(&this->queue, ^(Builder_QueueItem *item) {
 		String_Destroy(&item->source);
@@ -95,6 +97,9 @@ bool Builder_SetOption(Builder *this, String name, String value) {
 	} else if (String_Equals(name, $("link"))) {
 		StringArray_Destroy(&this->link);
 		this->link = String_Split(value, ',');
+	} else if (String_Equals(name, $("linkpath"))) {
+		StringArray_Destroy(&this->linkpaths);
+		this->linkpaths = String_Split(value, ',');
 	} else if (String_Equals(name, $("verbose"))) {
 		this->verbose = true;
 	}
@@ -274,6 +279,11 @@ void Builder_Link(Builder *this, StringArray files) {
 
 	for (size_t i = 0; i < files.len; i++) {
 		Process_AddParameter(&proc, files.buf[i]);
+	}
+
+	for (size_t i = 0; i < this->linkpaths.len; i++) {
+		Process_AddParameter(&proc, $("-L"));
+		Process_AddParameter(&proc, this->linkpaths.buf[i]);
 	}
 
 	if (this->blocks) {

@@ -32,6 +32,7 @@ typedef struct {
 	bool verbose;
 
 	StringArray link;
+	StringArray linkpaths;
 	Array(Deps_Mapping, mappings);
 	Array(Builder_QueueItem, queue);
 } Builder;

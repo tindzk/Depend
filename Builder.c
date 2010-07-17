@@ -305,13 +305,10 @@ void Builder_Link(Builder *this, StringArray files) {
 			Process_AddParameter(&proc, $("-Wl,-Bstatic"));
 		}
 
-		String lib = String_FastSlice(
+		Process_AddParameter(&proc, $("-l"));
+		Process_AddParameter(&proc, String_FastSlice(
 			this->link.buf[i],
-			this->link.buf[i].buf[0] == '@');
-
-		String tmp;
-		Process_AddParameter(&proc, tmp = String_Format($("-l%"), lib));
-		String_Destroy(&tmp);
+			this->link.buf[i].buf[0] == '@'));
 	}
 
 	Process_Spawn(&proc);

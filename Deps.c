@@ -34,10 +34,7 @@ bool Deps_SetOption(Deps *this, String name, String value) {
 }
 
 String Deps_GetLocalPath(UNUSED Deps *this, String base, String file) {
-	String path = HeapString(0);
-	String_Append(&path, base);
-	String_Append(&path, '/');
-	String_Append(&path, file);
+	String path = String_Format($("%/%"), base, file);
 
 	if (!Path_Exists(path)) {
 		path.len = 0;

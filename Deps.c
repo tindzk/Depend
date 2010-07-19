@@ -27,7 +27,7 @@ bool Deps_SetOption(Deps *this, String name, String value) {
 	if (String_Equals(name, $("main"))) {
 		String_Copy(&this->main, value);
 	} else if (String_Equals(name, $("include"))) {
-		this->include = String_Split(value, ',');
+		StringArray_Push(&this->include, value);
 	}
 
 	return true;

@@ -95,11 +95,9 @@ bool Builder_SetOption(Builder *this, String name, String value) {
 	} else if (String_Equals(name, $("optimlevel"))) {
 		this->optmlevel = Integer_ParseString(value);
 	} else if (String_Equals(name, $("link"))) {
-		StringArray_Destroy(&this->link);
-		this->link = String_Split(value, ',');
+		StringArray_Push(&this->link, value);
 	} else if (String_Equals(name, $("linkpath"))) {
-		StringArray_Destroy(&this->linkpaths);
-		this->linkpaths = String_Split(value, ',');
+		StringArray_Push(&this->linkpaths, value);
 	} else if (String_Equals(name, $("verbose"))) {
 		this->verbose = true;
 	}

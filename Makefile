@@ -20,7 +20,7 @@ CFLAGS += -std=gnu99 -fblocks -lBlocksRuntime
 LIBPATH = $(JIVAI_PATH)
 
 # Only build these modules.
-LIBFILES += $(LIBPATH)/{Process,Path,Array,Char,String,Backtrace,Integer,Memory,ExceptionManager,Tree,File,BufferedStream,FileStream,Hex,Logger}.c
+LIBFILES += $(LIBPATH)/{Process,Path,Array,Char,String,Backtrace,Integer,Memory,ExceptionManager,Tree,Terminal,File,BufferedStream,FileStream,Hex,Logger}.c
 
 # Enable human-readable backtraces (requires BFD).
 LIBFILES += $(LIBPATH)/BFD.c -lbfd

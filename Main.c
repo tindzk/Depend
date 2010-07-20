@@ -1,6 +1,7 @@
 #include "Utils.h"
 #include "Interface.h"
 
+Terminal term;
 ExceptionManager exc;
 
 int main(int argc, char* argv[]) {
@@ -25,6 +26,9 @@ int main(int argc, char* argv[]) {
 
 		return EXIT_FAILURE;
 	}
+
+	Terminal_Init(&term, File_StdIn, File_StdOut, true);
+	Terminal_Configure(&term, false, true);
 
 	Interface itf;
 	Interface_Init(&itf);
@@ -60,7 +64,7 @@ int main(int argc, char* argv[]) {
 		Backtrace_PrintTrace(e->trace, e->traceItems);
 #endif
 	} finally {
-
+		Terminal_Destroy(&term);
 	} tryEnd;
 
 out:

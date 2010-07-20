@@ -3,6 +3,7 @@
 
 #include <Path.h>
 #include <Logger.h>
+#include <Terminal.h>
 #include <FileStream.h>
 #include <BufferedStream.h>
 

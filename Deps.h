@@ -3,6 +3,7 @@
 
 #include <Path.h>
 #include <Tree.h>
+#include <Array.h>
 #include <StringArray.h>
 
 #include "Utils.h"
@@ -20,14 +21,14 @@ typedef struct _Deps_Node {
 typedef struct {
 	String main;
 
-	StringArray include;
+	StringArray *include;
 
 	/* Dependency tree. */
 	Tree tree;
 	Deps_Node *node;
 
 	/* All top-level deps flattened. */
-	Array(Deps_Node *, deps);
+	Array(Deps_Node *, *deps);
 } Deps;
 
 void Deps_Init(Deps *this);

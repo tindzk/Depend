@@ -31,10 +31,10 @@ typedef struct {
 	int optmlevel;
 	bool verbose;
 
-	StringArray link;
-	StringArray linkpaths;
-	Array(Deps_Mapping, mappings);
-	Array(Builder_QueueItem, queue);
+	StringArray *link;
+	StringArray *linkpaths;
+	Array(Deps_Mapping, *mappings);
+	Array(Builder_QueueItem, *queue);
 } Builder;
 
 void Builder_Init(Builder *this, Deps *deps);
@@ -46,7 +46,7 @@ String Builder_GetOutput(Builder *this, String path);
 String Builder_GetSource(String path);
 void Builder_AddToQueue(Builder *this, String source, String output);
 bool Builder_Compile(Builder *this, String src, String out);
-void Builder_Link(Builder *this, StringArray files);
+void Builder_Link(Builder *this, StringArray *files);
 bool Builder_CreateQueue(Builder *this);
 void Builder_PrintQueue(Builder *this);
 bool Builder_Run(Builder *this);

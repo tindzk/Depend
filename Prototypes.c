@@ -24,41 +24,40 @@ void Prototypes_Generate(Prototypes *this) {
 
 	String s = File_GetContents(this->path);
 
-	StringArray arr = String_Split(s, '\n');
+	StringArray *arr = String_Split(s, '\n');
 
-	String_Destroy(&s);
-
-	for (size_t i = 0; i < arr.len; i++) {
-		if (arr.buf[i].len < 5) {
+	for (size_t i = 0; i < arr->len; i++) {
+		if (arr->buf[i].len < 5) {
 			continue;
 		}
 
-		if (arr.buf[i].buf[0] == '\t'
-		 || arr.buf[i].buf[0] == ' ') {
+		if (arr->buf[i].buf[0] == '\t'
+		 || arr->buf[i].buf[0] == ' ') {
 			continue;
 		}
 
-		String_Trim(&arr.buf[i]);
+		String_Trim(&arr->buf[i]);
 
-		if (String_BeginsWith(arr.buf[i], $("/*"))
-		 || String_BeginsWith(arr.buf[i], $("//"))
-		 || String_BeginsWith(arr.buf[i], $("#"))) {
+		if (String_BeginsWith(arr->buf[i], $("/*"))
+		 || String_BeginsWith(arr->buf[i], $("//"))
+		 || String_BeginsWith(arr->buf[i], $("#"))) {
 			continue;
 		}
 
-		if (String_EndsWith(arr.buf[i], $("}"))) {
-			String_Crop(&arr.buf[i], 0, -1);
-			String_Trim(&arr.buf[i]);
+		if (String_EndsWith(arr->buf[i], $("}"))) {
+			String_Crop(&arr->buf[i], 0, -1);
+			String_Trim(&arr->buf[i]);
 		}
 
-		if (String_EndsWith(arr.buf[i], $("{"))) {
-			String_Crop(&arr.buf[i], 0, -1);
-			String_Trim(&arr.buf[i]);
+		if (String_EndsWith(arr->buf[i], $("{"))) {
+			String_Crop(&arr->buf[i], 0, -1);
+			String_Trim(&arr->buf[i]);
 
-			String_Print(arr.buf[i]);
+			String_Print(arr->buf[i]);
 			String_Print($(";\n"));
 		}
 	}
 
-	StringArray_Destroy(&arr);
+	Array_Destroy(arr);
+	String_Destroy(&s);
 }

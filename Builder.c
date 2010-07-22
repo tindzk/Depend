@@ -13,10 +13,10 @@ void Builder_Init(Builder *this, Deps *deps) {
 	this->optmlevel = 0;
 	this->verbose   = false;
 
-	Array_Init(&this->link,      0);
-	Array_Init(&this->queue,     0);
-	Array_Init(&this->mappings,  0);
-	Array_Init(&this->linkpaths, 0);
+	Array_Init(this->link,      0);
+	Array_Init(this->queue,     0);
+	Array_Init(this->mappings,  0);
+	Array_Init(this->linkpaths, 0);
 }
 
 void Builder_Destroy(Builder *this) {
@@ -25,41 +25,47 @@ void Builder_Destroy(Builder *this) {
 	String_Destroy(&this->inclhdr);
 	String_Destroy(&this->std);
 
-	StringArray_Destroy(&this->link);
-	StringArray_Destroy(&this->linkpaths);
+	Array_Foreach(this->link, String_Destroy);
+	Array_Destroy(this->link);
 
-	Array_Destroy(&this->queue, ^(Builder_QueueItem *item) {
+	Array_Foreach(this->linkpaths, String_Destroy);
+	Array_Destroy(this->linkpaths);
+
+	Array_Foreach(this->queue, ^(Builder_QueueItem *item) {
 		String_Destroy(&item->source);
 		String_Destroy(&item->output);
 	});
 
-	Array_Destroy(&this->mappings, ^(Deps_Mapping *item) {
+	Array_Foreach(this->mappings, ^(Deps_Mapping *item) {
 		String_Destroy(&item->src);
 		String_Destroy(&item->dest);
 	});
+
+	Array_Destroy(this->queue);
+	Array_Destroy(this->mappings);
 }
 
 bool Builder_SetOption(Builder *this, String name, String value) {
 	if (String_Equals(name, $("output"))) {
 		String_Copy(&this->output, value);
 	} else if (String_Equals(name, $("map"))) {
-		StringArray parts = String_Split(value, ':');
+		StringArray *parts = String_Split(value, ':');
 
-		if (parts.len < 2) {
+		if (parts->len < 2) {
 			Logger_Log(&logger, Logger_Level_Error,
 				$("`map' requires two values separated by a colon."));
 
-			StringArray_Destroy(&parts);
+			Array_Destroy(parts);
 
 			return false;
 		}
 
 		Deps_Mapping insert;
 
-		insert.src  = String_Clone(parts.buf[0]);
-		insert.dest = String_Clone(parts.buf[1]);
+		insert.src  = String_Clone(parts->buf[0]);
+		insert.dest = String_Clone(parts->buf[1]);
 
-		StringArray_Destroy(&parts);
+		Array_Destroy(parts);
 
 		if (insert.src.len == 0) {
 			Logger_Log(&logger, Logger_Level_Error,
@@ -81,7 +87,7 @@ bool Builder_SetOption(Builder *this, String name, String value) {
 			return false;
 		}
 
-		Array_Push(&this->mappings, insert);
+		Array_Push(this->mappings, insert);
 	} else if (String_Equals(name, $("cc"))) {
 		String_Copy(&this->cc, value);
 	} else if (String_Equals(name, $("inclhdr"))) {
@@ -95,9 +101,9 @@ bool Builder_SetOption(Builder *this, String name, String value) {
 	} else if (String_Equals(name, $("optimlevel"))) {
 		this->optmlevel = Integer_ParseString(value);
 	} else if (String_Equals(name, $("link"))) {
-		StringArray_Push(&this->link, value);
+		Array_Push(this->link, String_Clone(value));
 	} else if (String_Equals(name, $("linkpath"))) {
-		StringArray_Push(&this->linkpaths, value);
+		Array_Push(this->linkpaths, String_Clone(value));
 	} else if (String_Equals(name, $("verbose"))) {
 		this->verbose = true;
 	}
@@ -125,8 +131,8 @@ String Builder_ShrinkPathEx(String shortpath, String path) {
 }
 
 String Builder_ShrinkPath(Builder *this, String path) {
-	for (size_t i = 0; i < this->mappings.len; i++) {
-		String shortpath = this->mappings.buf[i].src;
+	for (size_t i = 0; i < this->mappings->len; i++) {
+		String shortpath = this->mappings->buf[i].src;
 
 		String res = Builder_ShrinkPathEx(shortpath, path);
 
@@ -141,11 +147,11 @@ String Builder_ShrinkPath(Builder *this, String path) {
 String Builder_GetOutput(Builder *this, String path) {
 	String realpath = Path_Resolve(path);
 
-	for (size_t i = 0; i < this->mappings.len; i++) {
-		String mapping = Path_Resolve(this->mappings.buf[i].src);
+	for (size_t i = 0; i < this->mappings->len; i++) {
+		String mapping = Path_Resolve(this->mappings->buf[i].src);
 
 		if (String_BeginsWith(realpath, mapping)) {
-			String out = String_Clone(this->mappings.buf[i].dest);
+			String out = String_Clone(this->mappings->buf[i].dest);
 			String_Append(&out, String_Slice(realpath, mapping.len));
 
 			if (String_EndsWith(out, $(".cpp"))) {
@@ -202,8 +208,8 @@ String Builder_GetSource(String path) {
 }
 
 void Builder_AddToQueue(Builder *this, String source, String output) {
-	for (size_t i = 0; i < this->queue.len; i++) {
-		if (String_Equals(this->queue.buf[i].source, source)) {
+	for (size_t i = 0; i < this->queue->len; i++) {
+		if (String_Equals(this->queue->buf[i].source, source)) {
 			return;
 		}
 	}
@@ -212,7 +218,7 @@ void Builder_AddToQueue(Builder *this, String source, String output) {
 	item.source = String_Clone(source);
 	item.output = String_Clone(output);
 
-	Array_Push(&this->queue, item);
+	Array_Push(this->queue, item);
 }
 
 bool Builder_Compile(Builder *this, String src, String out) {
@@ -250,9 +256,9 @@ bool Builder_Compile(Builder *this, String src, String out) {
 		Process_AddParameter(&proc, this->inclhdr);
 	}
 
-	for (size_t i = 0; i < this->deps->include.len; i++) {
+	for (size_t i = 0; i < this->deps->include->len; i++) {
 		Process_AddParameter(&proc, $("-I"));
-		Process_AddParameter(&proc, this->deps->include.buf[i]);
+		Process_AddParameter(&proc, this->deps->include->buf[i]);
 	}
 
 	int res = Process_Spawn(&proc);
@@ -268,20 +274,20 @@ bool Builder_Compile(Builder *this, String src, String out) {
 	return res < 0;
 }
 
-void Builder_Link(Builder *this, StringArray files) {
+void Builder_Link(Builder *this, StringArray *files) {
 	Process proc;
 	Process_Init(&proc, this->cc);
 
 	Process_AddParameter(&proc, $("-o"));
 	Process_AddParameter(&proc, this->output);
 
-	for (size_t i = 0; i < files.len; i++) {
-		Process_AddParameter(&proc, files.buf[i]);
+	for (size_t i = 0; i < files->len; i++) {
+		Process_AddParameter(&proc, files->buf[i]);
 	}
 
-	for (size_t i = 0; i < this->linkpaths.len; i++) {
+	for (size_t i = 0; i < this->linkpaths->len; i++) {
 		Process_AddParameter(&proc, $("-L"));
-		Process_AddParameter(&proc, this->linkpaths.buf[i]);
+		Process_AddParameter(&proc, this->linkpaths->buf[i]);
 	}
 
 	if (this->blocks) {
@@ -292,12 +298,12 @@ void Builder_Link(Builder *this, StringArray files) {
 		Process_AddParameter(&proc, $("-g"));
 	}
 
-	for (size_t i = 0; i < this->link.len; i++) {
-		if (this->link.buf[i].len == 0) {
+	for (size_t i = 0; i < this->link->len; i++) {
+		if (this->link->buf[i].len == 0) {
 			continue;
 		}
 
-		if (this->link.buf[i].buf[0] == '@') {
+		if (this->link->buf[i].buf[0] == '@') {
 			Process_AddParameter(&proc, $("-Wl,-Bdynamic"));
 		} else {
 			Process_AddParameter(&proc, $("-Wl,-Bstatic"));
@@ -305,8 +311,8 @@ void Builder_Link(Builder *this, StringArray files) {
 
 		Process_AddParameter(&proc, $("-l"));
 		Process_AddParameter(&proc, String_FastSlice(
-			this->link.buf[i],
-			this->link.buf[i].buf[0] == '@'));
+			this->link->buf[i],
+			this->link->buf[i].buf[0] == '@'));
 	}
 
 	Process_Spawn(&proc);
@@ -321,8 +327,8 @@ void Builder_Link(Builder *this, StringArray files) {
 }
 
 bool Builder_CreateQueue(Builder *this) {
-	for (size_t i = 0; i < this->deps->deps.len; i++) {
-		Deps_Node *dep = this->deps->deps.buf[i];
+	for (size_t i = 0; i < this->deps->deps->len; i++) {
+		Deps_Node *dep = this->deps->deps->buf[i];
 
 		String headerPath = String_Clone(dep->path);
 		String sourcePath = Builder_GetSource(headerPath);
@@ -431,15 +437,15 @@ bool Builder_CreateQueue(Builder *this) {
 }
 
 void Builder_PrintQueue(Builder *this) {
-	if (this->queue.len == 0 && Path_Exists(this->output)) {
+	if (this->queue->len == 0 && Path_Exists(this->output)) {
 		Logger_Log(&logger, Logger_Level_Info, $("  Queue is empty."));
 	} else {
 		Logger_Log(&logger, Logger_Level_Info, $("  Queue:"));
 
-		for (size_t i = 0; i < this->queue.len; i++) {
+		for (size_t i = 0; i < this->queue->len; i++) {
 			Logger_LogFmt(&logger, Logger_Level_Info, $(" - % --> %"),
-				this->queue.buf[i].source,
-				this->queue.buf[i].output);
+				this->queue->buf[i].source,
+				this->queue->buf[i].output);
 		}
 
 		Logger_LogFmt(&logger, Logger_Level_Info, $(" - % (link)"), this->output);
@@ -447,22 +453,22 @@ void Builder_PrintQueue(Builder *this) {
 }
 
 bool Builder_Run(Builder *this) {
-	if (this->queue.len != 0 || !Path_Exists(this->output)) {
-		for (size_t i = 0; i < this->queue.len; i++) {
-			String create = Path_GetDirectory(this->queue.buf[i].output);
+	if (this->queue->len != 0 || !Path_Exists(this->output)) {
+		for (size_t i = 0; i < this->queue->len; i++) {
+			String create = Path_GetDirectory(this->queue->buf[i].output);
 			if (!Path_Exists(create)) {
 				Path_Create(create, true);
 			}
 			String_Destroy(&create);
 
-			String path = Builder_ShrinkPath(this, this->queue.buf[i].source);
+			String path = Builder_ShrinkPath(this, this->queue->buf[i].source);
 
 			Logger_LogFmt(&logger, Logger_Level_Info, $("Compiling %... [%/%]"),
 				path,
 				Integer_ToString(i + 1),
-				Integer_ToString(this->queue.len));
+				Integer_ToString(this->queue->len));
 
-			bool ok = Builder_Compile(this, path, this->queue.buf[i].output);
+			bool ok = Builder_Compile(this, path, this->queue->buf[i].output);
 
 			String_Destroy(&path);
 
@@ -471,22 +477,25 @@ bool Builder_Run(Builder *this) {
 			}
 		}
 
-		StringArray files;
-		Array_Init(&files, 0);
+		StringArray *files;
+		Array_Init(files, 0);
 
-		for (size_t i = 0; i < this->deps->deps.len; i++) {
-			String src = Builder_GetSource(this->deps->deps.buf[i]->path);
+		for (size_t i = 0; i < this->deps->deps->len; i++) {
+			String src = Builder_GetSource(this->deps->deps->buf[i]->path);
 
 			if (src.len > 0) {
 				String path = Builder_GetOutput(this, src);
 
 				if (path.len == 0) {
-					StringArray_Destroy(&files);
+					Array_Foreach(files, String_Destroy);
+					Array_Destroy(files);
+
 					String_Destroy(&src);
+
 					return false;
 				}
 
-				Array_Push(&files, Builder_ShrinkPath(this, path));
+				Array_Push(files, Builder_ShrinkPath(this, path));
 
 				String_Destroy(&path);
 			}
@@ -496,7 +505,8 @@ bool Builder_Run(Builder *this) {
 
 		Builder_Link(this, files);
 
-		StringArray_Destroy(&files);
+		Array_Foreach(files, String_Destroy);
+		Array_Destroy(files);
 	}
 
 	return true;

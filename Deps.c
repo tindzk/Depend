@@ -4,8 +4,8 @@ extern Logger logger;
 
 void Deps_Init(Deps *this) {
 	this->main = HeapString(0);
-	StringArray_Init(&this->include, 0);
-	Array_Init(&this->deps, 0);
+	Array_Init(this->include, 0);
+	Array_Init(this->deps, 0);
 
 	Tree_Init(&this->tree, (void *) &Deps_DestroyNode);
 
@@ -15,8 +15,11 @@ void Deps_Init(Deps *this) {
 void Deps_Destroy(Deps *this) {
 	Tree_Destroy(&this->tree);
 	String_Destroy(&this->main);
-	StringArray_Destroy(&this->include);
-	Array_Destroy(&this->deps, ^(UNUSED Deps_Node **item) { });
+
+	Array_Foreach(this->include, String_Destroy);
+	Array_Destroy(this->include);
+
+	Array_Destroy(this->deps);
 }
 
 void Deps_DestroyNode(Deps_Node *node) {
@@ -27,7 +30,7 @@ bool Deps_SetOption(Deps *this, String name, String value) {
 	if (String_Equals(name, $("main"))) {
 		String_Copy(&this->main, value);
 	} else if (String_Equals(name, $("include"))) {
-		StringArray_Push(&this->include, value);
+		Array_Push(this->include, String_Clone(value));
 	}
 
 	return true;
@@ -47,8 +50,8 @@ String Deps_GetLocalPath(UNUSED Deps *this, String base, String file) {
 String Deps_GetSystemPath(Deps *this, String file) {
 	String path = HeapString(0);
 
-	for (size_t i = 0; i < this->include.len; i++) {
-		String_Append(&path, this->include.buf[i]);
+	for (size_t i = 0; i < this->include->len; i++) {
+		String_Append(&path, this->include->buf[i]);
 		String_Append(&path, '/');
 		String_Append(&path, file);
 
@@ -87,8 +90,8 @@ String Deps_GetFullPath(Deps *this, String base, String file, Deps_Type type) {
 bool Deps_AddFile(Deps *this, String absPath) {
 	bool alreadyExistent = false;
 
-	for (size_t i = 0; i < this->deps.len; i++) {
-		if (String_Equals(this->deps.buf[i]->path, absPath)) {
+	for (size_t i = 0; i < this->deps->len; i++) {
+		if (String_Equals(this->deps->buf[i]->path, absPath)) {
 			alreadyExistent = true;
 			break;
 		}
@@ -98,47 +101,57 @@ bool Deps_AddFile(Deps *this, String absPath) {
 	this->node->path = String_Clone(absPath);
 
 	if (!alreadyExistent) {
-		Array_Push(&this->deps, this->node);
+		Array_Push(this->deps, this->node);
 	}
 
 	return alreadyExistent;
 }
 
-void Deps_ScanFileDeps(Deps *this, String base, StringArray arr) {
-	for (size_t i = 0; i < arr.len; i++) {
+void Deps_ScanFileDeps(Deps *this, String base, StringArray *arr) {
+	for (size_t i = 0; i < arr->len; i++) {
 		String tmp;
-		if (!String_BeginsWith(arr.buf[i], tmp = $("#include"))) {
+		if (!String_BeginsWith(arr->buf[i], tmp = $("#include"))) {
 			continue;
 		}
 
-		if (arr.buf[i].len < tmp.len + 1) {
+		if (arr->buf[i].len < tmp.len + 1) {
 			continue;
 		}
 
-		String type = String_Clone(String_Slice(arr.buf[i], tmp.len + 1));
-		String_Trim(&type);
+		String type =
+			String_Clone(
+				String_Trim(
+					String_FastSlice(arr->buf[i], tmp.len + 1)));
 
 		String header;
 		bool quotes = false;
 
 		if (type.buf[0] == '<') {
 			quotes = false;
-			header = String_Between(arr.buf[i], $("<") , $(">"));
+			header =
+				String_Trim(
+					String_Between(
+						arr->buf[i],
+						$("<") ,
+						$(">")));
 		} else if (type.buf[0] == '"') {
 			quotes = true;
-			header = String_Between(arr.buf[i], $("\""), $("\""));
+			header =
+				String_Trim(
+					String_Between(
+						arr->buf[i],
+						$("\""),
+						$("\"")));
 		} else {
 			Logger_LogFmt(&logger,
 				Logger_Level_Error,
 				$("Line '%' not understood."),
-				arr.buf[i]);
+				arr->buf[i]);
 
 			continue;
 		}
 
 		String_Destroy(&type);
-
-		String_Trim(&header);
 
 		Logger_LogFmt(&logger, Logger_Level_Debug,
 			$("Header file '%' found."), header);
@@ -174,20 +187,21 @@ void Deps_ScanFile(Deps *this, String file) {
 	Logger_LogFmt(&logger, Logger_Level_Debug, $("Adding '%'..."), file);
 
 	String s = File_GetContents(file);
-	StringArray arr = String_Split(s, '\n');
-	String_Destroy(&s);
+	StringArray *arr = String_Split(s, '\n');
 
 	String base = Path_GetDirectory(file);
 
 	Deps_ScanFileDeps(this, base, arr);
 
 	String_Destroy(&base);
-	StringArray_Destroy(&arr);
+
+	Array_Destroy(arr);
+	String_Destroy(&s);
 }
 
 void Deps_ListSourceFiles(Deps *this) {
-	for (size_t i = 0; i < this->deps.len; i++) {
-		String path = String_Clone(this->deps.buf[i]->path);
+	for (size_t i = 0; i < this->deps->len; i++) {
+		String path = String_Clone(this->deps->buf[i]->path);
 
 		path.buf[path.len - 1] = 'c';
 

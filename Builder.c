@@ -290,10 +290,6 @@ void Builder_Link(Builder *this, StringArray *files) {
 		Process_AddParameter(&proc, this->linkpaths->buf[i]);
 	}
 
-	if (this->blocks) {
-		Process_AddParameter(&proc, $("-lBlocksRuntime"));
-	}
-
 	if (this->dbgsym) {
 		Process_AddParameter(&proc, $("-g"));
 	}

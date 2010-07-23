@@ -14,13 +14,13 @@ CFLAGS += -O0
 
 # Jivai uses a special C variant. Therefore these parameters
 # are necessary.
-CFLAGS += -std=gnu99 -fblocks -lBlocksRuntime
+CFLAGS += -std=gnu99 -fblocks
 
 # Define the library path.
 LIBPATH = $(JIVAI_PATH)
 
 # Only build these modules.
-LIBFILES += $(LIBPATH)/{Process,Path,Char,String,Backtrace,Integer,Memory,ExceptionManager,Tree,Terminal,File,BufferedStream,FileStream,Hex,Logger}.c
+LIBFILES += $(LIBPATH)/{Block,Process,Path,Char,String,Backtrace,Integer,Memory,ExceptionManager,Tree,Terminal,File,BufferedStream,FileStream,Hex,Logger}.c
 
 # Enable human-readable backtraces (requires BFD).
 LIBFILES += $(LIBPATH)/BFD.c -lbfd

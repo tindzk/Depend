@@ -306,7 +306,7 @@ void Builder_Link(Builder *this, StringArray *files) {
 		}
 
 		Process_AddParameter(&proc, $("-l"));
-		Process_AddParameter(&proc, String_FastSlice(
+		Process_AddParameter(&proc, String_Slice(
 			this->link->buf[i],
 			this->link->buf[i].buf[0] == '@'));
 	}
@@ -452,10 +452,10 @@ bool Builder_Run(Builder *this) {
 	if (this->queue->len != 0 || !Path_Exists(this->output)) {
 		for (size_t i = 0; i < this->queue->len; i++) {
 			String create = Path_GetDirectory(this->queue->buf[i].output);
+
 			if (!Path_Exists(create)) {
 				Path_Create(create, true);
 			}
-			String_Destroy(&create);
 
 			String path = Builder_ShrinkPath(this, this->queue->buf[i].source);
 

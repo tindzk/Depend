@@ -121,7 +121,7 @@ void Deps_ScanFileDeps(Deps *this, String base, StringArray *arr) {
 		String type =
 			String_Clone(
 				String_Trim(
-					String_FastSlice(arr->buf[i], tmp.len + 1)));
+					String_Slice(arr->buf[i], tmp.len + 1)));
 
 		String header;
 		bool quotes = false;
@@ -192,8 +192,6 @@ void Deps_ScanFile(Deps *this, String file) {
 	String base = Path_GetDirectory(file);
 
 	Deps_ScanFileDeps(this, base, arr);
-
-	String_Destroy(&base);
 
 	Array_Destroy(arr);
 	String_Destroy(&s);

@@ -48,7 +48,7 @@ String File_GetContents(String filename) {
 	BufferedStream stream;
 
 	try (&exc) {
-		FileStream_Open(&file, filename, O_RDONLY);
+		FileStream_Open(&file, filename, FileStatus_ReadOnly);
 	} catch(&File_NotFoundException, e) {
 		Logger_LogFmt(&logger, Logger_Level_Error,
 			String("File '%' not found."), filename);
@@ -80,8 +80,8 @@ String File_GetContents(String filename) {
 }
 
 bool File_IsModified(String sourceFile, String outputFile) {
-	struct stat64 src = Path_GetStat(sourceFile);
-	struct stat64 out = Path_GetStat(outputFile);
+	Stat64 src = Path_GetStat(sourceFile);
+	Stat64 out = Path_GetStat(outputFile);
 
-	return src.st_mtime > out.st_mtime;
+	return src.mtime.sec > out.mtime.sec;
 }

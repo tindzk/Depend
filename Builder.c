@@ -250,6 +250,7 @@ bool Builder_Compile(Builder *this, String src, String out) {
 	Process_AddParameter(&proc, $("-W"));
 	Process_AddParameter(&proc, $("-Wall"));
 	Process_AddParameter(&proc, $("-pipe"));
+	Process_AddParameter(&proc, $("-Wconversion"));
 
 	if (this->inclhdr.len > 0) {
 		Process_AddParameter(&proc, $("-include"));

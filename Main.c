@@ -19,16 +19,18 @@ int main(int argc, char* argv[]) {
 		Logger_Level_Info  |
 		Logger_Level_Trace);
 
+	Terminal_Init(&term, File_StdIn, File_StdOut, true);
+	Terminal_Configure(&term, false, true);
+
 	if (argc <= 1) {
-		String_FmtPrint(
-			String("Action missing. Run `% help' for an overview.\n"),
+		Logger_LogFmt(&logger, Logger_Level_Error,
+			String("Action missing. Run `% help' for an overview."),
 			String_FromNul(argv[0]));
+
+		Terminal_Destroy(&term);
 
 		return EXIT_FAILURE;
 	}
-
-	Terminal_Init(&term, File_StdIn, File_StdOut, true);
-	Terminal_Configure(&term, false, true);
 
 	Interface itf;
 	Interface_Init(&itf);

@@ -97,7 +97,8 @@ bool Deps_AddFile(Deps *this, String absPath) {
 		}
 	}
 
-	this->node = Tree_AddNode(Deps_Node, (Tree_Node *) this->node);
+	this->node = Tree_AddNode(this->node, sizeof(Deps_Node));
+
 	this->node->path = String_Clone(absPath);
 
 	if (!alreadyExistent) {

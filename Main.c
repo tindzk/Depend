@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
 	} catchAny (e) {
 		Exception_Print(e);
 
-#ifdef Exception_SaveTrace
+#if Exception_SaveTrace
 		Backtrace_PrintTrace(e->trace, e->traceItems);
 #endif
 	} finally {

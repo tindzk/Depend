@@ -49,7 +49,7 @@ String File_GetContents(String filename) {
 
 	try (&exc) {
 		FileStream_Open(&file, filename, FileStatus_ReadOnly);
-	} catch(&File_NotFoundException, e) {
+	} catch(File_NotFoundException, e) {
 		Logger_LogFmt(&logger, Logger_Level_Error,
 			String("File '%' not found."), filename);
 

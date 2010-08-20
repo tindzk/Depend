@@ -111,7 +111,9 @@ bool Deps_AddFile(Deps *this, String absPath) {
 void Deps_ScanFileDeps(Deps *this, String base, StringArray *arr) {
 	for (size_t i = 0; i < arr->len; i++) {
 		String tmp;
-		if (!String_BeginsWith(arr->buf[i], tmp = $("#include"))) {
+
+		if (!String_BeginsWith(arr->buf[i], tmp = $("#include"))
+		 && !String_BeginsWith(arr->buf[i], tmp = $("#import"))) {
 			continue;
 		}
 

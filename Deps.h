@@ -1,12 +1,9 @@
-#ifndef DEPS_H
-#define DEPS_H
+#import <Path.h>
+#import <Tree.h>
+#import <Array.h>
+#import <StringArray.h>
 
-#include <Path.h>
-#include <Tree.h>
-#include <Array.h>
-#include <StringArray.h>
-
-#include "Utils.h"
+#import "Utils.h"
 
 typedef enum {
 	Deps_Type_System,
@@ -44,5 +41,3 @@ void Deps_ListSourceFiles(Deps *this);
 void Deps_PrintNode(Deps *this, Deps_Node *node, int indent);
 void Deps_PrintTree(Deps *this);
 void Deps_Scan(Deps *this);
-
-#endif

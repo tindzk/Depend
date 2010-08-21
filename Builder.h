@@ -1,13 +1,10 @@
-#ifndef BUILDER_H
-#define BUILDER_H
+#import <Array.h>
+#import <String.h>
+#import <Process.h>
 
-#include <Array.h>
-#include <String.h>
-#include <Process.h>
+#import "Deps.h"
 
-#include "Deps.h"
-
-#include "Utils.h"
+#import "Utils.h"
 
 typedef struct {
 	String source;
@@ -50,5 +47,3 @@ void Builder_Link(Builder *this, StringArray *files);
 bool Builder_CreateQueue(Builder *this);
 void Builder_PrintQueue(Builder *this);
 bool Builder_Run(Builder *this);
-
-#endif

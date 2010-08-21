@@ -1,5 +1,5 @@
-#include "Utils.h"
-#include "Interface.h"
+#import "Utils.h"
+#import "Interface.h"
 
 Terminal term;
 ExceptionManager exc;

@@ -1,4 +1,4 @@
-#include "Prototypes.h"
+#import "Prototypes.h"
 
 void Prototypes_Init(Prototypes *this) {
 	this->path = HeapString(0);

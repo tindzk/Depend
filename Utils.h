@@ -1,11 +1,8 @@
-#ifndef UTILS_H
-#define UTILS_H
-
-#include <Path.h>
-#include <Logger.h>
-#include <Terminal.h>
-#include <FileStream.h>
-#include <BufferedStream.h>
+#import <Path.h>
+#import <Logger.h>
+#import <Terminal.h>
+#import <FileStream.h>
+#import <BufferedStream.h>
 
 #define $(s) String(s)
 
@@ -16,5 +13,3 @@ bool File_IsModified(String sourceFile, String outputFile);
 String File_GetContents(String filename);
 String File_GetPath(String file);
 String File_GetRealPath(String path);
-
-#endif

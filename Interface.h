@@ -1,12 +1,9 @@
-#ifndef INTERFACE_H
-#define INTERFACE_H
+#import <String.h>
 
-#include <String.h>
-
-#include "Deps.h"
-#include "Utils.h"
-#include "Builder.h"
-#include "Prototypes.h"
+#import "Deps.h"
+#import "Utils.h"
+#import "Builder.h"
+#import "Prototypes.h"
 
 typedef enum {
 	Interface_Action_Build,
@@ -31,5 +28,3 @@ void Interface_Destroy(Interface *this);
 void Interface_SetAction(Interface *this, String action);
 bool Interface_SetOption(Interface *this, String name, String value);
 bool Interface_Run(Interface *this);
-
-#endif

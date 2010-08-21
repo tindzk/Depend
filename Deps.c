@@ -36,7 +36,7 @@ bool Deps_SetOption(Deps *this, String name, String value) {
 	return true;
 }
 
-String Deps_GetLocalPath(UNUSED Deps *this, String base, String file) {
+String Deps_GetLocalPath(__unused Deps *this, String base, String file) {
 	String path = String_Format($("%/%"), base, file);
 
 	if (!Path_Exists(path)) {

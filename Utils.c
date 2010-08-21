@@ -5,7 +5,7 @@ Logger logger;
 extern Terminal term;
 extern ExceptionManager exc;
 
-void Utils_OnLogMessage(UNUSED void *ptr, String msg, Logger_Level level, String file, int line) {
+void Utils_OnLogMessage(__unused void *ptr, String msg, Logger_Level level, String file, int line) {
 	String fmt;
 	String slevel = Logger_LevelToString(level);
 

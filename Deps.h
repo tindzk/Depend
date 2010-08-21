@@ -35,7 +35,7 @@ void Deps_Init(Deps *this);
 void Deps_Destroy(Deps *this);
 void Deps_DestroyNode(Deps_Node *node);
 bool Deps_SetOption(Deps *this, String name, String value);
-String Deps_GetLocalPath(UNUSED Deps *this, String base, String file);
+String Deps_GetLocalPath(__unused Deps *this, String base, String file);
 String Deps_GetSystemPath(Deps *this, String file);
 String Deps_GetFullPath(Deps *this, String base, String file, Deps_Type type);
 bool Deps_AddFile(Deps *this, String absPath);

@@ -5,26 +5,29 @@
 #import "Builder.h"
 #import "Prototypes.h"
 
+#undef self
+#define self Interface
+
 typedef enum {
-	Interface_Action_Build,
-	Interface_Action_ListDeps,
-	Interface_Action_DepTree,
-	Interface_Action_PrintQueue,
-	Interface_Action_Prototypes,
-	Interface_Action_Help,
-	Interface_Action_Unsupported
-} Interface_Action;
+	ref(Action_Build),
+	ref(Action_ListDeps),
+	ref(Action_DepTree),
+	ref(Action_PrintQueue),
+	ref(Action_Prototypes),
+	ref(Action_Help),
+	ref(Action_Unsupported)
+} ref(Action);
 
 typedef struct {
-	Interface_Action action;
+	ref(Action) action;
 
 	Deps deps;
 	Builder builder;
 	Prototypes proto;
-} Interface;
+} self;
 
-void Interface_Init(Interface *this);
-void Interface_Destroy(Interface *this);
-void Interface_SetAction(Interface *this, String action);
-bool Interface_SetOption(Interface *this, String name, String value);
-bool Interface_Run(Interface *this);
+def(void, Init);
+def(void, Destroy);
+def(void, SetAction, String action);
+def(bool, SetOption, String name, String value);
+def(bool, Run);

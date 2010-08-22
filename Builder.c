@@ -2,7 +2,7 @@
 
 extern Logger logger;
 
-void Builder_Init(Builder *this, Deps *deps) {
+def(void, Init, Deps *deps) {
 	this->deps      = deps;
 	this->output    = String_Clone($("a.out"));
 	this->cc        = String_Clone($("/usr/bin/clang"));
@@ -19,7 +19,7 @@ void Builder_Init(Builder *this, Deps *deps) {
 	Array_Init(this->linkpaths, 0);
 }
 
-void Builder_Destroy(Builder *this) {
+def(void, Destroy) {
 	String_Destroy(&this->output);
 	String_Destroy(&this->cc);
 	String_Destroy(&this->inclhdr);
@@ -31,12 +31,12 @@ void Builder_Destroy(Builder *this) {
 	Array_Foreach(this->linkpaths, String_Destroy);
 	Array_Destroy(this->linkpaths);
 
-	Array_Foreach(this->queue, ^(Builder_QueueItem *item) {
+	Array_Foreach(this->queue, ^(ref(QueueItem) *item) {
 		String_Destroy(&item->source);
 		String_Destroy(&item->output);
 	});
 
-	Array_Foreach(this->mappings, ^(Deps_Mapping *item) {
+	Array_Foreach(this->mappings, ^(ref(DepsMapping) *item) {
 		String_Destroy(&item->src);
 		String_Destroy(&item->dest);
 	});
@@ -45,7 +45,7 @@ void Builder_Destroy(Builder *this) {
 	Array_Destroy(this->mappings);
 }
 
-bool Builder_SetOption(Builder *this, String name, String value) {
+def(bool, SetOption, String name, String value) {
 	if (String_Equals(name, $("output"))) {
 		String_Copy(&this->output, value);
 	} else if (String_Equals(name, $("map"))) {
@@ -60,7 +60,7 @@ bool Builder_SetOption(Builder *this, String name, String value) {
 			return false;
 		}
 
-		Deps_Mapping insert;
+		ref(DepsMapping) insert;
 
 		insert.src  = String_Clone(parts->buf[0]);
 		insert.dest = String_Clone(parts->buf[1]);
@@ -111,7 +111,7 @@ bool Builder_SetOption(Builder *this, String name, String value) {
 	return true;
 }
 
-String Builder_ShrinkPathEx(String shortpath, String path) {
+static String ref(ShrinkPathEx)(String shortpath, String path) {
 	String realpath = Path_Resolve(shortpath);
 
 	String res = HeapString(0);
@@ -130,11 +130,11 @@ String Builder_ShrinkPathEx(String shortpath, String path) {
 	return res;
 }
 
-String Builder_ShrinkPath(Builder *this, String path) {
+static def(String, ShrinkPath, String path) {
 	for (size_t i = 0; i < this->mappings->len; i++) {
 		String shortpath = this->mappings->buf[i].src;
 
-		String res = Builder_ShrinkPathEx(shortpath, path);
+		String res = ref(ShrinkPathEx)(shortpath, path);
 
 		if (res.len > 0) {
 			return res;
@@ -144,7 +144,7 @@ String Builder_ShrinkPath(Builder *this, String path) {
 	return String_Clone(path);
 }
 
-String Builder_GetOutput(Builder *this, String path) {
+static def(String, GetOutput, String path) {
 	String realpath = Path_Resolve(path);
 
 	for (size_t i = 0; i < this->mappings->len; i++) {
@@ -176,7 +176,7 @@ String Builder_GetOutput(Builder *this, String path) {
 	return HeapString(0);
 }
 
-String Builder_GetSource(String path) {
+static String ref(GetSource)(String path) {
 	ssize_t pos = String_ReverseFind(path, '.');
 
 	if (pos == String_NotFound) {
@@ -207,21 +207,21 @@ String Builder_GetSource(String path) {
 	return res;
 }
 
-void Builder_AddToQueue(Builder *this, String source, String output) {
+static def(void, AddToQueue, String source, String output) {
 	for (size_t i = 0; i < this->queue->len; i++) {
 		if (String_Equals(this->queue->buf[i].source, source)) {
 			return;
 		}
 	}
 
-	Builder_QueueItem item;
+	ref(QueueItem) item;
 	item.source = String_Clone(source);
 	item.output = String_Clone(output);
 
 	Array_Push(this->queue, item);
 }
 
-bool Builder_Compile(Builder *this, String src, String out) {
+static def(bool, Compile, String src, String out) {
 	Process proc;
 	Process_Init(&proc, this->cc);
 
@@ -275,7 +275,7 @@ bool Builder_Compile(Builder *this, String src, String out) {
 	return res < 0;
 }
 
-void Builder_Link(Builder *this, StringArray *files) {
+static def(void, Link, StringArray *files) {
 	Process proc;
 	Process_Init(&proc, this->cc);
 
@@ -323,12 +323,12 @@ void Builder_Link(Builder *this, StringArray *files) {
 	Process_Destroy(&proc);
 }
 
-bool Builder_CreateQueue(Builder *this) {
+def(bool, CreateQueue) {
 	for (size_t i = 0; i < this->deps->deps->len; i++) {
 		Deps_Node *dep = this->deps->deps->buf[i];
 
 		String headerPath = String_Clone(dep->path);
-		String sourcePath = Builder_GetSource(headerPath);
+		String sourcePath = ref(GetSource)(headerPath);
 
 		/* Skip all non-source files. */
 		if (sourcePath.len == 0) {
@@ -345,7 +345,7 @@ bool Builder_CreateQueue(Builder *this) {
 
 		Logger_LogFmt(&logger, Logger_Level_Info, $("Processing %..."), sourcePath);
 
-		String output = Builder_GetOutput(this, sourcePath);
+		String output = ref(GetOutput)(this, sourcePath);
 
 		if (output.len == 0) {
 			Logger_LogFmt(&logger,
@@ -366,7 +366,7 @@ bool Builder_CreateQueue(Builder *this) {
 				Logger_LogFmt(&logger, Logger_Level_Debug, $(" - %"), dep->nodes[j]->path);
 
 				String depHeaderPath = String_Clone(dep->nodes[j]->path);
-				String depSourcePath = Builder_GetSource(dep->nodes[j]->path);
+				String depSourcePath = ref(GetSource)(dep->nodes[j]->path);
 
 				if (depSourcePath.len == 0) { /* Header file wihout matching source file. */
 					if (Path_Exists(output)) {
@@ -376,7 +376,7 @@ bool Builder_CreateQueue(Builder *this) {
 						}
 					}
 				} else { /* There is a source file. */
-					String depOutput = Builder_GetOutput(this, depSourcePath);
+					String depOutput = ref(GetOutput)(this, depSourcePath);
 
 					if (depOutput.len == 0) {
 						Logger_LogFmt(&logger,
@@ -389,15 +389,15 @@ bool Builder_CreateQueue(Builder *this) {
 
 					if (!Path_Exists(depOutput)) {
 						/* dep unbuilt */
-						Builder_AddToQueue(this, depSourcePath, depOutput);
+						ref(AddToQueue)(this, depSourcePath, depOutput);
 						depChanged = true;
 					} else if (File_IsModified(depSourcePath, depOutput)) {
 						/* dep source changed */
-						Builder_AddToQueue(this, depSourcePath, depOutput);
+						ref(AddToQueue)(this, depSourcePath, depOutput);
 						depChanged = true;
 					} else if (File_IsModified(depHeaderPath, depOutput)) {
 						/* dep header changed */
-						Builder_AddToQueue(this, depSourcePath, depOutput);
+						ref(AddToQueue)(this, depSourcePath, depOutput);
 						depChanged = true;
 					}
 
@@ -411,16 +411,16 @@ bool Builder_CreateQueue(Builder *this) {
 
 		if (depChanged) {
 			Logger_Log(&logger, Logger_Level_Info, $("Dependency changed or unbuilt."));
-			Builder_AddToQueue(this, sourcePath, output);
+			ref(AddToQueue)(this, sourcePath, output);
 		} else if (!Path_Exists(output)) {
 			Logger_Log(&logger, Logger_Level_Info, $("Not built yet."));
-			Builder_AddToQueue(this, sourcePath, output);
+			ref(AddToQueue)(this, sourcePath, output);
 		} else if (File_IsModified(sourcePath, output)) {
 			Logger_Log(&logger, Logger_Level_Info, $("Source modified."));
-			Builder_AddToQueue(this, sourcePath, output);
+			ref(AddToQueue)(this, sourcePath, output);
 		} else if (File_IsModified(headerPath, output)) {
 			Logger_Log(&logger, Logger_Level_Info, $("Header modified."));
-			Builder_AddToQueue(this, sourcePath, output);
+			ref(AddToQueue)(this, sourcePath, output);
 		} else {
 			Logger_Log(&logger, Logger_Level_Debug, $("Already built."));
 		}
@@ -433,7 +433,7 @@ bool Builder_CreateQueue(Builder *this) {
 	return true;
 }
 
-void Builder_PrintQueue(Builder *this) {
+def(void, PrintQueue) {
 	if (this->queue->len == 0 && Path_Exists(this->output)) {
 		Logger_Log(&logger, Logger_Level_Info, $("  Queue is empty."));
 	} else {
@@ -449,7 +449,7 @@ void Builder_PrintQueue(Builder *this) {
 	}
 }
 
-bool Builder_Run(Builder *this) {
+def(bool, Run) {
 	if (this->queue->len != 0 || !Path_Exists(this->output)) {
 		for (size_t i = 0; i < this->queue->len; i++) {
 			String create = Path_GetDirectory(this->queue->buf[i].output);
@@ -458,14 +458,14 @@ bool Builder_Run(Builder *this) {
 				Path_Create(create, true);
 			}
 
-			String path = Builder_ShrinkPath(this, this->queue->buf[i].source);
+			String path = ref(ShrinkPath)(this, this->queue->buf[i].source);
 
 			Logger_LogFmt(&logger, Logger_Level_Info, $("Compiling %... [%/%]"),
 				path,
 				Integer_ToString(i + 1),
 				Integer_ToString(this->queue->len));
 
-			bool ok = Builder_Compile(this, path, this->queue->buf[i].output);
+			bool ok = ref(Compile)(this, path, this->queue->buf[i].output);
 
 			String_Destroy(&path);
 
@@ -478,10 +478,10 @@ bool Builder_Run(Builder *this) {
 		Array_Init(files, 0);
 
 		for (size_t i = 0; i < this->deps->deps->len; i++) {
-			String src = Builder_GetSource(this->deps->deps->buf[i]->path);
+			String src = ref(GetSource)(this->deps->deps->buf[i]->path);
 
 			if (src.len > 0) {
-				String path = Builder_GetOutput(this, src);
+				String path = ref(GetOutput)(this, src);
 
 				if (path.len == 0) {
 					Array_Foreach(files, String_Destroy);
@@ -492,7 +492,7 @@ bool Builder_Run(Builder *this) {
 					return false;
 				}
 
-				Array_Push(files, Builder_ShrinkPath(this, path));
+				Array_Push(files, ref(ShrinkPath)(this, path));
 
 				String_Destroy(&path);
 			}
@@ -500,7 +500,7 @@ bool Builder_Run(Builder *this) {
 			String_Destroy(&src);
 		}
 
-		Builder_Link(this, files);
+		ref(Link)(this, files);
 
 		Array_Foreach(files, String_Destroy);
 		Array_Destroy(files);

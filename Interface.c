@@ -2,37 +2,37 @@
 
 extern Logger logger;
 
-void Interface_Init(Interface *this) {
-	this->action = Interface_Action_Unsupported;
+def(void, Init) {
+	this->action = ref(Action_Unsupported);
 
 	Deps_Init(&this->deps);
 	Prototypes_Init(&this->proto);
 	Builder_Init(&this->builder, &this->deps);
 }
 
-void Interface_Destroy(Interface *this) {
+def(void, Destroy) {
 	Builder_Destroy(&this->builder);
 	Prototypes_Destroy(&this->proto);
 	Deps_Destroy(&this->deps);
 }
 
-void Interface_SetAction(Interface *this, String action) {
+def(void, SetAction, String action) {
 	if (String_Equals(action, $("build"))) {
-		this->action = Interface_Action_Build;
+		this->action = ref(Action_Build);
 	} else if (String_Equals(action, $("listdeps"))) {
-		this->action = Interface_Action_ListDeps;
+		this->action = ref(Action_ListDeps);
 	} else if (String_Equals(action, $("deptree"))) {
-		this->action = Interface_Action_DepTree;
+		this->action = ref(Action_DepTree);
 	} else if (String_Equals(action, $("print-queue"))) {
-		this->action = Interface_Action_PrintQueue;
+		this->action = ref(Action_PrintQueue);
 	} else if (String_Equals(action, $("prototypes"))) {
-		this->action = Interface_Action_Prototypes;
+		this->action = ref(Action_Prototypes);
 	} else if (String_Equals(action, $("help"))) {
-		this->action = Interface_Action_Help;
+		this->action = ref(Action_Help);
 	}
 }
 
-bool Interface_SetOption(Interface *this, String name, String value) {
+def(bool, SetOption, String name, String value) {
 	if (String_Equals(name, $("debug"))) {
 		if (String_Equals(value, $("yes"))) {
 			BitMask_Set(logger.levels, Logger_Level_Debug);
@@ -56,9 +56,9 @@ bool Interface_SetOption(Interface *this, String name, String value) {
 	return true;
 }
 
-bool Interface_Run(Interface *this) {
+def(bool, Run) {
 	switch (this->action) {
-		case Interface_Action_Build:
+		case ref(Action_Build):
 			Deps_Scan(&this->deps);
 
 			if (!Builder_CreateQueue(&this->builder)) {
@@ -71,19 +71,19 @@ bool Interface_Run(Interface *this) {
 
 			return true;
 
-		case Interface_Action_ListDeps:
+		case ref(Action_ListDeps):
 			Deps_Scan(&this->deps);
 			Deps_ListSourceFiles(&this->deps);
 
 			return true;
 
-		case Interface_Action_DepTree:
+		case ref(Action_DepTree):
 			Deps_Scan(&this->deps);
 			Deps_PrintTree(&this->deps);
 
 			return true;
 
-		case Interface_Action_PrintQueue:
+		case ref(Action_PrintQueue):
 			Deps_Scan(&this->deps);
 
 			if (!Builder_CreateQueue(&this->builder)) {
@@ -94,12 +94,12 @@ bool Interface_Run(Interface *this) {
 
 			return true;
 
-		case Interface_Action_Prototypes:
+		case ref(Action_Prototypes):
 			Prototypes_Generate(&this->proto);
 
 			return true;
 
-		case Interface_Action_Help:
+		case ref(Action_Help):
 			String_Print($(
 				"Supported actions are: "
 				"build, listdeps, deptree, print-queue, prototypes, help.\n"
@@ -107,7 +107,7 @@ bool Interface_Run(Interface *this) {
 
 			return true;
 
-		case Interface_Action_Unsupported:
+		case ref(Action_Unsupported):
 			String_Print($("Action unsupported.\n"));
 
 			return false;

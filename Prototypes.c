@@ -1,14 +1,14 @@
 #import "Prototypes.h"
 
-void Prototypes_Init(Prototypes *this) {
+def(void, Init) {
 	this->path = HeapString(0);
 }
 
-void Prototypes_Destroy(Prototypes *this) {
+def(void, Destroy) {
 	String_Destroy(&this->path);
 }
 
-bool Prototypes_SetOption(Prototypes *this, String name, String value) {
+def(bool, SetOption, String name, String value) {
 	if (String_Equals(name, $("file"))) {
 		String_Copy(&this->path, value);
 	}
@@ -16,7 +16,7 @@ bool Prototypes_SetOption(Prototypes *this, String name, String value) {
 	return true;
 }
 
-void Prototypes_Generate(Prototypes *this) {
+def(void, Generate) {
 	if (this->path.len == 0) {
 		String_Print($("Please specify a file.\n"));
 		return;

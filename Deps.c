@@ -2,17 +2,18 @@
 
 extern Logger logger;
 
-void Deps_Init(Deps *this) {
+def(void, Init) {
 	this->main = HeapString(0);
+
+	Array_Init(this->deps,    0);
 	Array_Init(this->include, 0);
-	Array_Init(this->deps, 0);
 
-	Tree_Init(&this->tree, (void *) &Deps_DestroyNode);
+	Tree_Init(&this->tree, (void *) &ref(DestroyNode));
 
-	this->node = (Deps_Node *) &this->tree.root;
+	this->node = (ref(Node) *) &this->tree.root;
 }
 
-void Deps_Destroy(Deps *this) {
+def(void, Destroy) {
 	Tree_Destroy(&this->tree);
 	String_Destroy(&this->main);
 
@@ -22,11 +23,11 @@ void Deps_Destroy(Deps *this) {
 	Array_Destroy(this->deps);
 }
 
-void Deps_DestroyNode(Deps_Node *node) {
+void ref(DestroyNode)(ref(Node) *node) {
 	String_Destroy(&node->path);
 }
 
-bool Deps_SetOption(Deps *this, String name, String value) {
+def(bool, SetOption, String name, String value) {
 	if (String_Equals(name, $("main"))) {
 		String_Copy(&this->main, value);
 	} else if (String_Equals(name, $("include"))) {
@@ -36,7 +37,7 @@ bool Deps_SetOption(Deps *this, String name, String value) {
 	return true;
 }
 
-String Deps_GetLocalPath(__unused Deps *this, String base, String file) {
+static String ref(GetLocalPath)(String base, String file) {
 	String path = String_Format($("%/%"), base, file);
 
 	if (!Path_Exists(path)) {
@@ -47,7 +48,7 @@ String Deps_GetLocalPath(__unused Deps *this, String base, String file) {
 }
 
 /* Iterates over all include paths and uses the matching one. */
-String Deps_GetSystemPath(Deps *this, String file) {
+static def(String, GetSystemPath, String file) {
 	String path = HeapString(0);
 
 	for (size_t i = 0; i < this->include->len; i++) {
@@ -65,29 +66,29 @@ String Deps_GetSystemPath(Deps *this, String file) {
 	return path;
 }
 
-String Deps_GetFullPath(Deps *this, String base, String file, Deps_Type type) {
+static def(String, GetFullPath, String base, String file, ref(Type) type) {
 	String path;
 
-	if (type == Deps_Type_Local) {
-		path = Deps_GetLocalPath(this, base, file);
+	if (type == ref(Type_Local)) {
+		path = ref(GetLocalPath)(base, file);
 
 		if (path.len == 0) {
 			String_Destroy(&path);
-			path = Deps_GetSystemPath(this, file);
+			path = ref(GetSystemPath)(this, file);
 		}
 	} else {
-		path = Deps_GetSystemPath(this, file);
+		path = ref(GetSystemPath)(this, file);
 
 		if (path.len == 0) {
 			String_Destroy(&path);
-			path = Deps_GetLocalPath(this, base, file);
+			path = ref(GetLocalPath)(base, file);
 		}
 	}
 
 	return path;
 }
 
-bool Deps_AddFile(Deps *this, String absPath) {
+static def(bool, AddFile, String absPath) {
 	bool alreadyExistent = false;
 
 	for (size_t i = 0; i < this->deps->len; i++) {
@@ -97,7 +98,7 @@ bool Deps_AddFile(Deps *this, String absPath) {
 		}
 	}
 
-	this->node = Tree_AddNode(this->node, sizeof(Deps_Node));
+	this->node = Tree_AddNode(this->node, sizeof(ref(Node)));
 
 	this->node->path = String_Clone(absPath);
 
@@ -108,7 +109,7 @@ bool Deps_AddFile(Deps *this, String absPath) {
 	return alreadyExistent;
 }
 
-void Deps_ScanFileDeps(Deps *this, String base, StringArray *arr) {
+static def(void, ScanFileDeps, String base, StringArray *arr) {
 	for (size_t i = 0; i < arr->len; i++) {
 		String tmp;
 
@@ -159,20 +160,20 @@ void Deps_ScanFileDeps(Deps *this, String base, StringArray *arr) {
 		Logger_LogFmt(&logger, Logger_Level_Debug,
 			$("Header file '%' found."), header);
 
-		Deps_Type deptype = quotes
-			? Deps_Type_Local
-			: Deps_Type_System;
+		ref(Type) deptype = quotes
+			? ref(Type_Local)
+			: ref(Type_System);
 
-		String relPath = Deps_GetFullPath(this, base, header, deptype);
+		String relPath = ref(GetFullPath)(this, base, header, deptype);
 
 		if (relPath.len > 0) {
 			String absPath = Path_Resolve(relPath);
 
 			if (absPath.len > 0) {
-				bool scanned = Deps_AddFile(this, absPath);
+				bool scanned = ref(AddFile)(this, absPath);
 
 				if (!scanned) {
-					Deps_ScanFile(this, absPath);
+					ref(ScanFile)(this, absPath);
 				}
 
 				this->node = this->node->parent;
@@ -186,21 +187,22 @@ void Deps_ScanFileDeps(Deps *this, String base, StringArray *arr) {
 	}
 }
 
-void Deps_ScanFile(Deps *this, String file) {
+static def(void, ScanFile, String file) {
 	Logger_LogFmt(&logger, Logger_Level_Debug, $("Adding '%'..."), file);
 
 	String s = File_GetContents(file);
+
 	StringArray *arr = String_Split(s, '\n');
 
 	String base = Path_GetDirectory(file);
 
-	Deps_ScanFileDeps(this, base, arr);
+	ref(ScanFileDeps)(this, base, arr);
 
 	Array_Destroy(arr);
 	String_Destroy(&s);
 }
 
-void Deps_ListSourceFiles(Deps *this) {
+def(void, ListSourceFiles) {
 	for (size_t i = 0; i < this->deps->len; i++) {
 		String path = String_Clone(this->deps->buf[i]->path);
 
@@ -214,8 +216,8 @@ void Deps_ListSourceFiles(Deps *this) {
 	}
 }
 
-void Deps_PrintNode(Deps *this, Deps_Node *node, int indent) {
-	if (node == (Deps_Node *) &this->tree.root) {
+static def(void, PrintNode, ref(Node) *node, int indent) {
+	if (node == (ref(Node) *) &this->tree.root) {
 		/* The root node does not contain a path. */
 		goto iter;
 	}
@@ -238,15 +240,15 @@ void Deps_PrintNode(Deps *this, Deps_Node *node, int indent) {
 
 iter:
 	for (size_t i = 0; i < node->len; i++) {
-		Deps_PrintNode(this, node->nodes[i], indent + 2);
+		ref(PrintNode)(this, node->nodes[i], indent + 2);
 	}
 }
 
-void Deps_PrintTree(Deps *this) {
-	Deps_PrintNode(this, this->node, 0);
+def(void, PrintTree) {
+	ref(PrintNode)(this, this->node, 0);
 }
 
-void Deps_Scan(Deps *this) {
+def(void, Scan) {
 	String fullpath = Path_Resolve(this->main);
 
 	if (fullpath.len == 0) {
@@ -255,8 +257,8 @@ void Deps_Scan(Deps *this) {
 			$("Main file '%' not found."),
 			this->main);
 	} else {
-		Deps_AddFile(this, fullpath);
-		Deps_ScanFile(this, fullpath);
+		ref(AddFile)(this, fullpath);
+		ref(ScanFile)(this, fullpath);
 		this->node = this->node->parent;
 	}
 

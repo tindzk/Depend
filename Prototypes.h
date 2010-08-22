@@ -2,11 +2,14 @@
 
 #import "Utils.h"
 
+#undef self
+#define self Prototypes
+
 typedef struct {
 	String path;
-} Prototypes;
+} self;
 
-void Prototypes_Init(Prototypes *this);
-void Prototypes_Destroy(Prototypes *this);
-bool Prototypes_SetOption(Prototypes *this, String name, String value);
-void Prototypes_Generate(Prototypes *this);
+def(void, Init);
+def(void, Destroy);
+def(bool, SetOption, String name, String value);
+def(void, Generate);

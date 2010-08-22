@@ -3,18 +3,20 @@
 #import <Process.h>
 
 #import "Deps.h"
-
 #import "Utils.h"
+
+#undef self
+#define self Builder
 
 typedef struct {
 	String source;
 	String output;
-} Builder_QueueItem;
+} ref(QueueItem);
 
 typedef struct {
 	String src;
 	String dest;
-} Deps_Mapping;
+} ref(DepsMapping);
 
 typedef struct {
 	Deps *deps;
@@ -30,20 +32,14 @@ typedef struct {
 
 	StringArray *link;
 	StringArray *linkpaths;
-	Array(Deps_Mapping, *mappings);
-	Array(Builder_QueueItem, *queue);
-} Builder;
 
-void Builder_Init(Builder *this, Deps *deps);
-void Builder_Destroy(Builder *this);
-bool Builder_SetOption(Builder *this, String name, String value);
-String Builder_ShrinkPathEx(String shortpath, String path);
-String Builder_ShrinkPath(Builder *this, String path);
-String Builder_GetOutput(Builder *this, String path);
-String Builder_GetSource(String path);
-void Builder_AddToQueue(Builder *this, String source, String output);
-bool Builder_Compile(Builder *this, String src, String out);
-void Builder_Link(Builder *this, StringArray *files);
-bool Builder_CreateQueue(Builder *this);
-void Builder_PrintQueue(Builder *this);
-bool Builder_Run(Builder *this);
+	Array(ref(DepsMapping), *mappings);
+	Array(ref(QueueItem),   *queue);
+} self;
+
+def(void, Init, Deps *deps);
+def(void, Destroy);
+def(bool, SetOption, String name, String value);
+def(bool, CreateQueue);
+def(void, PrintQueue);
+def(bool, Run);

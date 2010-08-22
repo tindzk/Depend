@@ -71,5 +71,8 @@ int main(int argc, char* argv[]) {
 
 out:
 	Interface_Destroy(&itf);
-	return success ? EXIT_SUCCESS : EXIT_FAILURE;
+
+	return success
+		? EXIT_SUCCESS
+		: EXIT_FAILURE;
 }

@@ -251,7 +251,7 @@ def(void, PrintTree) {
 def(void, Scan) {
 	String fullpath = Path_Resolve(this->main);
 
-	if (fullpath.len == 0) {
+	if (fullpath.len == 0 || !Path_Exists(fullpath)) {
 		Logger_LogFmt(&logger,
 			Logger_Level_Error,
 			$("Main file '%' not found."),

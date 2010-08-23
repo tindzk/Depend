@@ -22,7 +22,8 @@ def(void, Generate) {
 		return;
 	}
 
-	String s = File_GetContents(this->path);
+	String s = HeapString(Path_GetSize(this->path));
+	File_GetContents(this->path, &s);
 
 	StringArray *arr = String_Split(s, '\n');
 

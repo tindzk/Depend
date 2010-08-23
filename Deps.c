@@ -190,7 +190,9 @@ static def(void, ScanFileDeps, String base, StringArray *arr) {
 static def(void, ScanFile, String file) {
 	Logger_LogFmt(&logger, Logger_Level_Debug, $("Adding '%'..."), file);
 
-	String s = File_GetContents(file);
+	String s = HeapString(1024 * 15);
+
+	File_GetContents(file, &s);
 
 	StringArray *arr = String_Split(s, '\n');
 

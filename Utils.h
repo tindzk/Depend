@@ -1,8 +1,7 @@
 #import <Path.h>
 #import <Logger.h>
+#import <Integer.h>
 #import <Terminal.h>
-#import <FileStream.h>
-#import <BufferedStream.h>
 
 #define $(s) String(s)
 

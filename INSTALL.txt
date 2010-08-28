@@ -9,7 +9,7 @@ repository is placed in the same subdirectory as Jivai-Utils:
 Then run:
 $ git clone git://github.com/tindzk/Jivai-Utils.git
 $ cd Jivai-Utils
-$ make JIVAI_PATH=../Jivai/src
+$ make
 
 Let's try  to build the  httpd application from  the Jivai examples/
 directory:

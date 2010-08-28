@@ -16,6 +16,8 @@ CFLAGS += -O0
 # are necessary.
 CFLAGS += -std=gnu99 -fblocks
 
+JIVAI_PATH ?= ../Jivai/src
+
 # Define the library path.
 LIBPATH = $(JIVAI_PATH)
 

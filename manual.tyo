@@ -29,3 +29,39 @@
 		.item{Build system}
 	}
 }
+
+.chapter[License] {
+	.p {
+		Licensed under the EUPL, Version 1.1 only (the
+		.i{"Licence"}); You may not use this work except in
+		compliance with the Licence.
+	}
+
+	.p {
+		You may obtain a copy of the Licence at:
+			.url{http://ec.europa.eu/idabc/eupl}
+	}
+
+	.p {
+		Unless required by applicable law or agreed to in writing,
+		software distributed under the Licence is distributed on an
+		"AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+		either express or implied.
+	}
+
+	.p {
+		See the Licence for the specific language governing
+		permissions and limitations under the Licence.
+	}
+}
+
+.chapter[See also] {
+	.list {
+		.item{.url[Browse source]{http://github.com/tindzk/Jivai-Utils}}
+		.item{.url[GitHub account]{http://github.com/tindzk}}
+	}
+}
+
+.chapter[Contact] {
+	.mail[Tim Nieradzik]{tim.nieradzik@gmx.de}
+}

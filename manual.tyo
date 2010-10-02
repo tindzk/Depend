@@ -30,6 +30,76 @@
 	}
 }
 
+.chapter[Getting Started] {
+	.section[Requirements] {
+		Jivai-Utils depends on Jivai. In this tutorial the Jivai
+		repository is placed in the same directory as Jivai-Utils'.
+	}
+
+	.section[Installation] {
+		.command {
+			git clone git://github.com/tindzk/Jivai-Utils.git
+			cd Jivai-Utils
+			make
+		}
+	}
+
+	.section[Usage] {
+		.p {
+			Let's try  to build the  httpd application from  the Jivai
+			.path{examples/} directory:
+		}
+
+		.command {
+			cd ../Jivai/examples
+			mkdir -p build/Jivai
+			../../Jivai-Utils/jutils.bin \
+				build                    \
+				output=build/httpd.bin   \
+				main=httpd.c             \
+				include=../src           \
+				map=.:build              \
+				map=../src:build/Jivai   \
+				inclhdr=config.h         \
+				link=@bfd                \
+				dbgsym=yes               \
+				optimlevel=0
+		}
+	}
+
+	.section[Performance] {
+		.p {
+			In contrast  to the  shipped .path{Makefile},  this  will only  compile the
+			files which are  actually needed.  If a file  changes,  it will only
+			recompile those files which depend  on the changed one rendering the
+			build process much faster.
+		}
+
+		.p {
+			This  feature compares  the source  file's  date  with  the compiled
+			output. Therefore, it's possible to "fake" a file change by doing:
+		}
+
+		.command {
+			touch ../src/HTTP/Server.c
+		}
+
+		.p {
+			And then execute the above .path{jutils.bin} command.  As you can see, only
+			a subset of the initially built files get recompiled.
+		}
+	}
+
+	.section[Dependency tree] {
+		.p {
+			Sometimes it's useful  to get an overview of  your project's overall
+			complexity. Jivai-Utils supports printing the whole dependency tree.
+			Just  replace  replace  the  .keyword{build}  with
+			.keyword{deptree}  in  the above command.
+		}
+	}
+}
+
 .chapter[License] {
 	.p {
 		Licensed under the EUPL, Version 1.1 only (the

@@ -22,7 +22,7 @@ JIVAI_PATH ?= ../Jivai/src
 LIBPATH = $(JIVAI_PATH)
 
 # Only build these modules.
-LIBFILES += $(LIBPATH)/{Module,Block,Process,Path,Char,String,Backtrace,Integer,Memory,Exception{,Manager},Tree,Terminal,File,BufferedStream,FileStream,Hex,Logger}.c
+LIBFILES += $(LIBPATH)/{Kernel,Module,Block,Process,Path,Char,String,Backtrace,Integer,Memory,Exception{,Manager},Tree,Terminal,File,BufferedStream,FileStream,Hex,Logger}.c
 
 # Enable human-readable backtraces (requires BFD).
 LIBFILES += $(LIBPATH)/BFD.c -lbfd

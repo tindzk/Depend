@@ -1,19 +1,26 @@
 #import "Interface.h"
+#import <App.h>
 
 extern Logger logger;
 
 def(void, Init) {
 	this->action = ref(Action_Unsupported);
 
-	Deps_Init(&this->deps);
-	Prototypes_Init(&this->proto);
-	Builder_Init(&this->builder, &this->deps);
+	this->deps    = Deps_AsClass(&this->private.deps);
+	this->proto   = Prototypes_AsClass(&this->private.proto);
+	this->builder = Builder_AsClass(&this->private.builder);
+
+	Deps_Init(this->deps);
+	Prototypes_Init(this->proto);
+	Builder_Init(
+		this->builder,
+		this->deps);
 }
 
 def(void, Destroy) {
-	Builder_Destroy(&this->builder);
-	Prototypes_Destroy(&this->proto);
-	Deps_Destroy(&this->deps);
+	Builder_Destroy(this->builder);
+	Prototypes_Destroy(this->proto);
+	Deps_Destroy(this->deps);
 }
 
 def(void, SetAction, String action) {
@@ -41,15 +48,15 @@ def(bool, SetOption, String name, String value) {
 		}
 	}
 
-	if (!Deps_SetOption(&this->deps, name, value)) {
+	if (!Deps_SetOption(this->deps, name, value)) {
 		return false;
 	}
 
-	if (!Prototypes_SetOption(&this->proto, name, value)) {
+	if (!Prototypes_SetOption(this->proto, name, value)) {
 		return false;
 	}
 
-	if (!Builder_SetOption(&this->builder, name, value)) {
+	if (!Builder_SetOption(this->builder, name, value)) {
 		return false;
 	}
 
@@ -59,43 +66,43 @@ def(bool, SetOption, String name, String value) {
 def(bool, Run) {
 	switch (this->action) {
 		case ref(Action_Build):
-			Deps_Scan(&this->deps);
+			Deps_Scan(this->deps);
 
-			if (!Builder_CreateQueue(&this->builder)) {
+			if (!Builder_CreateQueue(this->builder)) {
 				return false;
 			}
 
-			if (!Builder_Run(&this->builder)) {
+			if (!Builder_Run(this->builder)) {
 				return false;
 			}
 
 			return true;
 
 		case ref(Action_ListDeps):
-			Deps_Scan(&this->deps);
-			Deps_ListSourceFiles(&this->deps);
+			Deps_Scan(this->deps);
+			Deps_ListSourceFiles(this->deps);
 
 			return true;
 
 		case ref(Action_DepTree):
-			Deps_Scan(&this->deps);
-			Deps_PrintTree(&this->deps);
+			Deps_Scan(this->deps);
+			Deps_PrintTree(this->deps);
 
 			return true;
 
 		case ref(Action_PrintQueue):
-			Deps_Scan(&this->deps);
+			Deps_Scan(this->deps);
 
-			if (!Builder_CreateQueue(&this->builder)) {
+			if (!Builder_CreateQueue(this->builder)) {
 				return false;
 			}
 
-			Builder_PrintQueue(&this->builder);
+			Builder_PrintQueue(this->builder);
 
 			return true;
 
 		case ref(Action_Prototypes):
-			Prototypes_Generate(&this->proto);
+			Prototypes_Generate(this->proto);
 
 			return true;
 

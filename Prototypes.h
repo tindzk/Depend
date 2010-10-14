@@ -7,7 +7,7 @@
 
 typedef struct {
 	String path;
-} self;
+} Class(self);
 
 def(void, Init);
 def(void, Destroy);

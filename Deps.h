@@ -18,6 +18,8 @@ typedef struct ref(Node) {
 	String path;
 } ref(Node);
 
+typedef Array(ref(Node) *, DepsArray);
+
 typedef struct {
 	String main;
 
@@ -28,14 +30,15 @@ typedef struct {
 	ref(Node) *node;
 
 	/* All top-level deps flattened. */
-	Array(ref(Node) *, *deps);
-} self;
+	DepsArray *deps;
+} Class(self);
 
 def(void, Init);
 def(void, Destroy);
 void ref(DestroyNode)(ref(Node) *node);
 def(bool, SetOption, String name, String value);
-static def(void, ScanFile, String file);
+def(StringArray *, GetIncludes);
+def(DepsArray *, GetDeps);
 def(void, ListSourceFiles);
 def(void, PrintTree);
 def(void, Scan);

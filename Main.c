@@ -32,9 +32,13 @@ int main(int argc, char* argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	Interface itf;
-	Interface_Init(&itf);
-	Interface_SetAction(&itf, String_FromNul(argv[1]));
+	struct {
+		Interface itf;
+	} private;
+
+	InterfaceClass itf = Interface_AsClass(&private.itf);
+	Interface_Init(itf);
+	Interface_SetAction(itf, String_FromNul(argv[1]));
 
 	bool success = true;
 
@@ -50,7 +54,7 @@ int main(int argc, char* argv[]) {
 		String name  = String_Slice(arg, 0, pos);
 		String value = String_Slice(arg, pos + 1);
 
-		success = Interface_SetOption(&itf, name, value);
+		success = Interface_SetOption(itf, name, value);
 
 		if (!success) {
 			goto out;
@@ -58,7 +62,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	try (&exc) {
-		success = Interface_Run(&itf);
+		success = Interface_Run(itf);
 	} catchAny (e) {
 		Exception_Print(e);
 
@@ -70,7 +74,7 @@ int main(int argc, char* argv[]) {
 	} tryEnd;
 
 out:
-	Interface_Destroy(&itf);
+	Interface_Destroy(itf);
 
 	return success
 		? EXIT_SUCCESS

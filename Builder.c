@@ -1,8 +1,9 @@
 #import "Builder.h"
+#import <App.h>
 
 extern Logger logger;
 
-def(void, Init, Deps *deps) {
+def(void, Init, DepsClass deps) {
 	this->deps      = deps;
 	this->output    = String_Clone($("a.out"));
 	this->cc        = String_Clone($("/usr/bin/clang"));
@@ -257,9 +258,9 @@ static def(bool, Compile, String src, String out) {
 		Process_AddParameter(&proc, this->inclhdr);
 	}
 
-	for (size_t i = 0; i < this->deps->include->len; i++) {
+	for (size_t i = 0; i < Deps_GetIncludes(this->deps)->len; i++) {
 		Process_AddParameter(&proc, $("-I"));
-		Process_AddParameter(&proc, this->deps->include->buf[i]);
+		Process_AddParameter(&proc, Deps_GetIncludes(this->deps)->buf[i]);
 	}
 
 	int res = Process_Spawn(&proc);
@@ -324,8 +325,8 @@ static def(void, Link, StringArray *files) {
 }
 
 def(bool, CreateQueue) {
-	for (size_t i = 0; i < this->deps->deps->len; i++) {
-		Deps_Node *dep = this->deps->deps->buf[i];
+	for (size_t i = 0; i < Deps_GetDeps(this->deps)->len; i++) {
+		Deps_Node *dep = Deps_GetDeps(this->deps)->buf[i];
 
 		String headerPath = String_Clone(dep->path);
 		String sourcePath = ref(GetSource)(headerPath);
@@ -345,7 +346,7 @@ def(bool, CreateQueue) {
 
 		Logger_LogFmt(&logger, Logger_Level_Info, $("Processing %..."), sourcePath);
 
-		String output = ref(GetOutput)(this, sourcePath);
+		String output = call(GetOutput, sourcePath);
 
 		if (output.len == 0) {
 			Logger_LogFmt(&logger,
@@ -376,7 +377,7 @@ def(bool, CreateQueue) {
 						}
 					}
 				} else { /* There is a source file. */
-					String depOutput = ref(GetOutput)(this, depSourcePath);
+					String depOutput = call(GetOutput, depSourcePath);
 
 					if (depOutput.len == 0) {
 						Logger_LogFmt(&logger,
@@ -389,15 +390,15 @@ def(bool, CreateQueue) {
 
 					if (!Path_Exists(depOutput)) {
 						/* dep unbuilt */
-						ref(AddToQueue)(this, depSourcePath, depOutput);
+						call(AddToQueue, depSourcePath, depOutput);
 						depChanged = true;
 					} else if (File_IsModified(depSourcePath, depOutput)) {
 						/* dep source changed */
-						ref(AddToQueue)(this, depSourcePath, depOutput);
+						call(AddToQueue, depSourcePath, depOutput);
 						depChanged = true;
 					} else if (File_IsModified(depHeaderPath, depOutput)) {
 						/* dep header changed */
-						ref(AddToQueue)(this, depSourcePath, depOutput);
+						call(AddToQueue, depSourcePath, depOutput);
 						depChanged = true;
 					}
 
@@ -411,16 +412,16 @@ def(bool, CreateQueue) {
 
 		if (depChanged) {
 			Logger_Log(&logger, Logger_Level_Info, $("Dependency changed or unbuilt."));
-			ref(AddToQueue)(this, sourcePath, output);
+			call(AddToQueue, sourcePath, output);
 		} else if (!Path_Exists(output)) {
 			Logger_Log(&logger, Logger_Level_Info, $("Not built yet."));
-			ref(AddToQueue)(this, sourcePath, output);
+			call(AddToQueue, sourcePath, output);
 		} else if (File_IsModified(sourcePath, output)) {
 			Logger_Log(&logger, Logger_Level_Info, $("Source modified."));
-			ref(AddToQueue)(this, sourcePath, output);
+			call(AddToQueue, sourcePath, output);
 		} else if (File_IsModified(headerPath, output)) {
 			Logger_Log(&logger, Logger_Level_Info, $("Header modified."));
-			ref(AddToQueue)(this, sourcePath, output);
+			call(AddToQueue, sourcePath, output);
 		} else {
 			Logger_Log(&logger, Logger_Level_Debug, $("Already built."));
 		}
@@ -458,14 +459,14 @@ def(bool, Run) {
 				Path_Create(create, true);
 			}
 
-			String path = ref(ShrinkPath)(this, this->queue->buf[i].source);
+			String path = call(ShrinkPath, this->queue->buf[i].source);
 
 			Logger_LogFmt(&logger, Logger_Level_Info, $("Compiling %... [%/%]"),
 				path,
 				Integer_ToString(i + 1),
 				Integer_ToString(this->queue->len));
 
-			bool ok = ref(Compile)(this, path, this->queue->buf[i].output);
+			bool ok = call(Compile, path, this->queue->buf[i].output);
 
 			String_Destroy(&path);
 
@@ -477,11 +478,11 @@ def(bool, Run) {
 		StringArray *files;
 		Array_Init(files, 0);
 
-		for (size_t i = 0; i < this->deps->deps->len; i++) {
-			String src = ref(GetSource)(this->deps->deps->buf[i]->path);
+		for (size_t i = 0; i < Deps_GetDeps(this->deps)->len; i++) {
+			String src = ref(GetSource)(Deps_GetDeps(this->deps)->buf[i]->path);
 
 			if (src.len > 0) {
-				String path = ref(GetOutput)(this, src);
+				String path = call(GetOutput, src);
 
 				if (path.len == 0) {
 					Array_Foreach(files, String_Destroy);
@@ -492,7 +493,7 @@ def(bool, Run) {
 					return false;
 				}
 
-				Array_Push(files, ref(ShrinkPath)(this, path));
+				Array_Push(files, call(ShrinkPath, path));
 
 				String_Destroy(&path);
 			}
@@ -500,7 +501,7 @@ def(bool, Run) {
 			String_Destroy(&src);
 		}
 
-		ref(Link)(this, files);
+		call(Link, files);
 
 		Array_Foreach(files, String_Destroy);
 		Array_Destroy(files);

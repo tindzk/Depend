@@ -21,10 +21,16 @@ typedef enum {
 typedef struct {
 	ref(Action) action;
 
-	Deps deps;
-	Builder builder;
-	Prototypes proto;
-} self;
+	struct {
+		Deps deps;
+		Builder builder;
+		Prototypes proto;
+	} private;
+
+	DepsClass deps;
+	BuilderClass builder;
+	PrototypesClass proto;
+} Class(self);
 
 def(void, Init);
 def(void, Destroy);

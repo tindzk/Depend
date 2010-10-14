@@ -1,4 +1,5 @@
 #import "Deps.h"
+#import <App.h>
 
 extern Logger logger;
 
@@ -35,6 +36,14 @@ def(bool, SetOption, String name, String value) {
 	}
 
 	return true;
+}
+
+def(StringArray *, GetIncludes) {
+	return this->include;
+}
+
+def(DepsArray *, GetDeps) {
+	return this->deps;
 }
 
 static String ref(GetLocalPath)(String base, String file) {
@@ -74,10 +83,10 @@ static def(String, GetFullPath, String base, String file, ref(Type) type) {
 
 		if (path.len == 0) {
 			String_Destroy(&path);
-			path = ref(GetSystemPath)(this, file);
+			path = call(GetSystemPath, file);
 		}
 	} else {
-		path = ref(GetSystemPath)(this, file);
+		path = call(GetSystemPath, file);
 
 		if (path.len == 0) {
 			String_Destroy(&path);
@@ -108,6 +117,8 @@ static def(bool, AddFile, String absPath) {
 
 	return alreadyExistent;
 }
+
+static def(void, ScanFile, String file);
 
 static def(void, ScanFileDeps, String base, StringArray *arr) {
 	for (size_t i = 0; i < arr->len; i++) {
@@ -164,16 +175,16 @@ static def(void, ScanFileDeps, String base, StringArray *arr) {
 			? ref(Type_Local)
 			: ref(Type_System);
 
-		String relPath = ref(GetFullPath)(this, base, header, deptype);
+		String relPath = call(GetFullPath, base, header, deptype);
 
 		if (relPath.len > 0) {
 			String absPath = Path_Resolve(relPath);
 
 			if (absPath.len > 0) {
-				bool scanned = ref(AddFile)(this, absPath);
+				bool scanned = call(AddFile, absPath);
 
 				if (!scanned) {
-					ref(ScanFile)(this, absPath);
+					call(ScanFile, absPath);
 				}
 
 				this->node = this->node->parent;
@@ -198,7 +209,7 @@ static def(void, ScanFile, String file) {
 
 	String base = Path_GetDirectory(file);
 
-	ref(ScanFileDeps)(this, base, arr);
+	call(ScanFileDeps, base, arr);
 
 	Array_Destroy(arr);
 	String_Destroy(&s);
@@ -242,12 +253,12 @@ static def(void, PrintNode, ref(Node) *node, int indent) {
 
 iter:
 	for (size_t i = 0; i < node->len; i++) {
-		ref(PrintNode)(this, node->nodes[i], indent + 2);
+		call(PrintNode, node->nodes[i], indent + 2);
 	}
 }
 
 def(void, PrintTree) {
-	ref(PrintNode)(this, this->node, 0);
+	call(PrintNode, this->node, 0);
 }
 
 def(void, Scan) {
@@ -259,8 +270,8 @@ def(void, Scan) {
 			$("Main file '%' not found."),
 			this->main);
 	} else {
-		ref(AddFile)(this, fullpath);
-		ref(ScanFile)(this, fullpath);
+		call(AddFile, fullpath);
+		call(ScanFile, fullpath);
 		this->node = this->node->parent;
 	}
 

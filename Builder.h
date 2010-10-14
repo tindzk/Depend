@@ -19,7 +19,7 @@ typedef struct {
 } ref(DepsMapping);
 
 typedef struct {
-	Deps *deps;
+	DepsClass deps;
 
 	String output;
 	String cc;
@@ -35,9 +35,9 @@ typedef struct {
 
 	Array(ref(DepsMapping), *mappings);
 	Array(ref(QueueItem),   *queue);
-} self;
+} Class(self);
 
-def(void, Init, Deps *deps);
+def(void, Init, DepsClass deps);
 def(void, Destroy);
 def(bool, SetOption, String name, String value);
 def(bool, CreateQueue);

@@ -46,11 +46,11 @@ def(DepsArray *, GetDeps) {
 	return this->deps;
 }
 
-static String ref(GetLocalPath)(String base, String file) {
+static def(String, GetLocalPath, String base, String file) {
 	String path = String_Format($("%/%"), base, file);
 
 	if (!Path_Exists(path)) {
-		path.len = 0;
+		String_Destroy(&path);
 	}
 
 	return path;
@@ -65,11 +65,9 @@ static def(String, GetSystemPath, String file) {
 		String_Append(&path, '/');
 		String_Append(&path, file);
 
-		if (Path_Exists(path)) {
-			return path;
+		if (!Path_Exists(path)) {
+			String_Destroy(&path);
 		}
-
-		path.len = 0;
 	}
 
 	return path;
@@ -79,18 +77,16 @@ static def(String, GetFullPath, String base, String file, ref(Type) type) {
 	String path;
 
 	if (type == ref(Type_Local)) {
-		path = ref(GetLocalPath)(base, file);
+		path = call(GetLocalPath, base, file);
 
 		if (path.len == 0) {
-			String_Destroy(&path);
 			path = call(GetSystemPath, file);
 		}
 	} else {
 		path = call(GetSystemPath, file);
 
 		if (path.len == 0) {
-			String_Destroy(&path);
-			path = ref(GetLocalPath)(base, file);
+			path = call(GetLocalPath, base, file);
 		}
 	}
 

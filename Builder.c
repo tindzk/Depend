@@ -46,49 +46,57 @@ def(void, Destroy) {
 	Array_Destroy(this->mappings);
 }
 
+def(bool, Map, String value) {
+	StringArray *parts = String_Split(value, ':');
+
+	if (parts->len < 2) {
+		Logger_Log(&logger, Logger_Level_Error,
+			$("`map' requires two values separated by a colon."));
+
+		goto error;
+	}
+
+	ref(DepsMapping) insert;
+
+	insert.src  = parts->buf[0];
+	insert.dest = parts->buf[1];
+
+	if (insert.src.len == 0) {
+		Logger_Log(&logger, Logger_Level_Error,
+			$("Invalid source path."));
+
+		goto error;
+	}
+
+	if (!Path_Exists(insert.dest)) {
+		Logger_LogFmt(&logger, Logger_Level_Error,
+			$("Destination path '%' does not exist."),
+			insert.dest);
+
+		goto error;
+	}
+
+	insert.src  = String_Clone(insert.src);
+	insert.dest = String_Clone(insert.dest);
+
+	Array_Push(this->mappings, insert);
+
+	bool res = true;
+
+	when (error) {
+		res = false;
+	}
+
+	Array_Destroy(parts);
+
+	return res;
+}
+
 def(bool, SetOption, String name, String value) {
 	if (String_Equals(name, $("output"))) {
 		String_Copy(&this->output, value);
 	} else if (String_Equals(name, $("map"))) {
-		StringArray *parts = String_Split(value, ':');
-
-		if (parts->len < 2) {
-			Logger_Log(&logger, Logger_Level_Error,
-				$("`map' requires two values separated by a colon."));
-
-			Array_Destroy(parts);
-
-			return false;
-		}
-
-		ref(DepsMapping) insert;
-
-		insert.src  = String_Clone(parts->buf[0]);
-		insert.dest = String_Clone(parts->buf[1]);
-
-		Array_Destroy(parts);
-
-		if (insert.src.len == 0) {
-			Logger_Log(&logger, Logger_Level_Error,
-				$("Invalid source path."));
-
-			String_Destroy(&insert.src);
-			String_Destroy(&insert.dest);
-
-			return false;
-		}
-
-		if (!Path_Exists(insert.dest)) {
-			Logger_LogFmt(&logger, Logger_Level_Error,
-				$("Destination path '%' does not exist."), insert.dest);
-
-			String_Destroy(&insert.src);
-			String_Destroy(&insert.dest);
-
-			return false;
-		}
-
-		Array_Push(this->mappings, insert);
+		return call(Map, value);
 	} else if (String_Equals(name, $("cc"))) {
 		String_Copy(&this->cc, value);
 	} else if (String_Equals(name, $("inclhdr"))) {

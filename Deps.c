@@ -106,7 +106,7 @@ static def(bool, AddFile, String absPath) {
 		}
 	}
 
-	this->node = Tree_AddNode(this->node, sizeof(ref(Node)));
+	this->node = Tree_AddNode(this->node);
 
 	this->node->path = String_Clone(absPath);
 

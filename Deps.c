@@ -65,12 +65,15 @@ static def(String, GetSystemPath, String file) {
 		String_Append(&path, '/');
 		String_Append(&path, file);
 
-		if (!Path_Exists(path)) {
-			String_Destroy(&path);
+		if (Path_Exists(path)) {
+			return path;
 		}
+
+		path.len = 0;
 	}
 
-	return path;
+	String_Destroy(&path);
+	return $("");
 }
 
 static def(String, GetFullPath, String base, String file, ref(Type) type) {

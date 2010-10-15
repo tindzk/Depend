@@ -2,6 +2,7 @@
 #import <Logger.h>
 #import <Integer.h>
 #import <Terminal.h>
+#import <Terminal/Controller.h>
 
 extern Logger logger;
 

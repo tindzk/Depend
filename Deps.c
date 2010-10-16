@@ -269,8 +269,9 @@ def(void, Scan) {
 			$("Main file '%' not found."),
 			this->main);
 	} else {
-		call(AddFile, fullpath);
+		call(AddFile,  fullpath);
 		call(ScanFile, fullpath);
+
 		this->node = this->node->parent;
 	}
 

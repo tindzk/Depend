@@ -27,9 +27,9 @@ typedef struct {
 		Prototypes proto;
 	} private;
 
-	DepsClass deps;
-	BuilderClass builder;
-	PrototypesClass proto;
+	DepsInstance deps;
+	BuilderInstance builder;
+	PrototypesInstance proto;
 } Class(self);
 
 def(void, Init);

@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 		Interface itf;
 	} private;
 
-	InterfaceClass itf = Interface_AsClass(&private.itf);
+	InterfaceInstance itf = Interface_FromObject(&private.itf);
 	Interface_Init(itf);
 	Interface_SetAction(itf, String_FromNul(argv[1]));
 

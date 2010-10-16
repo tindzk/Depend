@@ -3,7 +3,7 @@
 
 extern Logger logger;
 
-def(void, Init, DepsClass deps) {
+def(void, Init, DepsInstance deps) {
 	this->deps      = deps;
 	this->output    = String_Clone($("a.out"));
 	this->cc        = String_Clone($("/usr/bin/clang"));

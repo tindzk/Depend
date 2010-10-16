@@ -6,9 +6,9 @@ extern Logger logger;
 def(void, Init) {
 	this->action = ref(Action_Unsupported);
 
-	this->deps    = Deps_AsClass(&this->private.deps);
-	this->proto   = Prototypes_AsClass(&this->private.proto);
-	this->builder = Builder_AsClass(&this->private.builder);
+	this->deps    = Deps_FromObject(&this->private.deps);
+	this->proto   = Prototypes_FromObject(&this->private.proto);
+	this->builder = Builder_FromObject(&this->private.builder);
 
 	Deps_Init(this->deps);
 	Prototypes_Init(this->proto);

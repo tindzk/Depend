@@ -8,17 +8,17 @@
 #undef self
 #define self Builder
 
-typedef struct {
+record {
 	String source;
 	String output;
 } ref(QueueItem);
 
-typedef struct {
+record {
 	String src;
 	String dest;
 } ref(DepsMapping);
 
-typedef struct {
+record {
 	DepsInstance deps;
 
 	String output;

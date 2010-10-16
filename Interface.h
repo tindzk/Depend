@@ -8,7 +8,7 @@
 #undef self
 #define self Interface
 
-typedef enum {
+set {
 	ref(Action_Build),
 	ref(Action_ListDeps),
 	ref(Action_DepTree),
@@ -18,7 +18,7 @@ typedef enum {
 	ref(Action_Unsupported)
 } ref(Action);
 
-typedef struct {
+record {
 	ref(Action) action;
 
 	struct {

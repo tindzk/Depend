@@ -9,19 +9,19 @@
 #undef self
 #define self Deps
 
-typedef enum {
+set {
 	ref(Type_System),
 	ref(Type_Local)
 } ref(Type);
 
-typedef struct ref(Node) {
+record ref(Node) {
 	Tree_Define(ref(Node));
 	String path;
 } ref(Node);
 
 typedef Array(ref(Node) *, DepsArray);
 
-typedef struct {
+record {
 	String main;
 
 	StringArray *include;

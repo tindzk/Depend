@@ -5,7 +5,7 @@
 #undef self
 #define self Prototypes
 
-typedef struct {
+record {
 	String path;
 } Class(self);
 

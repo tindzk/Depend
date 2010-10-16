@@ -107,16 +107,15 @@ def(bool, Run) {
 			return true;
 
 		case ref(Action_Help):
-			String_Print($(
+			Logger_Info(&logger, $(
 				"Supported actions are: "
-				"build, listdeps, deptree, print-queue, prototypes, help.\n"
+				"build, listdeps, deptree, print-queue, prototypes, help."
 			));
 
 			return true;
 
 		case ref(Action_Unsupported):
-			String_Print($("Action unsupported.\n"));
-
+			Logger_Error(&logger, $("Action unsupported."));
 			return false;
 	}
 

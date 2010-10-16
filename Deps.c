@@ -206,9 +206,7 @@ static def(void, ScanFileDeps, String base, StringArray *arr) {
 						$("\""),
 						$("\"")));
 		} else {
-			Logger_LogFmt(&logger,
-				Logger_Level_Error,
-				$("Line '%' not understood."),
+			Logger_Error(&logger, $("Line '%' not understood."),
 				arr->buf[i]);
 
 			continue;
@@ -216,8 +214,7 @@ static def(void, ScanFileDeps, String base, StringArray *arr) {
 
 		String_Destroy(&type);
 
-		Logger_LogFmt(&logger, Logger_Level_Debug,
-			$("Header file '%' found."), header);
+		Logger_Debug(&logger, $("Header file '%' found."), header);
 
 		ref(Type) deptype = quotes
 			? ref(Type_Local)
@@ -247,7 +244,7 @@ static def(void, ScanFileDeps, String base, StringArray *arr) {
 }
 
 static def(void, ScanFile, String file) {
-	Logger_LogFmt(&logger, Logger_Level_Debug, $("Adding '%'..."), file);
+	Logger_Debug(&logger, $("Adding '%'..."), file);
 
 	String s = HeapString(1024 * 15);
 
@@ -270,7 +267,7 @@ def(void, ListSourceFiles) {
 		path.buf[path.len - 1] = 'c';
 
 		if (Path_Exists(path)) {
-			Logger_Log(&logger, Logger_Level_Debug, path);
+			Logger_Debug(&logger, path);
 		}
 
 		String_Destroy(&path);
@@ -313,9 +310,7 @@ def(void, Scan) {
 	String fullpath = Path_Resolve(this->main);
 
 	if (fullpath.len == 0 || !Path_Exists(fullpath)) {
-		Logger_LogFmt(&logger,
-			Logger_Level_Error,
-			$("Main file '%' not found."),
+		Logger_Error(&logger, $("Main file '%' not found."),
 			this->main);
 	} else {
 		call(AddFile,  fullpath);

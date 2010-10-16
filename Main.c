@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
 	Terminal_Configure(&term, false, true);
 
 	if (argc <= 1) {
-		Logger_LogFmt(&logger, Logger_Level_Error,
+		Logger_Error(&logger,
 			String("Action missing. Run `% help' for an overview."),
 			String_FromNul(argv[0]));
 

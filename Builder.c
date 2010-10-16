@@ -50,7 +50,7 @@ def(bool, Map, String value) {
 	StringArray *parts = String_Split(value, ':');
 
 	if (parts->len < 2) {
-		Logger_Log(&logger, Logger_Level_Error,
+		Logger_Error(&logger,
 			$("`map' requires two values separated by a colon."));
 
 		goto error;
@@ -62,14 +62,12 @@ def(bool, Map, String value) {
 	insert.dest = parts->buf[1];
 
 	if (insert.src.len == 0) {
-		Logger_Log(&logger, Logger_Level_Error,
-			$("Invalid source path."));
-
+		Logger_Error(&logger, $("Invalid source path."));
 		goto error;
 	}
 
 	if (!Path_Exists(insert.dest)) {
-		Logger_LogFmt(&logger, Logger_Level_Error,
+		Logger_Error(&logger,
 			$("Destination path '%' does not exist."),
 			insert.dest);
 
@@ -274,7 +272,7 @@ static def(bool, Compile, String src, String out) {
 
 	if (this->verbose) {
 		String cmd = Process_GetCommandLine(&proc);
-		Logger_Log(&logger, Logger_Level_Info, cmd);
+		Logger_Info(&logger, cmd);
 		String_Destroy(&cmd);
 	}
 
@@ -324,7 +322,7 @@ static def(void, Link, StringArray *files) {
 
 	if (this->verbose) {
 		String cmd = Process_GetCommandLine(&proc);
-		Logger_Log(&logger, Logger_Level_Info, cmd);
+		Logger_Info(&logger, cmd);
 		String_Destroy(&cmd);
 	}
 
@@ -340,8 +338,7 @@ def(bool, CreateQueue) {
 
 		/* Skip all non-source files. */
 		if (sourcePath.len == 0) {
-			Logger_LogFmt(&logger,
-				Logger_Level_Debug,
+			Logger_Debug(&logger,
 				$("'%' has no corresponding source file"),
 				headerPath);
 
@@ -351,13 +348,12 @@ def(bool, CreateQueue) {
 			continue;
 		}
 
-		Logger_LogFmt(&logger, Logger_Level_Info, $("Processing %..."), sourcePath);
+		Logger_Info(&logger, $("Processing %..."), sourcePath);
 
 		String output = call(GetOutput, sourcePath);
 
 		if (output.len == 0) {
-			Logger_LogFmt(&logger,
-				Logger_Level_Error,
+			Logger_Error(&logger,
 				$("No output path for '%' is mapped."),
 				sourcePath);
 
@@ -368,10 +364,10 @@ def(bool, CreateQueue) {
 		bool depChanged = false;
 
 		if (dep->len > 0) {
-			Logger_Log(&logger, Logger_Level_Debug, $("Depends on:"));
+			Logger_Debug(&logger, $("Depends on:"));
 
 			for (size_t j = 0; j < dep->len; j++) {
-				Logger_LogFmt(&logger, Logger_Level_Debug, $(" - %"), dep->nodes[j]->path);
+				Logger_Debug(&logger, $(" - %"), dep->nodes[j]->path);
 
 				String depHeaderPath = String_Clone(dep->nodes[j]->path);
 				String depSourcePath = ref(GetSource)(dep->nodes[j]->path);
@@ -379,7 +375,7 @@ def(bool, CreateQueue) {
 				if (depSourcePath.len == 0) { /* Header file wihout matching source file. */
 					if (Path_Exists(output)) {
 						if (File_IsModified(depHeaderPath, output)) {
-							Logger_Log(&logger, Logger_Level_Info, $("dep header changed."));
+							Logger_Info(&logger, $("dep header changed."));
 							depChanged = true;
 						}
 					}
@@ -387,8 +383,7 @@ def(bool, CreateQueue) {
 					String depOutput = call(GetOutput, depSourcePath);
 
 					if (depOutput.len == 0) {
-						Logger_LogFmt(&logger,
-							Logger_Level_Error,
+						Logger_Error(&logger,
 							$("No output path for '%' is mapped."),
 							depSourcePath);
 
@@ -418,19 +413,19 @@ def(bool, CreateQueue) {
 		}
 
 		if (depChanged) {
-			Logger_Log(&logger, Logger_Level_Info, $("Dependency changed or unbuilt."));
+			Logger_Info(&logger, $("Dependency changed or unbuilt."));
 			call(AddToQueue, sourcePath, output);
 		} else if (!Path_Exists(output)) {
-			Logger_Log(&logger, Logger_Level_Info, $("Not built yet."));
+			Logger_Info(&logger, $("Not built yet."));
 			call(AddToQueue, sourcePath, output);
 		} else if (File_IsModified(sourcePath, output)) {
-			Logger_Log(&logger, Logger_Level_Info, $("Source modified."));
+			Logger_Info(&logger, $("Source modified."));
 			call(AddToQueue, sourcePath, output);
 		} else if (File_IsModified(headerPath, output)) {
-			Logger_Log(&logger, Logger_Level_Info, $("Header modified."));
+			Logger_Info(&logger, $("Header modified."));
 			call(AddToQueue, sourcePath, output);
 		} else {
-			Logger_Log(&logger, Logger_Level_Debug, $("Already built."));
+			Logger_Debug(&logger, $("Already built."));
 		}
 
 		String_Destroy(&sourcePath);
@@ -443,17 +438,17 @@ def(bool, CreateQueue) {
 
 def(void, PrintQueue) {
 	if (this->queue->len == 0 && Path_Exists(this->output)) {
-		Logger_Log(&logger, Logger_Level_Info, $("  Queue is empty."));
+		Logger_Info(&logger, $("  Queue is empty."));
 	} else {
-		Logger_Log(&logger, Logger_Level_Info, $("  Queue:"));
+		Logger_Info(&logger, $("  Queue:"));
 
 		for (size_t i = 0; i < this->queue->len; i++) {
-			Logger_LogFmt(&logger, Logger_Level_Info, $(" - % --> %"),
+			Logger_Info(&logger, $(" - % --> %"),
 				this->queue->buf[i].source,
 				this->queue->buf[i].output);
 		}
 
-		Logger_LogFmt(&logger, Logger_Level_Info, $(" - % (link)"), this->output);
+		Logger_Info(&logger, $(" - % (link)"), this->output);
 	}
 }
 
@@ -468,7 +463,7 @@ def(bool, Run) {
 
 			String path = call(ShrinkPath, this->queue->buf[i].source);
 
-			Logger_LogFmt(&logger, Logger_Level_Info, $("Compiling %... [%/%]"),
+			Logger_Info(&logger, $("Compiling %... [%/%]"),
 				path,
 				Integer_ToString(i + 1),
 				Integer_ToString(this->queue->len));

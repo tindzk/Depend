@@ -67,6 +67,14 @@
 		}
 	}
 
+	.section[Manually adding files] {
+		If certain files are not covered by .keyword{#import}s, you
+		can add them manually using the .keyword{add} parameter. It
+		also has rudimentary support for wildcards, e.g.
+		.keyword{add=src/Providers/*.c} will add all .path{.c} files
+		(and their dependencies) within .path{src/Providers}.
+	}
+
 	.section[Performance] {
 		.p {
 			In contrast  to the  shipped .path{Makefile},  this  will only  compile the

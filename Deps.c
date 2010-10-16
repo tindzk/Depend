@@ -28,9 +28,60 @@ void ref(DestroyNode)(ref(Node) *node) {
 	String_Destroy(&node->path);
 }
 
+static def(bool, AddFile, String absPath);
+static def(void, ScanFile, String file);
+
+/* Very simple glob() implementation. Only one placeholder is
+ * allowed. Escaping and expanding (e.g. {a, b, c}) might be
+ * implemented in the future. If so, this function should be
+ * moved to the Jivai sources.
+ */
+static def(void, Add, String value) {
+	ssize_t star = String_Find(value, '*');
+
+	if (star == String_NotFound) {
+		call(AddFile,  value);
+		call(ScanFile, value);
+
+		return;
+	}
+
+	ssize_t slash = String_ReverseFind(value, star, '/');
+
+	String path  = String_Slice(value, 0, slash);
+	String left  = String_Slice(value, slash + 1, star - slash - 1);
+	String right = String_Slice(value, star  + 1);
+
+	Directory dir;
+	Directory_Entry item;
+	Directory_Init(&dir, path);
+
+	while (Directory_Read(&dir, &item)) {
+		if (item.type != Directory_ItemType_Symlink
+		 && item.type != Directory_ItemType_Regular) {
+			continue;
+		}
+
+		if (String_BeginsWith(item.name, left) &&
+			String_EndsWith(item.name, right))
+		{
+			String fullpath = String_Format($("%/%"), path, item.name);
+
+			call(AddFile,  fullpath);
+			call(ScanFile, fullpath);
+
+			String_Destroy(&fullpath);
+		}
+	}
+
+	Directory_Destroy(&dir);
+}
+
 def(bool, SetOption, String name, String value) {
 	if (String_Equals(name, $("main"))) {
 		String_Copy(&this->main, value);
+	} else if (String_Equals(name, $("add"))) {
+		call(Add, value);
 	} else if (String_Equals(name, $("include"))) {
 		Array_Push(this->include, String_Clone(value));
 	}
@@ -116,8 +167,6 @@ static def(bool, AddFile, String absPath) {
 
 	return alreadyExistent;
 }
-
-static def(void, ScanFile, String file);
 
 static def(void, ScanFileDeps, String base, StringArray *arr) {
 	for (size_t i = 0; i < arr->len; i++) {

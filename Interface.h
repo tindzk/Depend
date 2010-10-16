@@ -8,7 +8,7 @@
 #undef self
 #define self Interface
 
-set {
+set(ref(Action)) {
 	ref(Action_Build),
 	ref(Action_ListDeps),
 	ref(Action_DepTree),
@@ -16,9 +16,9 @@ set {
 	ref(Action_Prototypes),
 	ref(Action_Help),
 	ref(Action_Unsupported)
-} ref(Action);
+};
 
-record {
+class(self) {
 	ref(Action) action;
 
 	struct {
@@ -30,7 +30,7 @@ record {
 	DepsInstance deps;
 	BuilderInstance builder;
 	PrototypesInstance proto;
-} Class(self);
+};
 
 def(void, Init);
 def(void, Destroy);

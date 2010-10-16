@@ -5,9 +5,9 @@
 #undef self
 #define self Prototypes
 
-record {
+class(self) {
 	String path;
-} Class(self);
+};
 
 def(void, Init);
 def(void, Destroy);

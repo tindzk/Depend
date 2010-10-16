@@ -9,19 +9,19 @@
 #undef self
 #define self Deps
 
-set {
+set(ref(Type)) {
 	ref(Type_System),
 	ref(Type_Local)
-} ref(Type);
+};
 
-record ref(Node) {
+record(ref(Node)) {
 	Tree_Define(ref(Node));
 	String path;
-} ref(Node);
+};
 
 typedef Array(ref(Node) *, DepsArray);
 
-record {
+class(self) {
 	String main;
 
 	StringArray *include;
@@ -32,7 +32,7 @@ record {
 
 	/* All top-level deps flattened. */
 	DepsArray *deps;
-} Class(self);
+};
 
 def(void, Init);
 def(void, Destroy);

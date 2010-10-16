@@ -8,17 +8,17 @@
 #undef self
 #define self Builder
 
-record {
+record(ref(QueueItem)) {
 	String source;
 	String output;
-} ref(QueueItem);
+};
 
-record {
+record(ref(DepsMapping)) {
 	String src;
 	String dest;
-} ref(DepsMapping);
+};
 
-record {
+class(self) {
 	DepsInstance deps;
 
 	String output;
@@ -35,7 +35,7 @@ record {
 
 	Array(ref(DepsMapping), *mappings);
 	Array(ref(QueueItem),   *queue);
-} Class(self);
+};
 
 def(void, Init, DepsInstance deps);
 def(void, Destroy);

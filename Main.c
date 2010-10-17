@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
 
 	try (&exc) {
 		success = Interface_Run(itf);
-	} catchAny (e) {
+	} clean catchAny (e) {
 		Exception_Print(e);
 
 #if Exception_SaveTrace

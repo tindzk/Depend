@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 		Logger_Level_Trace);
 
 	Terminal_Init(&term, File_StdIn, File_StdOut, true);
-	Terminal_Configure(&term, false, true);
+	Terminal_Configure(&term, true, true);
 
 	if (argc <= 1) {
 		Logger_Error(&logger,

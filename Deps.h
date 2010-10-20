@@ -1,8 +1,8 @@
 #import <Path.h>
 #import <Tree.h>
 #import <Array.h>
+#import <String.h>
 #import <Directory.h>
-#import <StringArray.h>
 
 #import "Utils.h"
 

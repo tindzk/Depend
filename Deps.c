@@ -28,8 +28,7 @@ void ref(DestroyNode)(ref(Node) *node) {
 	String_Destroy(&node->path);
 }
 
-static def(bool, AddFile, String absPath);
-static def(void, ScanFile, String file);
+static def(void, ScanFile, String base, String file, ref(Type) deptype);
 
 /* Very simple glob() implementation. Only one placeholder is
  * allowed. Escaping and expanding (e.g. {a, b, c}) might be
@@ -40,8 +39,13 @@ static def(void, Add, String value) {
 	ssize_t star = String_Find(value, '*');
 
 	if (star == String_NotFound) {
-		call(AddFile,  value);
-		call(ScanFile, value);
+		if (value.len > 0 && !Path_Exists(value)) {
+			Logger_Error(&logger,
+				$("Manually added file '%' not found."),
+				value);
+		} else {
+			call(ScanFile, $("."), value, ref(Type_Local));
+		}
 
 		return;
 	}
@@ -65,12 +69,7 @@ static def(void, Add, String value) {
 		if (String_BeginsWith(item.name, left) &&
 			String_EndsWith(item.name, right))
 		{
-			String fullpath = String_Format($("%/%"), path, item.name);
-
-			call(AddFile,  fullpath);
-			call(ScanFile, fullpath);
-
-			String_Destroy(&fullpath);
+			call(ScanFile, path, item.name, ref(Type_Local));
 		}
 	}
 
@@ -182,9 +181,10 @@ static def(void, ScanFileDeps, String base, StringArray *lines) {
 		}
 
 		String type =
-			String_Clone(
-				String_Trim(
-					String_Slice(lines->buf[i], tmp.len + 1)));
+			String_Trim(
+				String_Slice(
+					lines->buf[i],
+					tmp.len + 1));
 
 		String header;
 		bool quotes = false;
@@ -212,52 +212,45 @@ static def(void, ScanFileDeps, String base, StringArray *lines) {
 			continue;
 		}
 
-		String_Destroy(&type);
-
-		Logger_Debug(&logger, $("Header file '%' found."), header);
-
 		ref(Type) deptype = quotes
 			? ref(Type_Local)
 			: ref(Type_System);
 
-		String relPath = call(GetFullPath, base, header, deptype);
-
-		if (relPath.len > 0) {
-			String absPath = Path_Resolve(relPath);
-
-			if (absPath.len > 0) {
-				bool scanned = call(AddFile, absPath);
-
-				if (!scanned) {
-					call(ScanFile, absPath);
-				}
-
-				this->node = this->node->parent;
-			}
-
-			String_Destroy(&absPath);
-		}
-
-		String_Destroy(&relPath);
-		String_Destroy(&header);
+		call(ScanFile, base, header, deptype);
 	}
 }
 
-static def(void, ScanFile, String file) {
-	Logger_Debug(&logger, $("Adding '%'..."), file);
+static def(void, ScanFile, String base, String file, ref(Type) deptype) {
+	String relPath = call(GetFullPath, base, file, deptype);
 
-	String s = HeapString(1024 * 15);
+	if (relPath.len > 0) {
+		String absPath = Path_Resolve(relPath);
 
-	File_GetContents(file, &s);
+		if (absPath.len > 0) {
+			bool scanned = call(AddFile, absPath);
 
-	StringArray *lines = String_Split(s, '\n');
+			if (!scanned) {
+				Logger_Debug(&logger, $("Adding '%'..."), absPath);
 
-	String base = Path_GetDirectory(file);
+				String s = HeapString(1024 * 15);
+				File_GetContents(absPath, &s);
+				StringArray *lines = String_Split(s, '\n');
 
-	call(ScanFileDeps, base, lines);
+				call(ScanFileDeps,
+					Path_GetDirectory(absPath),
+					lines);
 
-	Array_Destroy(lines);
-	String_Destroy(&s);
+				Array_Destroy(lines);
+				String_Destroy(&s);
+			}
+
+			this->node = this->node->parent;
+		}
+
+		String_Destroy(&absPath);
+	}
+
+	String_Destroy(&relPath);
 }
 
 def(void, ListSourceFiles) {
@@ -307,17 +300,12 @@ def(void, PrintTree) {
 }
 
 def(void, Scan) {
-	String fullpath = Path_Resolve(this->main);
-
-	if (fullpath.len == 0 || !Path_Exists(fullpath)) {
+	if (this->main.len > 0 && !Path_Exists(this->main)) {
 		Logger_Error(&logger, $("Main file '%' not found."),
 			this->main);
-	} else {
-		call(AddFile,  fullpath);
-		call(ScanFile, fullpath);
 
-		this->node = this->node->parent;
+		return;
 	}
 
-	String_Destroy(&fullpath);
+	call(ScanFile, $("."), this->main, ref(Type_Local));
 }

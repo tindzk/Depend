@@ -242,9 +242,9 @@ static def(bool, Compile, String src, String out) {
 	Process_AddParameter(&proc, $("-c"));
 	Process_AddParameter(&proc, src);
 
-	String tmp;
-	Process_AddParameter(&proc, tmp = String_Format($("-std=%"), this->std));
-	String_Destroy(&tmp);
+	String std = String_Concat($("-std="), this->std);
+	Process_AddParameter(&proc, std);
+	String_Destroy(&std);
 
 	if (this->blocks) {
 		Process_AddParameter(&proc, $("-fblocks"));

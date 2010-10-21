@@ -28,7 +28,7 @@ void ref(DestroyNode)(ref(Node) *node) {
 	String_Destroy(&node->path);
 }
 
-static def(void, ScanFile, String base, String file, ref(Type) deptype);
+static def(void, ProcessFile, String base, String file, ref(Type) deptype);
 
 /* Very simple glob() implementation. Only one placeholder is
  * allowed. Escaping and expanding (e.g. {a, b, c}) might be
@@ -44,7 +44,7 @@ static def(void, Add, String value) {
 				$("Manually added file '%' not found."),
 				value);
 		} else {
-			call(ScanFile, $("."), value, ref(Type_Local));
+			call(ProcessFile, $("."), value, ref(Type_Local));
 		}
 
 		return;
@@ -69,7 +69,7 @@ static def(void, Add, String value) {
 		if (String_BeginsWith(item.name, left) &&
 			String_EndsWith(item.name, right))
 		{
-			call(ScanFile, path, item.name, ref(Type_Local));
+			call(ProcessFile, path, item.name, ref(Type_Local));
 		}
 	}
 
@@ -167,16 +167,16 @@ static def(bool, AddFile, String absPath) {
 	return alreadyExistent;
 }
 
-static def(void, ScanFileDeps, String base, StringArray *lines) {
+static def(void, ScanFile, String path) {
+	String s = HeapString(1024 * 15);
+	File_GetContents(path, &s);
+	StringArray *lines = String_Split(s, '\n');
+
 	for (size_t i = 0; i < lines->len; i++) {
-		String tmp;
+		String needle;
 
-		if (!String_BeginsWith(lines->buf[i], tmp = $("#include"))
-		 && !String_BeginsWith(lines->buf[i], tmp = $("#import"))) {
-			continue;
-		}
-
-		if (lines->buf[i].len < tmp.len + 1) {
+		if (!String_BeginsWith(lines->buf[i], needle = $("#include "))
+		 && !String_BeginsWith(lines->buf[i], needle = $("#import "))) {
 			continue;
 		}
 
@@ -184,7 +184,7 @@ static def(void, ScanFileDeps, String base, StringArray *lines) {
 			String_Trim(
 				String_Slice(
 					lines->buf[i],
-					tmp.len + 1));
+					needle.len));
 
 		String header;
 		bool quotes = false;
@@ -216,11 +216,16 @@ static def(void, ScanFileDeps, String base, StringArray *lines) {
 			? ref(Type_Local)
 			: ref(Type_System);
 
-		call(ScanFile, base, header, deptype);
+		call(ProcessFile,
+			Path_GetDirectory(path),
+			header, deptype);
 	}
+
+	Array_Destroy(lines);
+	String_Destroy(&s);
 }
 
-static def(void, ScanFile, String base, String file, ref(Type) deptype) {
+static def(void, ProcessFile, String base, String file, ref(Type) deptype) {
 	String relPath = call(GetFullPath, base, file, deptype);
 
 	if (relPath.len > 0) {
@@ -231,17 +236,7 @@ static def(void, ScanFile, String base, String file, ref(Type) deptype) {
 
 			if (!scanned) {
 				Logger_Debug(&logger, $("Adding '%'..."), absPath);
-
-				String s = HeapString(1024 * 15);
-				File_GetContents(absPath, &s);
-				StringArray *lines = String_Split(s, '\n');
-
-				call(ScanFileDeps,
-					Path_GetDirectory(absPath),
-					lines);
-
-				Array_Destroy(lines);
-				String_Destroy(&s);
+				call(ScanFile, absPath);
 			}
 
 			this->node = this->node->parent;
@@ -307,5 +302,5 @@ def(void, Scan) {
 		return;
 	}
 
-	call(ScanFile, $("."), this->main, ref(Type_Local));
+	call(ProcessFile, $("."), this->main, ref(Type_Local));
 }

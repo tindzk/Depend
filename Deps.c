@@ -26,6 +26,7 @@ def(void, Destroy) {
 
 void ref(DestroyNode)(ref(Node) *node) {
 	String_Destroy(&node->path);
+	String_Destroy(&node->module);
 }
 
 static def(void, ProcessFile, String base, String file, ref(Type) deptype);
@@ -146,34 +147,45 @@ static def(String, GetFullPath, String base, String file, ref(Type) type) {
 	return path;
 }
 
-static def(bool, AddFile, String absPath) {
-	bool alreadyExistent = false;
+static def(ref(Node) *, AddFile, String absPath) {
+	this->node = Tree_AddNode(this->node);
+
+	this->node->path   = String_Clone(absPath);
+	this->node->module = HeapString(0);
 
 	for (size_t i = 0; i < this->deps->len; i++) {
 		if (String_Equals(this->deps->buf[i]->path, absPath)) {
-			alreadyExistent = true;
-			break;
+			/* Copy the module name from the first scan. Otherwise
+			 * we would have to read the file a second time.
+			 */
+			String_Copy(&this->node->module,
+				this->deps->buf[i]->module);
+
+			return NULL;
 		}
 	}
 
-	this->node = Tree_AddNode(this->node);
-
-	this->node->path = String_Clone(absPath);
-
-	if (!alreadyExistent) {
-		Array_Push(this->deps, this->node);
-	}
-
-	return alreadyExistent;
+	Array_Push(this->deps, this->node);
+	return this->node;
 }
 
-static def(void, ScanFile, String path) {
+static def(void, ScanFile, ref(Node) *node, String path) {
 	String s = HeapString(1024 * 15);
 	File_GetContents(path, &s);
 	StringArray *lines = String_Split(s, '\n');
 
 	for (size_t i = 0; i < lines->len; i++) {
 		String needle;
+
+		if (String_BeginsWith(lines->buf[i], needle = $("#define self "))) {
+			String_Copy(&node->module,
+				String_Trim(
+					String_Slice(
+						lines->buf[i],
+						needle.len)));
+
+			continue;
+		}
 
 		if (!String_BeginsWith(lines->buf[i], needle = $("#include "))
 		 && !String_BeginsWith(lines->buf[i], needle = $("#import "))) {
@@ -232,11 +244,14 @@ static def(void, ProcessFile, String base, String file, ref(Type) deptype) {
 		String absPath = Path_Resolve(relPath);
 
 		if (absPath.len > 0) {
-			bool scanned = call(AddFile, absPath);
+			/* Returns a pointer to the node when the file wasn't
+			 * scanned yet.
+			 */
+			ref(Node) *node = call(AddFile, absPath);
 
-			if (!scanned) {
+			if (node != NULL) {
 				Logger_Debug(&logger, $("Adding '%'..."), absPath);
-				call(ScanFile, absPath);
+				call(ScanFile, node, absPath);
 			}
 
 			this->node = this->node->parent;
@@ -282,6 +297,13 @@ static def(void, PrintNode, ref(Node) *node, int indent) {
 
 	String_Print($("["));
 	String_Print(node->path);
+
+	if (node->module.len > 0) {
+		String_Print($(" ("));
+		String_Print(node->module);
+		String_Print($(")"));
+	}
+
 	String_Print($("]\n"));
 
 iter:

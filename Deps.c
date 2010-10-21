@@ -168,23 +168,23 @@ static def(bool, AddFile, String absPath) {
 	return alreadyExistent;
 }
 
-static def(void, ScanFileDeps, String base, StringArray *arr) {
-	for (size_t i = 0; i < arr->len; i++) {
+static def(void, ScanFileDeps, String base, StringArray *lines) {
+	for (size_t i = 0; i < lines->len; i++) {
 		String tmp;
 
-		if (!String_BeginsWith(arr->buf[i], tmp = $("#include"))
-		 && !String_BeginsWith(arr->buf[i], tmp = $("#import"))) {
+		if (!String_BeginsWith(lines->buf[i], tmp = $("#include"))
+		 && !String_BeginsWith(lines->buf[i], tmp = $("#import"))) {
 			continue;
 		}
 
-		if (arr->buf[i].len < tmp.len + 1) {
+		if (lines->buf[i].len < tmp.len + 1) {
 			continue;
 		}
 
 		String type =
 			String_Clone(
 				String_Trim(
-					String_Slice(arr->buf[i], tmp.len + 1)));
+					String_Slice(lines->buf[i], tmp.len + 1)));
 
 		String header;
 		bool quotes = false;
@@ -194,7 +194,7 @@ static def(void, ScanFileDeps, String base, StringArray *arr) {
 			header =
 				String_Trim(
 					String_Between(
-						arr->buf[i],
+						lines->buf[i],
 						$("<") ,
 						$(">")));
 		} else if (type.buf[0] == '"') {
@@ -202,12 +202,12 @@ static def(void, ScanFileDeps, String base, StringArray *arr) {
 			header =
 				String_Trim(
 					String_Between(
-						arr->buf[i],
+						lines->buf[i],
 						$("\""),
 						$("\"")));
 		} else {
 			Logger_Error(&logger, $("Line '%' not understood."),
-				arr->buf[i]);
+				lines->buf[i]);
 
 			continue;
 		}
@@ -250,13 +250,13 @@ static def(void, ScanFile, String file) {
 
 	File_GetContents(file, &s);
 
-	StringArray *arr = String_Split(s, '\n');
+	StringArray *lines = String_Split(s, '\n');
 
 	String base = Path_GetDirectory(file);
 
-	call(ScanFileDeps, base, arr);
+	call(ScanFileDeps, base, lines);
 
-	Array_Destroy(arr);
+	Array_Destroy(lines);
 	String_Destroy(&s);
 }
 

@@ -458,7 +458,7 @@ def(void, PrintQueue) {
 }
 
 def(void, CreateManifest) {
-	size_t counter = 0;
+	size_t counter = 1;
 
 	DepsArray *deps = Deps_GetDeps(this->deps);
 
@@ -467,6 +467,14 @@ def(void, CreateManifest) {
 		FileStatus_Create    |
 		FileStatus_WriteOnly |
 		FileStatus_Truncate);
+
+	String fmt = String_Format($("#define Manifest_GapSize %\n"),
+		Integer_ToString(
+			Builder_ManifestGapSize));
+
+	File_Write(&file, fmt);
+
+	String_Destroy(&fmt);
 
 	for (size_t i = 0; i < deps->len; i++) {
 		String module = deps->buf[i]->module;
@@ -499,8 +507,9 @@ def(void, CreateManifest) {
 				$("."));
 
 			String fmt = String_Format($(
-				"\t\tcase Modules_%:\n"
+				"\t\tcase Modules_% ... Modules_% + Manifest_GapSize - 1:\n"
 				"\t\t\treturn \"%\";\n"),
+				module,
 				module,
 				readable);
 

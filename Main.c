@@ -63,11 +63,11 @@ int main(int argc, char* argv[]) {
 
 	try (&exc) {
 		success = Interface_Run(itf);
-	} clean catchAny (e) {
-		Exception_Print(e);
+	} clean catchAny {
+		ExceptionManager_Print(&exc, e);
 
 #if Exception_SaveTrace
-		Backtrace_PrintTrace(e->trace, e->traceItems);
+		Backtrace_PrintTrace(exc.e.trace, exc.e.traceItems);
 #endif
 	} finally {
 		Terminal_Destroy(&term);

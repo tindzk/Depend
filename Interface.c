@@ -68,10 +68,6 @@ def(bool, Run) {
 		case ref(Action_Build):
 			Deps_Scan(this->deps);
 
-			if (!Builder_CreateQueue(this->builder)) {
-				return false;
-			}
-
 			if (!Builder_Run(this->builder)) {
 				return false;
 			}

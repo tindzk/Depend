@@ -8,6 +8,7 @@ def(void, Init, DepsInstance deps) {
 	this->output    = String_Clone($("a.out"));
 	this->cc        = String_Clone($("/usr/bin/clang"));
 	this->inclhdr   = HeapString(0);
+	this->manifest  = HeapString(0);
 	this->dbgsym    = false;
 	this->std       = String_Clone($("gnu99"));
 	this->blocks    = true;
@@ -24,6 +25,7 @@ def(void, Destroy) {
 	String_Destroy(&this->output);
 	String_Destroy(&this->cc);
 	String_Destroy(&this->inclhdr);
+	String_Destroy(&this->manifest);
 	String_Destroy(&this->std);
 
 	Array_Foreach(this->link, String_Destroy);
@@ -99,6 +101,8 @@ def(bool, SetOption, String name, String value) {
 		String_Copy(&this->cc, value);
 	} else if (String_Equals(name, $("inclhdr"))) {
 		String_Copy(&this->inclhdr, value);
+	} else if (String_Equals(name, $("manifest"))) {
+		String_Copy(&this->manifest, value);
 	} else if (String_Equals(name, $("dbgsym"))) {
 		this->dbgsym = String_Equals(value, $("yes"));
 	} else if (String_Equals(name, $("std"))) {
@@ -453,7 +457,84 @@ def(void, PrintQueue) {
 	}
 }
 
+def(void, CreateManifest) {
+	size_t counter = 0;
+
+	DepsArray *deps = Deps_GetDeps(this->deps);
+
+	File file;
+	File_Open(&file, this->manifest,
+		FileStatus_Create    |
+		FileStatus_WriteOnly |
+		FileStatus_Truncate);
+
+	for (size_t i = 0; i < deps->len; i++) {
+		String module = deps->buf[i]->module;
+
+		if (module.len > 0) {
+			String fmt = String_Format($("#define Modules_% %\n"),
+				module,
+				Integer_ToString(
+					Builder_ManifestGapSize * counter));
+
+			File_Write(&file, fmt);
+
+			String_Destroy(&fmt);
+
+			counter++;
+		}
+	}
+
+	File_Write(&file, $("\n"));
+	File_Write(&file, $(
+		"static inline char* Manifest_ResolveName(unsigned int module) {\n"
+		"\tswitch (module) {\n"));
+
+	for (size_t i = 0; i < deps->len; i++) {
+		String module = deps->buf[i]->module;
+
+		if (module.len > 0) {
+			String readable = String_ReplaceAll(module,
+				$("_"),
+				$("."));
+
+			String fmt = String_Format($(
+				"\t\tcase Modules_%:\n"
+				"\t\t\treturn \"%\";\n"),
+				module,
+				readable);
+
+			File_Write(&file, fmt);
+			String_Destroy(&fmt);
+		}
+	}
+
+	File_Write(&file, $(
+		"\t}\n"
+		"\n"
+		"\treturn \"Unknown module\";\n"
+		"}\n"));
+
+	File_Close(&file);
+
+	Logger_Info(&logger,
+		$("Manifest written to '%'."),
+		this->manifest);
+}
+
 def(bool, Run) {
+	if (this->manifest.len != 0) {
+		call(CreateManifest);
+	}
+
+	if (this->mappings->len == 0) {
+		return true;
+	}
+
+	if (!call(CreateQueue)) {
+		return false;
+	}
+
 	if (this->queue->len != 0 || !Path_Exists(this->output)) {
 		for (size_t i = 0; i < this->queue->len; i++) {
 			String create = Path_GetDirectory(this->queue->buf[i].output);
@@ -481,8 +562,10 @@ def(bool, Run) {
 		StringArray *files;
 		Array_Init(files, 0);
 
-		for (size_t i = 0; i < Deps_GetDeps(this->deps)->len; i++) {
-			String src = ref(GetSource)(Deps_GetDeps(this->deps)->buf[i]->path);
+		DepsArray *deps = Deps_GetDeps(this->deps);
+
+		for (size_t i = 0; i < deps->len; i++) {
+			String src = ref(GetSource)(deps->buf[i]->path);
 
 			if (src.len > 0) {
 				String path = call(GetOutput, src);

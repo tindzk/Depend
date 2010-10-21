@@ -1,3 +1,4 @@
+#import <File.h>
 #import <String.h>
 #import <Process.h>
 
@@ -6,6 +7,10 @@
 
 #undef self
 #define self Builder
+
+#ifndef Builder_ManifestGapSize
+#define Builder_ManifestGapSize 256
+#endif
 
 record(ref(QueueItem)) {
 	String source;
@@ -20,6 +25,7 @@ record(ref(DepsMapping)) {
 class(self) {
 	DepsInstance deps;
 
+	String manifest;
 	String output;
 	String cc;
 	String inclhdr;

@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 	Path0(&exc);
 	String0(&exc);
 
-	Logger_Init(&logger, &Utils_OnLogMessage, NULL,
+	Logger_Init(&logger, Callback(NULL, Utils_OnLogMessage),
 		Logger_Level_Fatal |
 		Logger_Level_Crit  |
 		Logger_Level_Error |

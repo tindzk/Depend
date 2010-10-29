@@ -472,7 +472,7 @@ def(void, CreateManifest) {
 		Integer_ToString(
 			Builder_ManifestGapSize));
 
-	File_Write(&file, fmt);
+	File_Write(File_FromObject(&file), fmt);
 
 	String_Destroy(&fmt);
 
@@ -485,7 +485,7 @@ def(void, CreateManifest) {
 				Integer_ToString(
 					Builder_ManifestGapSize * counter));
 
-			File_Write(&file, fmt);
+			File_Write(File_FromObject(&file), fmt);
 
 			String_Destroy(&fmt);
 
@@ -493,8 +493,8 @@ def(void, CreateManifest) {
 		}
 	}
 
-	File_Write(&file, $("\n"));
-	File_Write(&file, $(
+	File_Write(File_FromObject(&file), $("\n"));
+	File_Write(File_FromObject(&file), $(
 		"static inline char* Manifest_ResolveName(unsigned int module) {\n"
 		"\tswitch (module) {\n"));
 
@@ -513,12 +513,12 @@ def(void, CreateManifest) {
 				module,
 				readable);
 
-			File_Write(&file, fmt);
+			File_Write(File_FromObject(&file), fmt);
 			String_Destroy(&fmt);
 		}
 	}
 
-	File_Write(&file, $(
+	File_Write(File_FromObject(&file), $(
 		"\t}\n"
 		"\n"
 		"\treturn \"Unknown module\";\n"

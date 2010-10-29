@@ -7,7 +7,7 @@ extern ExceptionManager exc;
 
 void Utils_OnLogMessage(__unused void *ptr, String msg, Logger_Level level, String file, int line) {
 	String color  = String("black");
-	String slevel = Logger_LevelToString(level);
+	String slevel = Logger_ResolveLevel(level);
 
 	if (level == Logger_Level_Fatal || level == Logger_Level_Crit || level == Logger_Level_Error) {
 		color = String("red");

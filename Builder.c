@@ -28,21 +28,27 @@ def(void, Destroy) {
 	String_Destroy(&this->manifest);
 	String_Destroy(&this->std);
 
-	Array_Foreach(this->link, String_Destroy);
+	foreach (item, this->link) {
+		String_Destroy(item);
+	}
+
 	Array_Destroy(this->link);
 
-	Array_Foreach(this->linkpaths, String_Destroy);
+	foreach (item, this->linkpaths) {
+		String_Destroy(item);
+	}
+
 	Array_Destroy(this->linkpaths);
 
-	Array_Foreach(this->queue, ^(ref(QueueItem) *item) {
+	foreach (item, this->queue) {
 		String_Destroy(&item->source);
 		String_Destroy(&item->output);
-	});
+	}
 
-	Array_Foreach(this->mappings, ^(ref(DepsMapping) *item) {
+	foreach (item, this->mappings) {
 		String_Destroy(&item->src);
 		String_Destroy(&item->dest);
-	});
+	}
 
 	Array_Destroy(this->queue);
 	Array_Destroy(this->mappings);
@@ -273,7 +279,7 @@ static def(bool, Compile, String src, String out) {
 		Process_AddParameter(&proc, Deps_GetIncludes(this->deps)->buf[i]);
 	}
 
-	int res = Process_Spawn(&proc);
+	int res = Process_Spawn(Process_FromObject(&proc));
 
 	if (this->verbose) {
 		String cmd = Process_GetCommandLine(&proc);
@@ -323,7 +329,7 @@ static def(void, Link, StringArray *files) {
 			this->link->buf[i].buf[0] == '@'));
 	}
 
-	Process_Spawn(&proc);
+	Process_Spawn(Process_FromObject(&proc));
 
 	if (this->verbose) {
 		String cmd = Process_GetCommandLine(&proc);
@@ -372,10 +378,10 @@ def(bool, CreateQueue) {
 			Logger_Debug(&logger, $("Depends on:"));
 
 			for (size_t j = 0; j < dep->len; j++) {
-				Logger_Debug(&logger, $(" - %"), dep->nodes[j]->path);
+				Logger_Debug(&logger, $(" - %"), dep->buf[j]->path);
 
-				String depHeaderPath = String_Clone(dep->nodes[j]->path);
-				String depSourcePath = ref(GetSource)(dep->nodes[j]->path);
+				String depHeaderPath = String_Clone(dep->buf[j]->path);
+				String depSourcePath = ref(GetSource)(dep->buf[j]->path);
 
 				if (depSourcePath.len == 0) { /* Header file wihout matching source file. */
 					if (Path_Exists(output)) {
@@ -580,7 +586,10 @@ def(bool, Run) {
 				String path = call(GetOutput, src);
 
 				if (path.len == 0) {
-					Array_Foreach(files, String_Destroy);
+					foreach (file, files) {
+						String_Destroy(file);
+					}
+
 					Array_Destroy(files);
 
 					String_Destroy(&src);
@@ -598,7 +607,10 @@ def(bool, Run) {
 
 		call(Link, files);
 
-		Array_Foreach(files, String_Destroy);
+		foreach (file, files) {
+			String_Destroy(file);
+		}
+
 		Array_Destroy(files);
 	}
 

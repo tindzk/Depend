@@ -18,7 +18,10 @@ def(void, Destroy) {
 	Tree_Destroy(&this->tree);
 	String_Destroy(&this->main);
 
-	Array_Foreach(this->include, String_Destroy);
+	foreach (item, this->include) {
+		String_Destroy(item);
+	}
+
 	Array_Destroy(this->include);
 
 	Array_Destroy(this->deps);
@@ -308,7 +311,7 @@ static def(void, PrintNode, ref(Node) *node, int indent) {
 
 iter:
 	for (size_t i = 0; i < node->len; i++) {
-		call(PrintNode, node->nodes[i], indent + 2);
+		call(PrintNode, node->buf[i], indent + 2);
 	}
 }
 

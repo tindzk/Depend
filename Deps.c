@@ -249,6 +249,10 @@ static def(void, ScanFile, ref(Node) *node, String path) {
 }
 
 static def(void, ProcessFile, String base, String file, ref(Type) deptype) {
+	if (file.len == 0) {
+		return;
+	}
+
 	String relPath = call(GetFullPath, base, file, deptype);
 
 	if (relPath.len > 0) {

@@ -56,9 +56,17 @@ static def(void, Add, String value) {
 
 	ssize_t slash = String_ReverseFind(value, star, '/');
 
-	String path  = String_Slice(value, 0, slash);
-	String left  = String_Slice(value, slash + 1, star - slash - 1);
-	String right = String_Slice(value, star  + 1);
+	String path, left;
+
+	if (slash == String_NotFound) {
+		path = $(".");
+		left = String_Slice(value, 0, star);
+	} else {
+		path = String_Slice(value, 0, slash);
+		left = String_Slice(value, slash + 1, star - slash - 1);
+	}
+
+	String right = String_Slice(value, star + 1);
 
 	Directory dir;
 	Directory_Entry item;

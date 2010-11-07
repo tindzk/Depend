@@ -597,7 +597,13 @@ def(bool, Run) {
 					return false;
 				}
 
-				Array_Push(files, call(ShrinkPath, path));
+				String shrinked = call(ShrinkPath, path);
+
+				if (StringArray_Contains(files, shrinked)) {
+					String_Destroy(&shrinked);
+				} else {
+					Array_Push(files, shrinked);
+				}
 
 				String_Destroy(&path);
 			}

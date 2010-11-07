@@ -279,13 +279,13 @@ static def(bool, Compile, String src, String out) {
 		Process_AddParameter(&proc, Deps_GetIncludes(this->deps)->buf[i]);
 	}
 
-	int res = Process_Spawn(Process_FromObject(&proc));
-
 	if (this->verbose) {
 		String cmd = Process_GetCommandLine(&proc);
 		Logger_Info(&logger, cmd);
 		String_Destroy(&cmd);
 	}
+
+	int res = Process_Spawn(Process_FromObject(&proc));
 
 	Process_Destroy(&proc);
 

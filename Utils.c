@@ -1,9 +1,7 @@
 #import "Utils.h"
 
-Logger logger;
-
+extern Logger logger;
 extern Terminal term;
-extern ExceptionManager exc;
 
 void Utils_OnLogMessage(__unused void *ptr, String msg, Logger_Level level, String file, int line) {
 	String color  = String("black");

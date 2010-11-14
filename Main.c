@@ -1,6 +1,7 @@
 #import "Utils.h"
 #import "Interface.h"
 
+Logger logger;
 Terminal term;
 ExceptionManager exc;
 
@@ -32,13 +33,9 @@ int main(int argc, char* argv[]) {
 		return ExitStatus_Failure;
 	}
 
-	struct {
-		Interface itf;
-	} private;
-
-	InterfaceInstance itf = Interface_FromObject(&private.itf);
-	Interface_Init(itf);
-	Interface_SetAction(itf, String_FromNul(argv[1]));
+	Interface itf;
+	Interface_Init(&itf);
+	Interface_SetAction(&itf, String_FromNul(argv[1]));
 
 	bool success = true;
 
@@ -54,7 +51,7 @@ int main(int argc, char* argv[]) {
 		String name  = String_Slice(arg, 0, pos);
 		String value = String_Slice(arg, pos + 1);
 
-		success = Interface_SetOption(itf, name, value);
+		success = Interface_SetOption(&itf, name, value);
 
 		if (!success) {
 			goto out;
@@ -62,7 +59,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	try (&exc) {
-		success = Interface_Run(itf);
+		success = Interface_Run(&itf);
 	} clean catchAny {
 		ExceptionManager_Print(&exc, e);
 
@@ -74,7 +71,7 @@ int main(int argc, char* argv[]) {
 	} tryEnd;
 
 out:
-	Interface_Destroy(itf);
+	Interface_Destroy(&itf);
 
 	return success
 		? ExitStatus_Success

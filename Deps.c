@@ -112,7 +112,7 @@ static def(String, GetLocalPath, String base, String file) {
 	String path = String_Format($("%/%"), base, file);
 
 	if (!Path_Exists(path)) {
-		String_Destroy(&path);
+		path.len = 0;
 	}
 
 	return path;
@@ -134,8 +134,7 @@ static def(String, GetSystemPath, String file) {
 		path.len = 0;
 	}
 
-	String_Destroy(&path);
-	return $("");
+	return path;
 }
 
 static def(String, GetFullPath, String base, String file, ref(Type) type) {

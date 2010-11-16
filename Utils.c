@@ -19,7 +19,7 @@ void Utils_OnLogMessage(__unused void *ptr, String msg, Logger_Level level, Stri
 	Terminal_Controller_Init(&controller, &term);
 
 	if (BitMask_Has(logger.levels, Logger_Level_Debug)) {
-		String sline = Integer_ToString(line);
+		String sline = Int32_ToString(line);
 
 		Terminal_Controller_Render(&controller,
 			$(".fg[%]{.b{[%]} % .i{(%:%)}}\n"),

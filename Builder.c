@@ -116,7 +116,7 @@ def(bool, SetOption, String name, String value) {
 	} else if (String_Equals(name, $("blocks"))) {
 		this->blocks = String_Equals(value, $("yes"));
 	} else if (String_Equals(name, $("optimlevel"))) {
-		this->optmlevel = Integer_ParseString(value);
+		this->optmlevel = Int16_Parse(value);
 	} else if (String_Equals(name, $("link"))) {
 		Array_Push(this->link, String_Clone(value));
 	} else if (String_Equals(name, $("linkpath"))) {
@@ -256,7 +256,7 @@ static def(bool, Compile, String src, String out) {
 		Process_AddParameter(&proc, $("-fblocks"));
 	}
 
-	String optim = String_Format($("-O%"), Integer_ToString(this->optmlevel));
+	String optim = String_Format($("-O%"), Int16_ToString(this->optmlevel));
 	Process_AddParameter(&proc, optim);
 	String_Destroy(&optim);
 
@@ -475,7 +475,7 @@ def(void, CreateManifest) {
 		FileStatus_Truncate);
 
 	String fmt = String_Format($("#define Manifest_GapSize %\n"),
-		Integer_ToString(
+		Int16_ToString(
 			Builder_ManifestGapSize));
 
 	File_Write(File_FromObject(&file), fmt);
@@ -488,7 +488,7 @@ def(void, CreateManifest) {
 		if (module.len > 0) {
 			String fmt = String_Format($("#define Modules_% %\n"),
 				module,
-				Integer_ToString(
+				Int16_ToString(
 					Builder_ManifestGapSize * counter));
 
 			File_Write(File_FromObject(&file), fmt);
@@ -562,8 +562,8 @@ def(bool, Run) {
 
 			Logger_Info(&logger, $("Compiling %... [%/%]"),
 				path,
-				Integer_ToString(i + 1),
-				Integer_ToString(this->queue->len));
+				Int32_ToString(i + 1),
+				Int32_ToString(this->queue->len));
 
 			bool ok = call(Compile, path, this->queue->buf[i].output);
 

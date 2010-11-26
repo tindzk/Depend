@@ -3,15 +3,8 @@
 
 Logger logger;
 Terminal term;
-ExceptionManager exc;
 
 int main(int argc, char* argv[]) {
-	ExceptionManager_Init(&exc);
-
-	File0(&exc);
-	Path0(&exc);
-	String0(&exc);
-
 	Logger_Init(&logger, Callback(NULL, Utils_OnLogMessage),
 		Logger_Level_Fatal |
 		Logger_Level_Crit  |
@@ -58,13 +51,13 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	try (&exc) {
+	try {
 		success = Interface_Run(&itf);
 	} clean catchAny {
-		ExceptionManager_Print(&exc, e);
+		Exception_Print(e);
 
 #if Exception_SaveTrace
-		Backtrace_PrintTrace(exc.e.trace, exc.e.traceItems);
+		Backtrace_PrintTrace(__exc_mgr.e.trace, __exc_mgr.e.traceItems);
 #endif
 	} finally {
 		Terminal_Destroy(&term);

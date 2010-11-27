@@ -1,5 +1,4 @@
 #import "Interface.h"
-#import <App.h>
 
 extern Logger logger;
 

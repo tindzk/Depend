@@ -1,5 +1,4 @@
 #import "Deps.h"
-#import <App.h>
 
 extern Logger logger;
 

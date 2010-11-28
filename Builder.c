@@ -390,7 +390,7 @@ def(bool, CreateQueue) {
 				if (depSourcePath.len == 0) { /* Header file wihout matching source file. */
 					if (Path_Exists(output)) {
 						if (File_IsModified(depHeaderPath, output)) {
-							Logger_Info(&logger, $("dep header changed."));
+							Logger_Info(&logger, $("Dependency header changed."));
 							depChanged = true;
 						}
 					}
@@ -406,15 +406,15 @@ def(bool, CreateQueue) {
 					}
 
 					if (!Path_Exists(depOutput)) {
-						/* dep unbuilt */
+						/* Dependency unbuilt. */
 						call(AddToQueue, depSourcePath, depOutput);
 						depChanged = true;
 					} else if (File_IsModified(depSourcePath, depOutput)) {
-						/* dep source changed */
+						/* Dependency source changed. */
 						call(AddToQueue, depSourcePath, depOutput);
 						depChanged = true;
 					} else if (File_IsModified(depHeaderPath, depOutput)) {
-						/* dep header changed */
+						/* Dependency header changed. */
 						call(AddToQueue, depSourcePath, depOutput);
 						depChanged = true;
 					}

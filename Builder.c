@@ -268,6 +268,11 @@ static def(bool, Compile, String src, String out) {
 	Process_AddParameter(&proc, $("-pipe"));
 	Process_AddParameter(&proc, $("-Wshorten-64-to-32"));
 
+	if (this->manifest.len != 0) {
+		Process_AddParameter(&proc, $("-include"));
+		Process_AddParameter(&proc, this->manifest);
+	}
+
 	if (this->inclhdr.len > 0) {
 		Process_AddParameter(&proc, $("-include"));
 		Process_AddParameter(&proc, this->inclhdr);

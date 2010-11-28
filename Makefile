@@ -1,6 +1,5 @@
-# Compile with Clang using the `config.h' configuration file and
-# enable blocks.
-CC = clang -include config.h
+# Compile with Clang using the `config.h' configuration file.
+CC = clang -include Manifest.h -include config.h
 
 # Enable warnings.
 CFLAGS = -W -Wall -pipe

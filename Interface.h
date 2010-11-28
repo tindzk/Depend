@@ -18,18 +18,12 @@ set(ref(Action)) {
 	ref(Action_Unsupported)
 };
 
-class(self) {
+class {
 	ref(Action) action;
 
-	struct {
-		Deps deps;
-		Builder builder;
-		Prototypes proto;
-	} private;
-
-	DepsInstance deps;
-	BuilderInstance builder;
-	PrototypesInstance proto;
+	Deps deps;
+	Builder builder;
+	Prototypes proto;
 };
 
 def(void, Init);

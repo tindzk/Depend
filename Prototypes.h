@@ -5,7 +5,7 @@
 #undef self
 #define self Prototypes
 
-class(self) {
+class {
 	String path;
 };
 

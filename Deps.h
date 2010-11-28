@@ -23,7 +23,7 @@ record(ref(Node)) {
 
 typedef Array(ref(Node) *, DepsArray);
 
-class(self) {
+class {
 	String main;
 
 	StringArray *include;

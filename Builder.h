@@ -22,7 +22,7 @@ record(ref(DepsMapping)) {
 	String dest;
 };
 
-class(self) {
+class {
 	DepsInstance deps;
 
 	String manifest;

@@ -18,7 +18,7 @@ record(ref(Node)) {
 	Tree_Define(ref(Node));
 
 	String path;
-	String module;
+	StringArray *modules;
 };
 
 typedef Array(ref(Node) *, DepsArray);

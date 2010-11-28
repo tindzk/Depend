@@ -28,7 +28,9 @@ def(void, Destroy) {
 
 void ref(DestroyNode)(ref(Node) *node) {
 	String_Destroy(&node->path);
-	String_Destroy(&node->module);
+
+	StringArray_Destroy(node->modules);
+	StringArray_Free(node->modules);
 }
 
 static def(void, ProcessFile, String base, String file, ref(Type) deptype);
@@ -159,16 +161,25 @@ static def(String, GetFullPath, String base, String file, ref(Type) type) {
 static def(ref(Node) *, AddFile, String absPath) {
 	this->node = Tree_AddNode(this->node);
 
-	this->node->path   = String_Clone(absPath);
-	this->node->module = HeapString(0);
+	this->node->path    = String_Clone(absPath);
+	this->node->modules = StringArray_New(1);
 
-	for (size_t i = 0; i < this->deps->len; i++) {
+	forward (i, this->deps->len) {
 		if (String_Equals(this->deps->buf[i]->path, absPath)) {
-			/* Copy the module name from the first scan. Otherwise
-			 * we would have to read the file a second time.
+			/* Clone all module names from the first scan. Otherwise
+			 * we would need to read the file a second time.
 			 */
-			String_Copy(&this->node->module,
-				this->deps->buf[i]->module);
+
+			StringArray *src = this->deps->buf[i]->modules;
+
+			this->node->modules = StringArray_New(src->len);
+
+			forward (i, src->len) {
+				this->node->modules->buf[i] =
+					String_Clone(src->buf[i]);
+			}
+
+			this->node->modules->len = src->len;
 
 			return NULL;
 		}
@@ -183,15 +194,20 @@ static def(void, ScanFile, ref(Node) *node, String path) {
 	File_GetContents(path, &s);
 	StringArray *lines = String_Split(s, '\n');
 
-	for (size_t i = 0; i < lines->len; i++) {
+	forward (i, lines->len) {
 		String needle;
 
 		if (String_BeginsWith(lines->buf[i], needle = $("#define self "))) {
-			String_Copy(&node->module,
+			String module =
 				String_Trim(
 					String_Slice(
 						lines->buf[i],
-						needle.len)));
+						needle.len));
+
+			if (!StringArray_Contains(this->node->modules, module)) {
+				StringArray_Push(&this->node->modules,
+					String_Clone(module));
+			}
 
 			continue;
 		}
@@ -311,9 +327,17 @@ static def(void, PrintNode, ref(Node) *node, int indent) {
 	String_Print($("["));
 	String_Print(node->path);
 
-	if (node->module.len > 0) {
+	if (node->modules->len > 0) {
 		String_Print($(" ("));
-		String_Print(node->module);
+
+		foreach (module, node->modules) {
+			String_Print(*module);
+
+			if (!isLast(module, node->modules)) {
+				String_Print($(", "));
+			}
+		}
+
 		String_Print($(")"));
 	}
 

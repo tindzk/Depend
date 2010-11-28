@@ -486,13 +486,11 @@ def(void, CreateManifest) {
 
 	String_Destroy(&fmt);
 
-	for (size_t i = 0; i < deps->len; i++) {
-		String module = deps->buf[i]->module;
-
-		if (module.len > 0) {
+	forward (i, deps->len) {
+		foreach (module, deps->buf[i]->modules) {
 			String fmt = String_Format($("#define Modules_% %\n"),
-				module,
-				Int16_ToString(
+				*module,
+				Integer_ToString(
 					Builder_ManifestGapSize * counter));
 
 			File_Write(&file, fmt);
@@ -508,19 +506,17 @@ def(void, CreateManifest) {
 		"static inline char* Manifest_ResolveName(unsigned int module) {\n"
 		"\tswitch (module) {\n"));
 
-	for (size_t i = 0; i < deps->len; i++) {
-		String module = deps->buf[i]->module;
-
-		if (module.len > 0) {
-			String readable = String_ReplaceAll(module,
+	forward (i, deps->len) {
+		foreach (module, deps->buf[i]->modules) {
+			String readable = String_ReplaceAll(*module,
 				$("_"),
 				$("."));
 
 			String fmt = String_Format($(
 				"\t\tcase Modules_% ... Modules_% + Manifest_GapSize - 1:\n"
 				"\t\t\treturn \"%\";\n"),
-				module,
-				module,
+				*module,
+				*module,
 				readable);
 
 			File_Write(&file, fmt);

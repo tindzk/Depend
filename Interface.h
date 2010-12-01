@@ -5,7 +5,6 @@
 #import "Builder.h"
 #import "Prototypes.h"
 
-#undef self
 #define self Interface
 
 set(ref(Action)) {
@@ -31,3 +30,5 @@ def(void, Destroy);
 def(void, SetAction, String action);
 def(bool, SetOption, String name, String value);
 def(bool, Run);
+
+#undef self

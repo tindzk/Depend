@@ -5,7 +5,6 @@
 #import "Deps.h"
 #import "Utils.h"
 
-#undef self
 #define self Builder
 
 #ifndef Builder_ManifestGapSize
@@ -48,3 +47,5 @@ def(bool, SetOption, String name, String value);
 def(bool, CreateQueue);
 def(void, PrintQueue);
 def(bool, Run);
+
+#undef self

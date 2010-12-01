@@ -2,7 +2,6 @@
 
 #import "Utils.h"
 
-#undef self
 #define self Prototypes
 
 class {
@@ -13,3 +12,5 @@ def(void, Init);
 def(void, Destroy);
 def(bool, SetOption, String name, String value);
 def(void, Generate);
+
+#undef self

@@ -1,5 +1,7 @@
 #import "Interface.h"
 
+#define self Interface
+
 extern Logger logger;
 
 def(void, Init) {

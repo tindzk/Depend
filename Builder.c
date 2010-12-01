@@ -1,5 +1,7 @@
 #import "Builder.h"
 
+#define self Builder
+
 extern Logger logger;
 
 def(void, Init, DepsInstance deps) {

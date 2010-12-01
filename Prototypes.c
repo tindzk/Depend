@@ -1,5 +1,7 @@
 #import "Prototypes.h"
 
+#define self Prototypes
+
 def(void, Init) {
 	this->path = HeapString(0);
 }

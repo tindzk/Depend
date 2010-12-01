@@ -6,7 +6,6 @@
 
 #import "Utils.h"
 
-#undef self
 #define self Deps
 
 set(ref(Type)) {
@@ -45,3 +44,5 @@ def(DepsArray *, GetDeps);
 def(void, ListSourceFiles);
 def(void, PrintTree);
 def(void, Scan);
+
+#undef self

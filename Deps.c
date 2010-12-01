@@ -1,5 +1,7 @@
 #import "Deps.h"
 
+#define self Deps
+
 extern Logger logger;
 
 def(void, Init) {

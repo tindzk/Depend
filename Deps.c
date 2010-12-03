@@ -9,7 +9,7 @@ def(void, Init) {
 	this->deps    = DepsArray_New(0);
 	this->include = StringArray_New(0);
 
-	Tree_Init(&this->tree, (void *) &ref(DestroyNode));
+	Tree_Init(&this->tree, (void *) ref(DestroyNode));
 
 	this->node = (ref(Node) *) &this->tree.root;
 }
@@ -24,7 +24,7 @@ def(void, Destroy) {
 	DepsArray_Free(this->deps);
 }
 
-void ref(DestroyNode)(ref(Node) *node) {
+sdef(void, DestroyNode, ref(Node) *node) {
 	String_Destroy(&node->path);
 
 	StringArray_Destroy(node->modules);

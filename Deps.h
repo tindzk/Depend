@@ -37,7 +37,7 @@ class {
 
 def(void, Init);
 def(void, Destroy);
-void ref(DestroyNode)(ref(Node) *node);
+sdef(void, DestroyNode, ref(Node) *node);
 def(bool, SetOption, String name, String value);
 def(StringArray *, GetIncludes);
 def(DepsArray *, GetDeps);

@@ -122,7 +122,7 @@ def(bool, SetOption, String name, String value) {
 	return true;
 }
 
-static String ref(ShrinkPathEx)(String shortpath, String path) {
+static sdef(String, ShrinkPathEx, String shortpath, String path) {
 	String realpath = Path_Resolve(shortpath);
 
 	String res = HeapString(0);
@@ -142,10 +142,9 @@ static String ref(ShrinkPathEx)(String shortpath, String path) {
 }
 
 static def(String, ShrinkPath, String path) {
-	for (size_t i = 0; i < this->mappings->len; i++) {
-		String shortpath = this->mappings->buf[i].src;
-
-		String res = ref(ShrinkPathEx)(shortpath, path);
+	foreach (mapping, this->mappings) {
+		String shortpath = mapping->src;
+		String res = scall(ShrinkPathEx, shortpath, path);
 
 		if (res.len > 0) {
 			return res;
@@ -158,7 +157,7 @@ static def(String, ShrinkPath, String path) {
 static def(String, GetOutput, String path) {
 	String realpath = Path_Resolve(path);
 
-	for (size_t i = 0; i < this->mappings->len; i++) {
+	forward (i, this->mappings->len) {
 		String mapping = Path_Resolve(this->mappings->buf[i].src);
 
 		if (String_BeginsWith(realpath, mapping)) {
@@ -187,7 +186,7 @@ static def(String, GetOutput, String path) {
 	return HeapString(0);
 }
 
-static String ref(GetSource)(String path) {
+static sdef(String, GetSource, String path) {
 	ssize_t pos = String_ReverseFind(path, '.');
 
 	if (pos == String_NotFound) {
@@ -219,7 +218,7 @@ static String ref(GetSource)(String path) {
 }
 
 static def(void, AddToQueue, String source, String output) {
-	for (size_t i = 0; i < this->queue->len; i++) {
+	forward (i, this->queue->len) {
 		if (String_Equals(this->queue->buf[i].source, source)) {
 			return;
 		}
@@ -274,9 +273,11 @@ static def(bool, Compile, String src, String out) {
 		Process_AddParameter(&proc, this->inclhdr);
 	}
 
-	for (size_t i = 0; i < Deps_GetIncludes(this->deps)->len; i++) {
+	StringArray *deps = Deps_GetIncludes(this->deps);
+
+	forward (i, deps->len) {
 		Process_AddParameter(&proc, $("-I"));
-		Process_AddParameter(&proc, Deps_GetIncludes(this->deps)->buf[i]);
+		Process_AddParameter(&proc, deps->buf[i]);
 	}
 
 	if (this->verbose) {
@@ -299,11 +300,11 @@ static def(void, Link, StringArray *files) {
 	Process_AddParameter(&proc, $("-o"));
 	Process_AddParameter(&proc, this->output);
 
-	for (size_t i = 0; i < files->len; i++) {
+	forward (i, files->len) {
 		Process_AddParameter(&proc, files->buf[i]);
 	}
 
-	for (size_t i = 0; i < this->linkpaths->len; i++) {
+	forward (i, this->linkpaths->len) {
 		Process_AddParameter(&proc, $("-L"));
 		Process_AddParameter(&proc, this->linkpaths->buf[i]);
 	}
@@ -312,7 +313,7 @@ static def(void, Link, StringArray *files) {
 		Process_AddParameter(&proc, $("-g"));
 	}
 
-	for (size_t i = 0; i < this->link->len; i++) {
+	forward (i, this->link->len) {
 		if (this->link->buf[i].len == 0) {
 			continue;
 		}
@@ -341,11 +342,13 @@ static def(void, Link, StringArray *files) {
 }
 
 def(bool, CreateQueue) {
-	for (size_t i = 0; i < Deps_GetDeps(this->deps)->len; i++) {
-		Deps_Node *dep = Deps_GetDeps(this->deps)->buf[i];
+	DepsArray *deps = Deps_GetDeps(this->deps);
+
+	forward (i, deps->len) {
+		Deps_Node *dep = deps->buf[i];
 
 		String headerPath = String_Clone(dep->path);
-		String sourcePath = ref(GetSource)(headerPath);
+		String sourcePath = scall(GetSource, headerPath);
 
 		/* Skip all non-source files. */
 		if (sourcePath.len == 0) {
@@ -377,11 +380,11 @@ def(bool, CreateQueue) {
 		if (dep->len > 0) {
 			Logger_Debug(&logger, $("Depends on:"));
 
-			for (size_t j = 0; j < dep->len; j++) {
+			forward (j, dep->len) {
 				Logger_Debug(&logger, $(" - %"), dep->buf[j]->path);
 
 				String depHeaderPath = String_Clone(dep->buf[j]->path);
-				String depSourcePath = ref(GetSource)(dep->buf[j]->path);
+				String depSourcePath = scall(GetSource, dep->buf[j]->path);
 
 				if (depSourcePath.len == 0) { /* Header file wihout matching source file. */
 					if (Path_Exists(output)) {
@@ -453,7 +456,7 @@ def(void, PrintQueue) {
 	} else {
 		Logger_Info(&logger, $("  Queue:"));
 
-		for (size_t i = 0; i < this->queue->len; i++) {
+		forward (i, this->queue->len) {
 			Logger_Info(&logger, $(" - % --> %"),
 				this->queue->buf[i].source,
 				this->queue->buf[i].output);
@@ -547,7 +550,7 @@ def(bool, Run) {
 	}
 
 	if (this->queue->len != 0 || !Path_Exists(this->output)) {
-		for (size_t i = 0; i < this->queue->len; i++) {
+		forward (i, this->queue->len) {
 			String create = Path_GetDirectory(this->queue->buf[i].output);
 
 			if (!Path_Exists(create)) {
@@ -574,8 +577,8 @@ def(bool, Run) {
 
 		DepsArray *deps = Deps_GetDeps(this->deps);
 
-		for (size_t i = 0; i < deps->len; i++) {
-			String src = ref(GetSource)(deps->buf[i]->path);
+		forward (i, deps->len) {
+			String src = scall(GetSource, deps->buf[i]->path);
 
 			if (src.len > 0) {
 				String path = call(GetOutput, src);

@@ -21,6 +21,9 @@ record(ref(DepsMapping)) {
 	String dest;
 };
 
+Array(ref(DepsMapping), MappingArray);
+Array(ref(QueueItem),   QueueArray);
+
 class {
 	DepsInstance deps;
 
@@ -36,9 +39,8 @@ class {
 
 	StringArray *link;
 	StringArray *linkpaths;
-
-	Array(ref(DepsMapping), *mappings);
-	Array(ref(QueueItem),   *queue);
+	MappingArray *mappings;
+	QueueArray *queue;
 };
 
 def(void, Init, DepsInstance deps);

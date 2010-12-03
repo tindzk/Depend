@@ -5,10 +5,9 @@
 extern Logger logger;
 
 def(void, Init) {
-	this->main = HeapString(0);
-
-	Array_Init(this->deps,    0);
-	Array_Init(this->include, 0);
+	this->main    = HeapString(0);
+	this->deps    = DepsArray_New(0);
+	this->include = StringArray_New(0);
 
 	Tree_Init(&this->tree, (void *) &ref(DestroyNode));
 
@@ -19,13 +18,10 @@ def(void, Destroy) {
 	Tree_Destroy(&this->tree);
 	String_Destroy(&this->main);
 
-	foreach (item, this->include) {
-		String_Destroy(item);
-	}
+	StringArray_Destroy(this->include);
+	StringArray_Free(this->include);
 
-	Array_Destroy(this->include);
-
-	Array_Destroy(this->deps);
+	DepsArray_Free(this->deps);
 }
 
 void ref(DestroyNode)(ref(Node) *node) {
@@ -97,7 +93,7 @@ def(bool, SetOption, String name, String value) {
 	} else if (String_Equals(name, $("add"))) {
 		call(Add, value);
 	} else if (String_Equals(name, $("include"))) {
-		Array_Push(this->include, String_Clone(value));
+		StringArray_Push(&this->include, String_Clone(value));
 	}
 
 	return true;
@@ -187,7 +183,7 @@ static def(ref(Node) *, AddFile, String absPath) {
 		}
 	}
 
-	Array_Push(this->deps, this->node);
+	DepsArray_Push(&this->deps, this->node);
 	return this->node;
 }
 
@@ -260,7 +256,7 @@ static def(void, ScanFile, ref(Node) *node, String path) {
 			header, deptype);
 	}
 
-	Array_Destroy(lines);
+	StringArray_Free(lines);
 	String_Destroy(&s);
 }
 

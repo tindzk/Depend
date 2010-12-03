@@ -61,6 +61,6 @@ def(void, Generate) {
 		}
 	}
 
-	Array_Destroy(arr);
+	StringArray_Destroy(arr);
 	String_Destroy(&s);
 }

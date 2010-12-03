@@ -15,11 +15,10 @@ def(void, Init, DepsInstance deps) {
 	this->blocks    = true;
 	this->optmlevel = 0;
 	this->verbose   = false;
-
-	Array_Init(this->link,      0);
-	Array_Init(this->queue,     0);
-	Array_Init(this->mappings,  0);
-	Array_Init(this->linkpaths, 0);
+	this->link      = StringArray_New(0);
+	this->queue     = QueueArray_New(0);
+	this->mappings  = MappingArray_New(0);
+	this->linkpaths = StringArray_New(0);
 }
 
 def(void, Destroy) {
@@ -29,17 +28,11 @@ def(void, Destroy) {
 	String_Destroy(&this->manifest);
 	String_Destroy(&this->std);
 
-	foreach (item, this->link) {
-		String_Destroy(item);
-	}
+	StringArray_Destroy(this->link);
+	StringArray_Free(this->link);
 
-	Array_Destroy(this->link);
-
-	foreach (item, this->linkpaths) {
-		String_Destroy(item);
-	}
-
-	Array_Destroy(this->linkpaths);
+	StringArray_Destroy(this->linkpaths);
+	StringArray_Free(this->linkpaths);
 
 	foreach (item, this->queue) {
 		String_Destroy(&item->source);
@@ -51,8 +44,8 @@ def(void, Destroy) {
 		String_Destroy(&item->dest);
 	}
 
-	Array_Destroy(this->queue);
-	Array_Destroy(this->mappings);
+	MappingArray_Free(this->mappings);
+	QueueArray_Free(this->queue);
 }
 
 def(bool, Map, String value) {
@@ -65,10 +58,10 @@ def(bool, Map, String value) {
 		goto error;
 	}
 
-	ref(DepsMapping) insert;
-
-	insert.src  = parts->buf[0];
-	insert.dest = parts->buf[1];
+	ref(DepsMapping) insert = {
+		.src  = parts->buf[0],
+		.dest = parts->buf[1]
+	};
 
 	if (insert.src.len == 0) {
 		Logger_Error(&logger, $("Invalid source path."));
@@ -86,7 +79,7 @@ def(bool, Map, String value) {
 	insert.src  = String_Clone(insert.src);
 	insert.dest = String_Clone(insert.dest);
 
-	Array_Push(this->mappings, insert);
+	MappingArray_Push(&this->mappings, insert);
 
 	bool res = true;
 
@@ -94,7 +87,7 @@ def(bool, Map, String value) {
 		res = false;
 	}
 
-	Array_Destroy(parts);
+	StringArray_Free(parts);
 
 	return res;
 }
@@ -119,9 +112,9 @@ def(bool, SetOption, String name, String value) {
 	} else if (String_Equals(name, $("optimlevel"))) {
 		this->optmlevel = Int16_Parse(value);
 	} else if (String_Equals(name, $("link"))) {
-		Array_Push(this->link, String_Clone(value));
+		StringArray_Push(&this->link, String_Clone(value));
 	} else if (String_Equals(name, $("linkpath"))) {
-		Array_Push(this->linkpaths, String_Clone(value));
+		StringArray_Push(&this->linkpaths, String_Clone(value));
 	} else if (String_Equals(name, $("verbose"))) {
 		this->verbose = true;
 	}
@@ -232,11 +225,12 @@ static def(void, AddToQueue, String source, String output) {
 		}
 	}
 
-	ref(QueueItem) item;
-	item.source = String_Clone(source);
-	item.output = String_Clone(output);
+	ref(QueueItem) item = {
+		.source = String_Clone(source),
+		.output = String_Clone(output)
+	};
 
-	Array_Push(this->queue, item);
+	QueueArray_Push(&this->queue, item);
 }
 
 static def(bool, Compile, String src, String out) {
@@ -576,8 +570,7 @@ def(bool, Run) {
 			}
 		}
 
-		StringArray *files;
-		Array_Init(files, 0);
+		StringArray *files = StringArray_New(0);
 
 		DepsArray *deps = Deps_GetDeps(this->deps);
 
@@ -592,7 +585,7 @@ def(bool, Run) {
 						String_Destroy(file);
 					}
 
-					Array_Destroy(files);
+					StringArray_Free(files);
 
 					String_Destroy(&src);
 
@@ -604,7 +597,7 @@ def(bool, Run) {
 				if (StringArray_Contains(files, shrinked)) {
 					String_Destroy(&shrinked);
 				} else {
-					Array_Push(files, shrinked);
+					StringArray_Push(&files, shrinked);
 				}
 
 				String_Destroy(&path);
@@ -619,7 +612,7 @@ def(bool, Run) {
 			String_Destroy(file);
 		}
 
-		Array_Destroy(files);
+		StringArray_Free(files);
 	}
 
 	return true;

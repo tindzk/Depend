@@ -20,7 +20,7 @@ record(ref(Node)) {
 	StringArray *modules;
 };
 
-typedef Array(ref(Node) *, DepsArray);
+Array(ref(Node) *, DepsArray);
 
 class {
 	String main;

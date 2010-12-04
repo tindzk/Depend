@@ -502,7 +502,7 @@ def(void, CreateManifest) {
 
 	File_Write(&file, $("\n"));
 	File_Write(&file, $(
-		"static inline char* Manifest_ResolveName(unsigned int module) {\n"
+		"static inline char* Manifest_ResolveName(int module) {\n"
 		"\tswitch (module) {\n"));
 
 	forward (i, deps->len) {

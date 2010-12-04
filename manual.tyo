@@ -38,9 +38,9 @@
 
 	.section[Installation] {
 		.command {
-			git clone git://github.com/tindzk/Jivai-Utils.git
-			cd Jivai-Utils
-			make
+			$ git clone git://github.com/tindzk/Jivai-Utils.git
+			$ cd Jivai-Utils
+			$ make
 		}
 	}
 
@@ -51,9 +51,9 @@
 		}
 
 		.command {
-			cd ../Jivai/examples
-			mkdir -p build/Jivai
-			../../Jivai-Utils/jutils.bin \
+			$ cd ../Jivai/examples
+			$ mkdir -p build/Jivai
+			$ ../../Jivai-Utils/jutils.bin \
 				build                    \
 				output=build/httpd.bin   \
 				main=httpd.c             \
@@ -89,7 +89,7 @@
 		}
 
 		.command {
-			touch ../src/HTTP/Server.c
+			$ touch ../src/HTTP/Server.c
 		}
 
 		.p {

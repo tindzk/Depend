@@ -490,7 +490,7 @@ def(void, CreateManifest) {
 			String fmt = String_Format($("#define Modules_% %\n"),
 				*module,
 				Integer_ToString(
-					Builder_ManifestGapSize * counter));
+					(u32) Builder_ManifestGapSize * counter));
 
 			File_Write(&file, fmt);
 

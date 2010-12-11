@@ -13,34 +13,43 @@ set(ref(Type)) {
 	ref(Type_Local)
 };
 
-record(ref(Node)) {
-	Tree_Define(ref(Node));
-
-	String path;
-	StringArray *modules;
+record(ref(Module)) {
+	String name;
+	StringArray *exc;
 };
 
-Array(ref(Node) *, DepsArray);
+Array(ref(Module), ref(Modules));
+Array(size_t,      ref(ModuleOffsets));
+
+record(ref(Component)) {
+	Tree_Define(ref(Component));
+
+	String path;
+	ref(ModuleOffsets) *modules;
+};
 
 class {
 	String main;
 
+	StringArray *paths;
 	StringArray *include;
 
 	/* Dependency tree. */
 	Tree tree;
-	ref(Node) *node;
+	ref(Component) *component;
 
-	/* All top-level deps flattened. */
-	DepsArray *deps;
+	/* All modules flattened. */
+	ref(Modules) *modules;
 };
 
 def(void, Init);
 def(void, Destroy);
-sdef(void, DestroyNode, ref(Node) *node);
+sdef(void, DestroyNode, ref(Component) *node);
 def(bool, SetOption, String name, String value);
 def(StringArray *, GetIncludes);
-def(DepsArray *, GetDeps);
+def(ref(Modules) *, GetModules);
+def(ref(Component) *, GetComponent);
+def(StringArray *, GetPaths);
 def(void, ListSourceFiles);
 def(void, PrintTree);
 def(void, Scan);

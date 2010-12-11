@@ -7,9 +7,7 @@
 
 #define self Builder
 
-#ifndef Builder_ManifestGapSize
-#define Builder_ManifestGapSize 256
-#endif
+// @exc RuntimeError
 
 record(ref(QueueItem)) {
 	String source;

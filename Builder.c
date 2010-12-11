@@ -341,110 +341,77 @@ static def(void, Link, StringArray *files) {
 	Process_Destroy(&proc);
 }
 
-def(bool, CreateQueue) {
-	DepsArray *deps = Deps_GetDeps(this->deps);
+def(bool, Traverse, Deps_Component *node, size_t depth) {
+	bool build = false;
 
-	forward (i, deps->len) {
-		Deps_Node *dep = deps->buf[i];
+	String prefix = HeapString(depth * 2);
+	repeat (depth * 2) {
+		String_Append(&prefix, ' ');
+	}
 
-		String headerPath = String_Clone(dep->path);
-		String sourcePath = scall(GetSource, headerPath);
+	String headerPath = String_Clone(node->path);
+	String sourcePath = scall(GetSource, headerPath);
 
-		/* Skip all non-source files. */
-		if (sourcePath.len == 0) {
-			Logger_Debug(&logger,
-				$("'%' has no corresponding source file"),
-				headerPath);
-
-			String_Destroy(&headerPath);
-			String_Destroy(&sourcePath);
-
-			continue;
-		}
-
-		Logger_Info(&logger, $("Processing %..."), sourcePath);
+	/* Skip all non-source files. */
+	if (sourcePath.len == 0) {
+		Logger_Debug(&logger,
+			$("%'%' has no corresponding source file"),
+			prefix, headerPath);
+	} else {
+		Logger_Info(&logger, $("%Processing %..."), prefix, sourcePath);
 
 		String output = call(GetOutput, sourcePath);
 
 		if (output.len == 0) {
 			Logger_Error(&logger,
-				$("No output path for '%' is mapped."),
-				sourcePath);
+				$("%No output path for '%' is mapped."),
+				prefix, sourcePath);
 
-			return false;
+			String_Destroy(&headerPath);
+			String_Destroy(&sourcePath);
+
+			throw(RuntimeError);
 		}
 
-		/* Will be true when at least one dependency has changed. */
-		bool depChanged = false;
-
-		if (dep->len > 0) {
-			Logger_Debug(&logger, $("Depends on:"));
-
-			forward (j, dep->len) {
-				Logger_Debug(&logger, $(" - %"), dep->buf[j]->path);
-
-				String depHeaderPath = String_Clone(dep->buf[j]->path);
-				String depSourcePath = scall(GetSource, dep->buf[j]->path);
-
-				if (depSourcePath.len == 0) { /* Header file wihout matching source file. */
-					if (Path_Exists(output)) {
-						if (File_IsModified(depHeaderPath, output)) {
-							Logger_Info(&logger, $("Dependency header changed."));
-							depChanged = true;
-						}
-					}
-				} else { /* There is a source file. */
-					String depOutput = call(GetOutput, depSourcePath);
-
-					if (depOutput.len == 0) {
-						Logger_Error(&logger,
-							$("No output path for '%' is mapped."),
-							depSourcePath);
-
-						return false;
-					}
-
-					if (!Path_Exists(depOutput)) {
-						/* Dependency unbuilt. */
-						call(AddToQueue, depSourcePath, depOutput);
-						depChanged = true;
-					} else if (File_IsModified(depSourcePath, depOutput)) {
-						/* Dependency source changed. */
-						call(AddToQueue, depSourcePath, depOutput);
-						depChanged = true;
-					} else if (File_IsModified(depHeaderPath, depOutput)) {
-						/* Dependency header changed. */
-						call(AddToQueue, depSourcePath, depOutput);
-						depChanged = true;
-					}
-
-					String_Destroy(&depOutput);
-				}
-
-				String_Destroy(&depSourcePath);
-				String_Destroy(&depHeaderPath);
-			}
-		}
-
-		if (depChanged) {
-			Logger_Info(&logger, $("Dependency changed or unbuilt."));
+		if (!Path_Exists(output)) {
+			Logger_Info(&logger, $("%Not built yet."), prefix);
 			call(AddToQueue, sourcePath, output);
-		} else if (!Path_Exists(output)) {
-			Logger_Info(&logger, $("Not built yet."));
-			call(AddToQueue, sourcePath, output);
+			build = true;
 		} else if (File_IsModified(sourcePath, output)) {
-			Logger_Info(&logger, $("Source modified."));
+			Logger_Info(&logger, $("%Source modified."), prefix);
 			call(AddToQueue, sourcePath, output);
+			build = true;
 		} else if (File_IsModified(headerPath, output)) {
-			Logger_Info(&logger, $("Header modified."));
+			Logger_Info(&logger, $("%Header modified."), prefix);
 			call(AddToQueue, sourcePath, output);
-		} else {
-			Logger_Debug(&logger, $("Already built."));
+			build = true;
 		}
 
-		String_Destroy(&sourcePath);
-		String_Destroy(&headerPath);
 		String_Destroy(&output);
+	}
+
+	forward (i, node->len) {
+		if (call(Traverse, node->buf[i], depth + 1)) {
+			build = true;
+		}
+	}
+
+	if (!build) {
+		Logger_Debug(&logger, $("%Not building."), prefix);
+	}
+
+	String_Destroy(&sourcePath);
+	String_Destroy(&headerPath);
+	String_Destroy(&prefix);
+
+	return build;
+}
+
+def(bool, CreateQueue) {
+	Deps_Component *comps = Deps_GetComponent(this->deps);
+
+	foreach (comp, comps) {
+		call(Traverse, *comp, 0);
 	}
 
 	return true;
@@ -467,60 +434,53 @@ def(void, PrintQueue) {
 }
 
 def(void, CreateManifest) {
-	size_t counter = 1;
-
-	DepsArray *deps = Deps_GetDeps(this->deps);
+	Deps_Modules *modules = Deps_GetModules(this->deps);
 
 	File file;
 	File_Open(&file, this->manifest,
 		FileStatus_Create    |
 		FileStatus_WriteOnly |
 		FileStatus_Truncate);
+	File_Write(&file, $("enum {\n"));
 
-	String fmt = String_Format($("#define Manifest_GapSize %\n"),
-		Int16_ToString(
-			Builder_ManifestGapSize));
+	foreach (module, modules) {
+		String fmt = String_Format($("\tModules_%,\n"), module->name);
+		File_Write(&file, fmt);
+		String_Destroy(&fmt);
 
-	File_Write(&file, fmt);
-
-	String_Destroy(&fmt);
-
-	forward (i, deps->len) {
-		foreach (module, deps->buf[i]->modules) {
-			String fmt = String_Format($("#define Modules_% %\n"),
-				*module,
-				Integer_ToString(
-					(u32) Builder_ManifestGapSize * counter));
-
-			File_Write(&file, fmt);
-
-			String_Destroy(&fmt);
-
-			counter++;
+		foreach (exc, module->exc) {
+			String fmt2 = String_Format($("\t%_%,\n"), module->name, *exc);
+			File_Write(&file, fmt2);
+			String_Destroy(&fmt2);
 		}
+
+		String fmt3 = String_Format($("\tModules_%_Length,\n"), module->name);
+		File_Write(&file, fmt3);
+		String_Destroy(&fmt3);
 	}
 
-	File_Write(&file, $("\n"));
 	File_Write(&file, $(
+		"};\n"
+		"\n"
 		"static inline char* Manifest_ResolveName(int module) {\n"
 		"\tswitch (module) {\n"));
 
-	forward (i, deps->len) {
-		foreach (module, deps->buf[i]->modules) {
-			String readable = String_ReplaceAll(*module,
-				$("_"),
-				$("."));
+	foreach (module, modules) {
+		String readable = String_ReplaceAll(module->name,
+			$("_"),
+			$("."));
 
-			String fmt = String_Format($(
-				"\t\tcase Modules_% ... Modules_% + Manifest_GapSize - 1:\n"
-				"\t\t\treturn \"%\";\n"),
-				*module,
-				*module,
-				readable);
+		String fmt = String_Format($(
+			"\t\tcase Modules_% ... Modules_%_Length:\n"
+			"\t\t\treturn \"%\";\n"),
+			module->name,
+			module->name,
+			readable);
 
-			File_Write(&file, fmt);
-			String_Destroy(&fmt);
-		}
+		String_Destroy(&readable);
+
+		File_Write(&file, fmt);
+		String_Destroy(&fmt);
 	}
 
 	File_Write(&file, $(
@@ -561,8 +521,8 @@ def(bool, Run) {
 
 			Logger_Info(&logger, $("Compiling %... [%/%]"),
 				path,
-				Int32_ToString(i + 1),
-				Int32_ToString(this->queue->len));
+				Integer_ToString(i + 1),
+				Integer_ToString(this->queue->len));
 
 			bool ok = call(Compile, path, this->queue->buf[i].output);
 
@@ -575,10 +535,10 @@ def(bool, Run) {
 
 		StringArray *files = StringArray_New(0);
 
-		DepsArray *deps = Deps_GetDeps(this->deps);
+		StringArray *paths = Deps_GetPaths(this->deps);
 
-		forward (i, deps->len) {
-			String src = scall(GetSource, deps->buf[i]->path);
+		forward (i, paths->len) {
+			String src = scall(GetSource, paths->buf[i]);
 
 			if (src.len > 0) {
 				String path = call(GetOutput, src);

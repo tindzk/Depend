@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
 
 	if (argc <= 1) {
 		Logger_Error(&logger,
-			String("Action missing. Run `% help' for an overview."),
+			$("Action missing. Run `% help' for an overview."),
 			String_FromNul(argv[0]));
 
 		Terminal_Destroy(&term);

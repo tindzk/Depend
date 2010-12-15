@@ -4,22 +4,22 @@ extern Logger logger;
 extern Terminal term;
 
 void Utils_OnLogMessage(__unused void *ptr, String msg, Logger_Level level, String file, int line) {
-	String color  = String("black");
+	String color  = $("black");
 	String slevel = Logger_ResolveLevel(level);
 
 	if (level == Logger_Level_Fatal || level == Logger_Level_Crit || level == Logger_Level_Error) {
-		color = String("red");
+		color = $("red");
 	} else if (level == Logger_Level_Warn || level == Logger_Level_Info) {
-		color = String("yellow");
+		color = $("yellow");
 	} else if (level == Logger_Level_Debug || level == Logger_Level_Trace) {
-		color = String("cyan");
+		color = $("cyan");
 	}
 
 	Terminal_Controller controller;
 	Terminal_Controller_Init(&controller, &term);
 
 	if (BitMask_Has(logger.levels, Logger_Level_Debug)) {
-		String sline = Int32_ToString(line);
+		String sline = Integer_ToString(line);
 
 		Terminal_Controller_Render(&controller,
 			$(".fg[%]{.b{[%]} % .i{(%:%)}}\n"),

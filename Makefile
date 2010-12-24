@@ -30,4 +30,4 @@ LIBFILES += $(LIBPATH)/BFD.c -lbfd
 LIBFILES += -I$(LIBPATH)
 
 all:
-	$(CC) -o jutils.bin $(CFLAGS) *.c $(LIBFILES)
+	bash -c "$(CC) -o jutils.bin $(CFLAGS) *.c $(LIBFILES)"

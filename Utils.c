@@ -3,7 +3,7 @@
 extern Logger logger;
 extern Terminal term;
 
-void Utils_OnLogMessage(__unused void *ptr, String msg, Logger_Level level, String file, int line) {
+void Utils_OnLogMessage(__unused void *ptr, FmtString msg, Logger_Level level, String file, int line) {
 	String color  = $("black");
 	String slevel = Logger_ResolveLevel(level);
 
@@ -22,11 +22,11 @@ void Utils_OnLogMessage(__unused void *ptr, String msg, Logger_Level level, Stri
 		String sline = Integer_ToString(line);
 
 		Terminal_Controller_Render(&controller,
-			$(".fg[%]{.b{[%]} % .i{(%:%)}}\n"),
+			$(".fg[%]{.b{[%]} $ .i{(%:%)}}\n"),
 			color, slevel, msg, file, sline);
 	} else {
 		Terminal_Controller_Render(&controller,
-			$(".fg[%]{.b{[%]} %}\n"),
+			$(".fg[%]{.b{[%]} $}\n"),
 			color, slevel, msg);
 	}
 }

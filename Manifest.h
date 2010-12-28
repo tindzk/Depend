@@ -2,6 +2,7 @@ enum {
 	Modules_String,
 	String_NotMutable,
 	String_BufferOverflow,
+	String_ElementMismatch,
 	Modules_String_Length,
 	Modules_Memory,
 	Memory_NullPointer,
@@ -13,6 +14,28 @@ enum {
 	Modules_Exception_Length,
 	Modules_Hex,
 	Modules_Hex_Length,
+	Modules_File,
+	File_AccessDenied,
+	File_AlreadyExists,
+	File_AttributeNonExistent,
+	File_BufferTooSmall,
+	File_CannotOpenFile,
+	File_GettingAttributeFailed,
+	File_InvalidFileDescriptor,
+	File_InvalidParameter,
+	File_IsDirectory,
+	File_NotFound,
+	File_NotReadable,
+	File_NotWritable,
+	File_ReadingFailed,
+	File_ReadingInterrupted,
+	File_SeekingFailed,
+	File_SettingAttributeFailed,
+	File_StatFailed,
+	File_TruncatingFailed,
+	File_WritingFailed,
+	File_WritingInterrupted,
+	Modules_File_Length,
 	Modules_Integer,
 	Integer_Overflow,
 	Integer_Underflow,
@@ -50,30 +73,9 @@ enum {
 	Modules_Path_Length,
 	Modules_Logger,
 	Modules_Logger_Length,
-	Modules_File,
-	File_AccessDenied,
-	File_AlreadyExists,
-	File_AttributeNonExistent,
-	File_BufferTooSmall,
-	File_CannotOpenFile,
-	File_GettingAttributeFailed,
-	File_InvalidFileDescriptor,
-	File_InvalidParameter,
-	File_IsDirectory,
-	File_NotFound,
-	File_NotReadable,
-	File_NotWritable,
-	File_ReadingFailed,
-	File_ReadingInterrupted,
-	File_SeekingFailed,
-	File_SettingAttributeFailed,
-	File_StatFailed,
-	File_TruncatingFailed,
-	File_WritingFailed,
-	File_WritingInterrupted,
-	Modules_File_Length,
 	Modules_Terminal,
 	Terminal_IoctlFailed,
+	Terminal_ElementMismatch,
 	Modules_Terminal_Length,
 	Modules_Tree,
 	Modules_Tree_Length,
@@ -113,6 +115,8 @@ static inline char* Manifest_ResolveName(int module) {
 			return "Exception";
 		case Modules_Hex ... Modules_Hex_Length:
 			return "Hex";
+		case Modules_File ... Modules_File_Length:
+			return "File";
 		case Modules_Integer ... Modules_Integer_Length:
 			return "Integer";
 		case Modules_BFD ... Modules_BFD_Length:
@@ -125,8 +129,6 @@ static inline char* Manifest_ResolveName(int module) {
 			return "Path";
 		case Modules_Logger ... Modules_Logger_Length:
 			return "Logger";
-		case Modules_File ... Modules_File_Length:
-			return "File";
 		case Modules_Terminal ... Modules_Terminal_Length:
 			return "Terminal";
 		case Modules_Tree ... Modules_Tree_Length:

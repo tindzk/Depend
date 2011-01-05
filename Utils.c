@@ -24,6 +24,8 @@ void Utils_OnLogMessage(__unused void *ptr, FmtString msg, Logger_Level level, S
 		Terminal_Controller_Render(&controller,
 			$(".fg[%]{.b{[%]} $ .i{(%:%)}}\n"),
 			color, slevel, msg, file, sline);
+
+		String_Destroy(&sline);
 	} else {
 		Terminal_Controller_Render(&controller,
 			$(".fg[%]{.b{[%]} $}\n"),

@@ -5,7 +5,7 @@
 extern Logger logger;
 
 def(void, Init) {
-	this->main    = HeapString(0);
+	this->main    = $("");
 	this->modules = scall(Modules_New, 0);
 	this->include = StringArray_New(0);
 	this->paths   = StringArray_New(0);
@@ -102,7 +102,10 @@ def(bool, SetOption, String name, String value) {
 	} else if (String_Equals(name, $("add"))) {
 		call(Add, value);
 	} else if (String_Equals(name, $("include"))) {
-		StringArray_Push(&this->include, String_Clone(value));
+		String *push = New(String);
+		*push = String_Clone(value);
+
+		StringArray_Push(&this->include, push);
 	}
 
 	return true;
@@ -132,17 +135,17 @@ static def(String, GetLocalPath, String base, String file) {
 	}
 
 	String_Destroy(&path);
-	return HeapString(0);
+	return $("");
 }
 
 /* Iterates over all include paths and uses the matching one. */
 static def(String, GetSystemPath, String file) {
-	String path = HeapString(0);
+	String path = $("");
 
 	forward (i, this->include->len) {
 		path.len = 0;
 
-		String_Append(&path, this->include->buf[i]);
+		String_Append(&path, *this->include->buf[i]);
 		String_Append(&path, '/');
 		String_Append(&path, file);
 
@@ -152,7 +155,7 @@ static def(String, GetSystemPath, String file) {
 	}
 
 	String_Destroy(&path);
-	return HeapString(0);
+	return $("");
 }
 
 static def(String, GetFullPath, String base, String file, ref(Type) type) {
@@ -185,28 +188,31 @@ static def(ref(Component) *, AddFile, String absPath) {
 		return NULL;
 	}
 
-	StringArray_Push(&this->paths, String_Clone(absPath));
+	String *push = New(String);
+	*push = String_Clone(absPath);
+
+	StringArray_Push(&this->paths, push);
 
 	return this->component;
 }
 
 static def(void, ScanFile, String path) {
-	String s = HeapString(1024 * 15);
+	String s = String_New(1024 * 15);
 	File_GetContents(path, &s);
-	StringArray *lines = String_Split(s, '\n');
+	StringArray *lines = String_Split(&s, '\n');
 
 	ssize_t ofsModule = -1;
 
 	forward (i, lines->len) {
 		String needle;
 
-		ssize_t offset = String_Find(lines->buf[i], needle = $("@exc "));
+		ssize_t offset = String_Find(*lines->buf[i], needle = $("@exc "));
 
 		if (offset != String_NotFound) {
 			String name =
 				String_Trim(
 					String_Slice(
-						lines->buf[i],
+						*lines->buf[i],
 						offset + needle.len));
 
 			if (ofsModule == -1) {
@@ -214,18 +220,20 @@ static def(void, ScanFile, String path) {
 			} else {
 				Logger_Debug(&logger, $("Found exception %."), name);
 
-				StringArray_Push(&this->modules->buf[ofsModule].exc,
-					String_Clone(name));
+				String *push = New(String);
+				*push = String_Clone(name);
+
+				StringArray_Push(&this->modules->buf[ofsModule].exc, push);
 			}
 
 			continue;
 		}
 
-		if (String_BeginsWith(lines->buf[i], needle = $("#define self "))) {
+		if (String_BeginsWith(*lines->buf[i], needle = $("#define self "))) {
 			String name =
 				String_Trim(
 					String_Slice(
-						lines->buf[i],
+						*lines->buf[i],
 						needle.len));
 
 			foreach (item, this->modules) {
@@ -253,15 +261,16 @@ static def(void, ScanFile, String path) {
 			continue;
 		}
 
-		if (!String_BeginsWith(lines->buf[i], needle = $("#include "))
-		 && !String_BeginsWith(lines->buf[i], needle = $("#import "))) {
+		if (!String_BeginsWith(*lines->buf[i], needle = $("#include ")) &&
+			!String_BeginsWith(*lines->buf[i], needle = $("#import ")))
+		{
 			continue;
 		}
 
 		String type =
 			String_Trim(
 				String_Slice(
-					lines->buf[i],
+					*lines->buf[i],
 					needle.len));
 
 		String header;
@@ -272,7 +281,7 @@ static def(void, ScanFile, String path) {
 			header =
 				String_Trim(
 					String_Between(
-						lines->buf[i],
+						*lines->buf[i],
 						$("<") ,
 						$(">")));
 		} else if (type.buf[0] == '"') {
@@ -280,12 +289,12 @@ static def(void, ScanFile, String path) {
 			header =
 				String_Trim(
 					String_Between(
-						lines->buf[i],
+						*lines->buf[i],
 						$("\""),
 						$("\"")));
 		} else {
 			Logger_Error(&logger, $("Line '%' not understood."),
-				lines->buf[i]);
+				*lines->buf[i]);
 
 			continue;
 		}
@@ -335,7 +344,7 @@ static def(void, ProcessFile, String base, String file, ref(Type) deptype) {
 
 def(void, ListSourceFiles) {
 	forward (i, this->paths->len) {
-		String path = String_Clone(this->paths->buf[i]);
+		String path = String_Clone(*this->paths->buf[i]);
 
 		path.buf[path.len - 1] = 'c';
 

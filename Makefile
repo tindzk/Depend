@@ -21,7 +21,7 @@ CFLAGS += -std=gnu99 -fblocks
 LIBPATH = $(JIVAI_PATH)/src
 
 # Only build these modules.
-LIBFILES += $(LIBPATH)/{Directory,Runtime,Kernel,Block,Process,Path,Char,String{,Stream},Backtrace,Integer,Memory,Exception,Tree,Terminal{,/Controller},Typography,File,BufferedStream,FileStream,Hex,Logger}.c
+LIBFILES += $(LIBPATH)/{Arena,Directory,Runtime,Kernel,Block,Process,Path,Char,String{,Stream},Backtrace,Integer,Memory,Exception,Tree,Terminal{,/Controller},Typography,File,BufferedStream,FileStream,Hex,Logger}.c
 
 # Enable human-readable backtraces (requires BFD).
 LIBFILES += $(LIBPATH)/BFD.c -lbfd
@@ -30,4 +30,6 @@ LIBFILES += $(LIBPATH)/BFD.c -lbfd
 LIBFILES += -I$(LIBPATH)
 
 all:
-	bash -c "$(CC) -o jutils.bin $(CFLAGS) *.c $(LIBFILES)"
+	if test -f jutils.bin; then ./update-manifest.sh; fi
+	bash -c "$(CC) -o jutils.tmp $(CFLAGS) *.c $(LIBFILES)"
+	mv jutils.tmp jutils.bin

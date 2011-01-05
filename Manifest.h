@@ -1,6 +1,7 @@
 enum {
 	Modules_String,
-	String_NotMutable,
+	String_DoubleFree,
+	String_IsInherited,
 	String_BufferOverflow,
 	String_ElementMismatch,
 	Modules_String_Length,
@@ -10,6 +11,10 @@ enum {
 	Memory_OutOfMemory,
 	Memory_Overlapping,
 	Modules_Memory_Length,
+	Modules_Arena,
+	Arena_NotAllocated,
+	Arena_LimitExceeded,
+	Modules_Arena_Length,
 	Modules_Exception,
 	Modules_Exception_Length,
 	Modules_Hex,
@@ -111,6 +116,8 @@ static inline char* Manifest_ResolveName(int module) {
 			return "String";
 		case Modules_Memory ... Modules_Memory_Length:
 			return "Memory";
+		case Modules_Arena ... Modules_Arena_Length:
+			return "Arena";
 		case Modules_Exception ... Modules_Exception_Length:
 			return "Exception";
 		case Modules_Hex ... Modules_Hex_Length:

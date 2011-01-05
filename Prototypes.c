@@ -3,7 +3,7 @@
 #define self Prototypes
 
 def(void, Init) {
-	this->path = HeapString(0);
+	this->path = $("");
 }
 
 def(void, Destroy) {
@@ -24,39 +24,44 @@ def(void, Generate) {
 		return;
 	}
 
-	String s = HeapString(Path_GetSize(this->path));
+	String s = String_New(Path_GetSize(this->path));
 	File_GetContents(this->path, &s);
 
-	StringArray *arr = String_Split(s, '\n');
+	StringArray *arr = String_Split(&s, '\n');
 
-	for (size_t i = 0; i < arr->len; i++) {
-		if (arr->buf[i].len < 5) {
+	forward (i, arr->len) {
+		if (arr->buf[i]->len < 5) {
 			continue;
 		}
 
-		if (arr->buf[i].buf[0] == '\t'
-		 || arr->buf[i].buf[0] == ' ') {
+		if (arr->buf[i]->buf[0] == '\t' ||
+			arr->buf[i]->buf[0] == ' ')
+		{
 			continue;
 		}
 
-		String_Trim(&arr->buf[i]);
+		String_Copy(arr->buf[i],
+			String_Trim(*arr->buf[i]));
 
-		if (String_BeginsWith(arr->buf[i], $("/*"))
-		 || String_BeginsWith(arr->buf[i], $("//"))
-		 || String_BeginsWith(arr->buf[i], $("#"))) {
+		if (String_BeginsWith(*arr->buf[i], $("/*")) ||
+			String_BeginsWith(*arr->buf[i], $("//")) ||
+			String_BeginsWith(*arr->buf[i], $("#")))
+		{
 			continue;
 		}
 
-		if (String_EndsWith(arr->buf[i], $("}"))) {
-			String_Crop(&arr->buf[i], 0, -1);
-			String_Trim(&arr->buf[i]);
+		if (String_EndsWith(*arr->buf[i], $("}"))) {
+			String_Crop(arr->buf[i], 0, -1);
+			String_Copy(arr->buf[i],
+				String_Trim(*arr->buf[i]));
 		}
 
-		if (String_EndsWith(arr->buf[i], $("{"))) {
-			String_Crop(&arr->buf[i], 0, -1);
-			String_Trim(&arr->buf[i]);
+		if (String_EndsWith(*arr->buf[i], $("{"))) {
+			String_Crop(arr->buf[i], 0, -1);
+			String_Copy(arr->buf[i],
+				String_Trim(*arr->buf[i]));
 
-			String_Print(arr->buf[i]);
+			String_Print(*arr->buf[i]);
 			String_Print($(";\n"));
 		}
 	}

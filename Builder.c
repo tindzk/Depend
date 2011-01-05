@@ -8,8 +8,8 @@ def(void, Init, DepsInstance deps) {
 	this->deps      = deps;
 	this->output    = String_Clone($("a.out"));
 	this->cc        = String_Clone($("/usr/bin/clang"));
-	this->inclhdr   = HeapString(0);
-	this->manifest  = HeapString(0);
+	this->inclhdr   = $("");
+	this->manifest  = $("");
 	this->dbgsym    = false;
 	this->std       = String_Clone($("gnu99"));
 	this->blocks    = true;
@@ -49,7 +49,7 @@ def(void, Destroy) {
 }
 
 def(bool, Map, String value) {
-	StringArray *parts = String_Split(value, ':');
+	StringArray *parts = String_Split(&value, ':');
 
 	if (parts->len < 2) {
 		Logger_Error(&logger,
@@ -59,8 +59,8 @@ def(bool, Map, String value) {
 	}
 
 	ref(DepsMapping) insert = {
-		.src  = parts->buf[0],
-		.dest = parts->buf[1]
+		.src  = *parts->buf[0],
+		.dest = *parts->buf[1]
 	};
 
 	if (insert.src.len == 0) {
@@ -87,6 +87,7 @@ def(bool, Map, String value) {
 		res = false;
 	}
 
+	StringArray_Destroy(parts);
 	StringArray_Free(parts);
 
 	return res;
@@ -112,9 +113,13 @@ def(bool, SetOption, String name, String value) {
 	} else if (String_Equals(name, $("optimlevel"))) {
 		this->optmlevel = Int16_Parse(value);
 	} else if (String_Equals(name, $("link"))) {
-		StringArray_Push(&this->link, String_Clone(value));
+		String *item = New(String);
+		*item = String_Clone(value);
+		StringArray_Push(&this->link, item);
 	} else if (String_Equals(name, $("linkpath"))) {
-		StringArray_Push(&this->linkpaths, String_Clone(value));
+		String *item = New(String);
+		*item = String_Clone(value);
+		StringArray_Push(&this->linkpaths, item);
 	} else if (String_Equals(name, $("verbose"))) {
 		this->verbose = true;
 	}
@@ -125,7 +130,7 @@ def(bool, SetOption, String name, String value) {
 static sdef(String, ShrinkPathEx, String shortpath, String path) {
 	String realpath = Path_Resolve(shortpath);
 
-	String res = HeapString(0);
+	String res = $("");
 
 	if (String_BeginsWith(path, realpath)) {
 		if (!String_Equals(shortpath, $("."))) {
@@ -183,20 +188,20 @@ static def(String, GetOutput, String path) {
 
 	String_Destroy(&realpath);
 
-	return HeapString(0);
+	return $("");
 }
 
 static sdef(String, GetSource, String path) {
 	ssize_t pos = String_ReverseFind(path, '.');
 
 	if (pos == String_NotFound) {
-		return HeapString(0);
+		return $("");
 	}
 
 	String ext = String_Slice(path, pos);
 
-	if (String_Equals(ext, $("c"))
-	 || String_Equals(ext, $("cpp")))
+	if (String_Equals(ext, $("c")) ||
+		String_Equals(ext, $("cpp")))
 	{
 		/* Already a source file. */
 		return String_Clone(path);
@@ -250,9 +255,13 @@ static def(bool, Compile, String src, String out) {
 		Process_AddParameter(&proc, $("-fblocks"));
 	}
 
-	String optim = String_Format($("-O%"), Int16_ToString(this->optmlevel));
+	String strLevel = Integer_ToString(this->optmlevel);
+	String optim    = String_Format($("-O%"), strLevel);
+
 	Process_AddParameter(&proc, optim);
+
 	String_Destroy(&optim);
+	String_Destroy(&strLevel);
 
 	if (this->dbgsym) {
 		Process_AddParameter(&proc, $("-g"));
@@ -277,7 +286,7 @@ static def(bool, Compile, String src, String out) {
 
 	forward (i, deps->len) {
 		Process_AddParameter(&proc, $("-I"));
-		Process_AddParameter(&proc, deps->buf[i]);
+		Process_AddParameter(&proc, *deps->buf[i]);
 	}
 
 	if (this->verbose) {
@@ -301,12 +310,12 @@ static def(void, Link, StringArray *files) {
 	Process_AddParameter(&proc, this->output);
 
 	forward (i, files->len) {
-		Process_AddParameter(&proc, files->buf[i]);
+		Process_AddParameter(&proc, *files->buf[i]);
 	}
 
 	forward (i, this->linkpaths->len) {
 		Process_AddParameter(&proc, $("-L"));
-		Process_AddParameter(&proc, this->linkpaths->buf[i]);
+		Process_AddParameter(&proc, *this->linkpaths->buf[i]);
 	}
 
 	if (this->dbgsym) {
@@ -314,11 +323,11 @@ static def(void, Link, StringArray *files) {
 	}
 
 	forward (i, this->link->len) {
-		if (this->link->buf[i].len == 0) {
+		if (this->link->buf[i]->len == 0) {
 			continue;
 		}
 
-		if (this->link->buf[i].buf[0] == '@') {
+		if (this->link->buf[i]->buf[0] == '@') {
 			Process_AddParameter(&proc, $("-Wl,-Bdynamic"));
 		} else {
 			Process_AddParameter(&proc, $("-Wl,-Bstatic"));
@@ -326,8 +335,8 @@ static def(void, Link, StringArray *files) {
 
 		Process_AddParameter(&proc, $("-l"));
 		Process_AddParameter(&proc, String_Slice(
-			this->link->buf[i],
-			this->link->buf[i].buf[0] == '@'));
+			*this->link->buf[i],
+			this->link->buf[i]->buf[0] == '@'));
 	}
 
 	Process_Spawn(Process_FromObject(&proc));
@@ -344,7 +353,7 @@ static def(void, Link, StringArray *files) {
 def(bool, Traverse, Deps_Component *node, size_t depth) {
 	bool build = false;
 
-	String prefix = HeapString(depth * 2);
+	String prefix = String_New(depth * 2);
 	repeat (depth * 2) {
 		String_Append(&prefix, ' ');
 	}
@@ -449,7 +458,7 @@ def(void, CreateManifest) {
 		String_Destroy(&fmt);
 
 		foreach (exc, module->exc) {
-			String fmt2 = String_Format($("\t%_%,\n"), module->name, *exc);
+			String fmt2 = String_Format($("\t%_%,\n"), module->name, **exc);
 			File_Write(&file, fmt2);
 			String_Destroy(&fmt2);
 		}
@@ -519,10 +528,11 @@ def(bool, Run) {
 
 			String path = call(ShrinkPath, this->queue->buf[i].source);
 
+			String strCur   = Integer_ToString(i + 1);
+			String strTotal = Integer_ToString(this->queue->len);
+
 			Logger_Info(&logger, $("Compiling %... [%/%]"),
-				path,
-				Integer_ToString(i + 1),
-				Integer_ToString(this->queue->len));
+				path, strCur, strTotal);
 
 			bool ok = call(Compile, path, this->queue->buf[i].output);
 
@@ -538,16 +548,13 @@ def(bool, Run) {
 		StringArray *paths = Deps_GetPaths(this->deps);
 
 		forward (i, paths->len) {
-			String src = scall(GetSource, paths->buf[i]);
+			String src = scall(GetSource, *paths->buf[i]);
 
 			if (src.len > 0) {
 				String path = call(GetOutput, src);
 
 				if (path.len == 0) {
-					foreach (file, files) {
-						String_Destroy(file);
-					}
-
+					StringArray_Destroy(files);
 					StringArray_Free(files);
 
 					String_Destroy(&src);
@@ -560,7 +567,9 @@ def(bool, Run) {
 				if (StringArray_Contains(files, shrinked)) {
 					String_Destroy(&shrinked);
 				} else {
-					StringArray_Push(&files, shrinked);
+					String *push = New(String);
+					*push = shrinked;
+					StringArray_Push(&files, push);
 				}
 
 				String_Destroy(&path);
@@ -571,10 +580,7 @@ def(bool, Run) {
 
 		call(Link, files);
 
-		foreach (file, files) {
-			String_Destroy(file);
-		}
-
+		StringArray_Destroy(files);
 		StringArray_Free(files);
 	}
 

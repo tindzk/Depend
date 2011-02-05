@@ -102,10 +102,7 @@ def(bool, SetOption, String name, String value) {
 	} else if (String_Equals(name, $("add"))) {
 		call(Add, value);
 	} else if (String_Equals(name, $("include"))) {
-		String *push = New(String);
-		*push = String_Clone(value);
-
-		StringArray_Push(&this->include, push);
+		StringArray_Push(&this->include, String_Clone(value));
 	}
 
 	return true;
@@ -145,7 +142,7 @@ static def(String, GetSystemPath, String file) {
 	forward (i, this->include->len) {
 		path.len = 0;
 
-		String_Append(&path, *this->include->buf[i]);
+		String_Append(&path, this->include->buf[i]);
 		String_Append(&path, '/');
 		String_Append(&path, file);
 
@@ -188,10 +185,7 @@ static def(ref(Component) *, AddFile, String absPath) {
 		return NULL;
 	}
 
-	String *push = New(String);
-	*push = String_Clone(absPath);
-
-	StringArray_Push(&this->paths, push);
+	StringArray_Push(&this->paths, String_Clone(absPath));
 
 	return this->component;
 }
@@ -199,42 +193,31 @@ static def(ref(Component) *, AddFile, String absPath) {
 static def(void, ScanFile, String path) {
 	String s = String_New(1024 * 15);
 	File_GetContents(path, &s);
-	StringArray *lines = String_Split(&s, '\n');
 
 	ssize_t ofsModule = -1;
 
-	forward (i, lines->len) {
+	String line = $("");
+	while (String_Split(s, '\n', &line)) {
 		String needle;
 
-		ssize_t offset = String_Find(*lines->buf[i], needle = $("@exc "));
+		ssize_t offset = String_Find(line, needle = $("@exc "));
 
 		if (offset != String_NotFound) {
-			String name =
-				String_Trim(
-					String_Slice(
-						*lines->buf[i],
-						offset + needle.len));
+			String name = String_Trim(String_Slice(line, offset + needle.len));
 
 			if (ofsModule == -1) {
 				Logger_Error(&logger, $("Ignored exception '%'."), name);
 			} else {
 				Logger_Debug(&logger, $("Found exception %."), name);
 
-				String *push = New(String);
-				*push = String_Clone(name);
-
-				StringArray_Push(&this->modules->buf[ofsModule].exc, push);
+				StringArray_Push(&this->modules->buf[ofsModule].exc, String_Clone(name));
 			}
 
 			continue;
 		}
 
-		if (String_BeginsWith(*lines->buf[i], needle = $("#define self "))) {
-			String name =
-				String_Trim(
-					String_Slice(
-						*lines->buf[i],
-						needle.len));
+		if (String_BeginsWith(line, needle = $("#define self "))) {
+			String name = String_Trim(String_Slice(line, needle.len));
 
 			foreach (item, this->modules) {
 				if (String_Equals(item->name, name)) {
@@ -261,41 +244,25 @@ static def(void, ScanFile, String path) {
 			continue;
 		}
 
-		if (!String_BeginsWith(*lines->buf[i], needle = $("#include ")) &&
-			!String_BeginsWith(*lines->buf[i], needle = $("#import ")))
+		if (!String_BeginsWith(line, needle = $("#include ")) &&
+			!String_BeginsWith(line, needle = $("#import ")))
 		{
 			continue;
 		}
 
-		String type =
-			String_Trim(
-				String_Slice(
-					*lines->buf[i],
-					needle.len));
+		String type = String_Trim(String_Slice(line, needle.len));
 
 		String header;
 		bool quotes = false;
 
 		if (type.buf[0] == '<') {
 			quotes = false;
-			header =
-				String_Trim(
-					String_Between(
-						*lines->buf[i],
-						$("<") ,
-						$(">")));
+			header = String_Trim(String_Between(line, $("<"), $(">")));
 		} else if (type.buf[0] == '"') {
 			quotes = true;
-			header =
-				String_Trim(
-					String_Between(
-						*lines->buf[i],
-						$("\""),
-						$("\"")));
+			header = String_Trim(String_Between(line, $("\""), $("\"")));
 		} else {
-			Logger_Error(&logger, $("Line '%' not understood."),
-				*lines->buf[i]);
-
+			Logger_Error(&logger, $("Line '%' not understood."), line);
 			continue;
 		}
 
@@ -308,7 +275,6 @@ static def(void, ScanFile, String path) {
 			header, deptype);
 	}
 
-	StringArray_Free(lines);
 	String_Destroy(&s);
 }
 
@@ -344,7 +310,7 @@ static def(void, ProcessFile, String base, String file, ref(Type) deptype) {
 
 def(void, ListSourceFiles) {
 	forward (i, this->paths->len) {
-		String path = String_Clone(*this->paths->buf[i]);
+		String path = String_Clone(this->paths->buf[i]);
 
 		path.buf[path.len - 1] = 'c';
 

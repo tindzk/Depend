@@ -27,45 +27,38 @@ def(void, Generate) {
 	String s = String_New(Path_GetSize(this->path));
 	File_GetContents(this->path, &s);
 
-	StringArray *arr = String_Split(&s, '\n');
-
-	forward (i, arr->len) {
-		if (arr->buf[i]->len < 5) {
+	String iter = $("");
+	while (String_Split(s, '\n', &iter)) {
+		if (iter.len < 5) {
 			continue;
 		}
 
-		if (arr->buf[i]->buf[0] == '\t' ||
-			arr->buf[i]->buf[0] == ' ')
+		if (iter.buf[0] == '\t' || iter.buf[0] == ' ') {
+			continue;
+		}
+
+		String line = String_Trim(iter);
+
+		if (String_BeginsWith(line, $("/*")) ||
+			String_BeginsWith(line, $("//")) ||
+			String_BeginsWith(line, $("#")))
 		{
 			continue;
 		}
 
-		String_Copy(arr->buf[i],
-			String_Trim(*arr->buf[i]));
-
-		if (String_BeginsWith(*arr->buf[i], $("/*")) ||
-			String_BeginsWith(*arr->buf[i], $("//")) ||
-			String_BeginsWith(*arr->buf[i], $("#")))
-		{
-			continue;
+		if (String_EndsWith(line, $("}"))) {
+			line = String_Slice(line, 0, -1);
+			line = String_Trim(line);
 		}
 
-		if (String_EndsWith(*arr->buf[i], $("}"))) {
-			String_Crop(arr->buf[i], 0, -1);
-			String_Copy(arr->buf[i],
-				String_Trim(*arr->buf[i]));
-		}
+		if (String_EndsWith(line, $("{"))) {
+			line = String_Slice(line, 0, -1);
+			line = String_Trim(line);
 
-		if (String_EndsWith(*arr->buf[i], $("{"))) {
-			String_Crop(arr->buf[i], 0, -1);
-			String_Copy(arr->buf[i],
-				String_Trim(*arr->buf[i]));
-
-			String_Print(*arr->buf[i]);
+			String_Print(line);
 			String_Print($(";\n"));
 		}
 	}
 
-	StringArray_Destroy(arr);
 	String_Destroy(&s);
 }

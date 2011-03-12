@@ -27,8 +27,8 @@ class {
 
 def(void, Init);
 def(void, Destroy);
-def(void, SetAction, String action);
-def(bool, SetOption, String name, String value);
+def(void, SetAction, ProtString action);
+def(bool, SetOption, ProtString name, ProtString value);
 def(bool, Run);
 
 #undef self

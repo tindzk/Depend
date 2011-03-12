@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
 		Logger_Level_Info  |
 		Logger_Level_Trace);
 
-	Terminal_Init(&term, File_StdIn, File_StdOut, true);
+	term = Terminal_New(File_StdIn, File_StdOut, true);
 	Terminal_Configure(&term, true, true);
 
 	if (argc <= 1) {
@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
 	bool success = true;
 
 	for (int i = 1; i < argc; i++) {
-		String arg = String_FromNul(argv[i]);
+		ProtString arg = String_FromNul(argv[i]);
 
 		ssize_t pos = String_Find(arg, '=');
 
@@ -41,8 +41,8 @@ int main(int argc, char* argv[]) {
 			continue;
 		}
 
-		String name  = String_Slice(arg, 0, pos);
-		String value = String_Slice(arg, pos + 1);
+		ProtString name  = String_Slice(arg, 0, pos);
+		ProtString value = String_Slice(arg, pos + 1);
 
 		success = Interface_SetOption(&itf, name, value);
 
@@ -53,12 +53,8 @@ int main(int argc, char* argv[]) {
 
 	try {
 		success = Interface_Run(&itf);
-	} clean catchAny {
+	} catchAny {
 		Exception_Print(e);
-
-#if Exception_SaveTrace
-		Backtrace_PrintTrace(__exc_mgr.e.trace, __exc_mgr.e.traceItems);
-#endif
 	} finally {
 		Terminal_Destroy(&term);
 	} tryEnd;

@@ -1,22 +1,20 @@
 enum {
 	Modules_String,
 	String_DoubleFree,
-	String_IsInherited,
 	String_BufferOverflow,
 	String_ElementMismatch,
 	Modules_String_Length,
+	Modules_Pool,
+	Pool_HasParent,
+	Pool_NotBundling,
+	Pool_AlreadyBundling,
+	Modules_Pool_Length,
 	Modules_Memory,
 	Memory_NullPointer,
 	Memory_OutOfBounds,
 	Memory_OutOfMemory,
 	Memory_Overlapping,
 	Modules_Memory_Length,
-	Modules_Arena,
-	Arena_NotAllocated,
-	Arena_LimitExceeded,
-	Modules_Arena_Length,
-	Modules_Exception,
-	Modules_Exception_Length,
 	Modules_Hex,
 	Modules_Hex_Length,
 	Modules_File,
@@ -47,6 +45,8 @@ enum {
 	Modules_Integer_Length,
 	Modules_BFD,
 	Modules_BFD_Length,
+	Modules_Exception,
+	Modules_Exception_Length,
 	Modules_Kernel,
 	Modules_Kernel_Length,
 	Modules_Time,
@@ -114,12 +114,10 @@ static inline char* Manifest_ResolveName(int module) {
 	switch (module) {
 		case Modules_String ... Modules_String_Length:
 			return "String";
+		case Modules_Pool ... Modules_Pool_Length:
+			return "Pool";
 		case Modules_Memory ... Modules_Memory_Length:
 			return "Memory";
-		case Modules_Arena ... Modules_Arena_Length:
-			return "Arena";
-		case Modules_Exception ... Modules_Exception_Length:
-			return "Exception";
 		case Modules_Hex ... Modules_Hex_Length:
 			return "Hex";
 		case Modules_File ... Modules_File_Length:
@@ -128,6 +126,8 @@ static inline char* Manifest_ResolveName(int module) {
 			return "Integer";
 		case Modules_BFD ... Modules_BFD_Length:
 			return "BFD";
+		case Modules_Exception ... Modules_Exception_Length:
+			return "Exception";
 		case Modules_Kernel ... Modules_Kernel_Length:
 			return "Kernel";
 		case Modules_Time ... Modules_Time_Length:

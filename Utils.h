@@ -6,5 +6,5 @@
 
 extern Logger logger;
 
-void Utils_OnLogMessage(__unused void *ptr, FmtString msg, Logger_Level level, String file, int line);
-bool File_IsModified(String sourceFile, String outputFile);
+void Utils_OnLogMessage(__unused void *ptr, FmtString msg, Logger_Level level, ProtString file, int line);
+bool File_IsModified(ProtString sourceFile, ProtString outputFile);

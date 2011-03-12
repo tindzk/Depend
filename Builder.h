@@ -43,7 +43,7 @@ class {
 
 def(void, Init, DepsInstance deps);
 def(void, Destroy);
-def(bool, SetOption, String name, String value);
+def(bool, SetOption, ProtString name, ProtString value);
 def(bool, CreateQueue);
 def(void, PrintQueue);
 def(bool, Run);

@@ -45,7 +45,7 @@ class {
 def(void, Init);
 def(void, Destroy);
 sdef(void, DestroyNode, ref(Component) *node);
-def(bool, SetOption, String name, String value);
+def(bool, SetOption, ProtString name, ProtString value);
 def(StringArray *, GetIncludes);
 def(ref(Modules) *, GetModules);
 def(ref(Component) *, GetComponent);

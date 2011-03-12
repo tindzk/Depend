@@ -20,7 +20,7 @@ def(void, Destroy) {
 	Deps_Destroy(&this->deps);
 }
 
-def(void, SetAction, String action) {
+def(void, SetAction, ProtString action) {
 	if (String_Equals(action, $("build"))) {
 		this->action = ref(Action_Build);
 	} else if (String_Equals(action, $("listdeps"))) {
@@ -36,7 +36,7 @@ def(void, SetAction, String action) {
 	}
 }
 
-def(bool, SetOption, String name, String value) {
+def(bool, SetOption, ProtString name, ProtString value) {
 	if (String_Equals(name, $("debug"))) {
 		if (String_Equals(value, $("yes"))) {
 			BitMask_Set(logger.levels, Logger_Level_Debug);

@@ -8,8 +8,8 @@ def(void, Init, DepsInstance deps) {
 	this->deps      = deps;
 	this->output    = String_Clone($("a.out"));
 	this->cc        = String_Clone($("/usr/bin/clang"));
-	this->inclhdr   = $("");
-	this->manifest  = $("");
+	this->inclhdr   = String_New(0);
+	this->manifest  = String_New(0);
 	this->dbgsym    = false;
 	this->std       = String_Clone($("gnu99"));
 	this->blocks    = true;
@@ -48,17 +48,17 @@ def(void, Destroy) {
 	QueueArray_Free(this->queue);
 }
 
-def(bool, Map, String value) {
+static def(bool, Map, ProtString value) {
 	bool src = true;
-	String s = $("");
+	ProtString s = $("");
 	ref(DepsMapping) insert;
 
 	while (String_Split(value, ':', &s)) {
 		if (src) {
-			insert.src = s;
+			insert.src = String_Clone(s);
 			src = false;
 		} else {
-			insert.dest = s;
+			insert.dest = String_Clone(s);
 			break;
 		}
 	}
@@ -66,32 +66,33 @@ def(bool, Map, String value) {
 	if (src) {
 		Logger_Error(&logger,
 			$("`map' requires two values separated by a colon."));
-
-		return false;
+		goto error;
 	}
 
 	if (insert.src.len == 0) {
 		Logger_Error(&logger, $("Invalid source path."));
-		return false;
+		goto error;
 	}
 
-	if (!Path_Exists(insert.dest)) {
+	if (!Path_Exists(insert.dest.prot)) {
 		Logger_Error(&logger,
 			$("Destination path '%' does not exist."),
-			insert.dest);
-
-		return false;
+			insert.dest.prot);
+		goto error;
 	}
-
-	insert.src  = String_Clone(insert.src);
-	insert.dest = String_Clone(insert.dest);
 
 	MappingArray_Push(&this->mappings, insert);
 
 	return true;
+
+error:
+	String_Destroy(&insert.dest);
+	String_Destroy(&insert.src);
+
+	return false;
 }
 
-def(bool, SetOption, String name, String value) {
+def(bool, SetOption, ProtString name, ProtString value) {
 	if (String_Equals(name, $("output"))) {
 		String_Copy(&this->output, value);
 	} else if (String_Equals(name, $("map"))) {
@@ -121,12 +122,12 @@ def(bool, SetOption, String name, String value) {
 	return true;
 }
 
-static sdef(String, ShrinkPathEx, String shortpath, String path) {
+static sdef(String, ShrinkPathEx, ProtString shortpath, ProtString path) {
 	String realpath = Path_Resolve(shortpath);
 
-	String res = $("");
+	String res = String_New(0);
 
-	if (String_BeginsWith(path, realpath)) {
+	if (String_BeginsWith(path, realpath.prot)) {
 		if (!String_Equals(shortpath, $("."))) {
 			String_Append(&res, shortpath);
 			String_Append(&res, '/');
@@ -140,10 +141,10 @@ static sdef(String, ShrinkPathEx, String shortpath, String path) {
 	return res;
 }
 
-static def(String, ShrinkPath, String path) {
+static def(String, ShrinkPath, ProtString path) {
 	foreach (mapping, this->mappings) {
 		String shortpath = mapping->src;
-		String res = scall(ShrinkPathEx, shortpath, path);
+		String res = scall(ShrinkPathEx, shortpath.prot, path);
 
 		if (res.len > 0) {
 			return res;
@@ -153,19 +154,19 @@ static def(String, ShrinkPath, String path) {
 	return String_Clone(path);
 }
 
-static def(String, GetOutput, String path) {
+static def(String, GetOutput, ProtString path) {
 	String realpath = Path_Resolve(path);
 
 	forward (i, this->mappings->len) {
-		String mapping = Path_Resolve(this->mappings->buf[i].src);
+		String mapping = Path_Resolve(this->mappings->buf[i].src.prot);
 
-		if (String_BeginsWith(realpath, mapping)) {
-			String out = String_Clone(this->mappings->buf[i].dest);
-			String_Append(&out, String_Slice(realpath, mapping.len));
+		if (String_BeginsWith(realpath.prot, mapping.prot)) {
+			String out = String_Clone(this->mappings->buf[i].dest.prot);
+			String_Append(&out, String_Slice(realpath.prot, mapping.len));
 
-			if (String_EndsWith(out, $(".cpp"))) {
+			if (String_EndsWith(out.prot, $(".cpp"))) {
 				String_Crop(&out, 0, -4);
-			} else if (String_EndsWith(out, $(".c"))) {
+			} else if (String_EndsWith(out.prot, $(".c"))) {
 				String_Crop(&out, 0, -2);
 			}
 
@@ -182,17 +183,17 @@ static def(String, GetOutput, String path) {
 
 	String_Destroy(&realpath);
 
-	return $("");
+	return String_New(0);
 }
 
-static sdef(String, GetSource, String path) {
+static sdef(String, GetSource, ProtString path) {
 	ssize_t pos = String_ReverseFind(path, '.');
 
 	if (pos == String_NotFound) {
-		return $("");
+		return String_New(0);
 	}
 
-	String ext = String_Slice(path, pos);
+	ProtString ext = String_Slice(path, pos);
 
 	if (String_Equals(ext, $("c")) ||
 		String_Equals(ext, $("cpp")))
@@ -205,10 +206,10 @@ static sdef(String, GetSource, String path) {
 
 	String_Append(&res, 'c');
 
-	if (!Path_Exists(res)) {
+	if (!Path_Exists(res.prot)) {
 		String_Append(&res, $("pp"));
 
-		if (!Path_Exists(res)) {
+		if (!Path_Exists(res.prot)) {
 			res.len = 0;
 		}
 	}
@@ -216,9 +217,9 @@ static sdef(String, GetSource, String path) {
 	return res;
 }
 
-static def(void, AddToQueue, String source, String output) {
+static def(void, AddToQueue, ProtString source, ProtString output) {
 	forward (i, this->queue->len) {
-		if (String_Equals(this->queue->buf[i].source, source)) {
+		if (String_Equals(this->queue->buf[i].source.prot, source)) {
 			return;
 		}
 	}
@@ -233,16 +234,16 @@ static def(void, AddToQueue, String source, String output) {
 
 static def(bool, Compile, String src, String out) {
 	Process proc;
-	Process_Init(&proc, this->cc);
+	Process_Init(&proc, this->cc.prot);
 
 	Process_AddParameter(&proc, $("-o"));
-	Process_AddParameter(&proc, out);
+	Process_AddParameter(&proc, out.prot);
 
 	Process_AddParameter(&proc, $("-c"));
-	Process_AddParameter(&proc, src);
+	Process_AddParameter(&proc, src.prot);
 
-	String std = String_Concat($("-std="), this->std);
-	Process_AddParameter(&proc, std);
+	String std = String_Concat($("-std="), this->std.prot);
+	Process_AddParameter(&proc, std.prot);
 	String_Destroy(&std);
 
 	if (this->blocks) {
@@ -250,9 +251,9 @@ static def(bool, Compile, String src, String out) {
 	}
 
 	String strLevel = Integer_ToString(this->optmlevel);
-	String optim    = String_Format($("-O%"), strLevel);
+	String optim    = String_Format($("-O%"), strLevel.prot);
 
-	Process_AddParameter(&proc, optim);
+	Process_AddParameter(&proc, optim.prot);
 
 	String_Destroy(&optim);
 	String_Destroy(&strLevel);
@@ -268,24 +269,24 @@ static def(bool, Compile, String src, String out) {
 
 	if (this->manifest.len != 0) {
 		Process_AddParameter(&proc, $("-include"));
-		Process_AddParameter(&proc, this->manifest);
+		Process_AddParameter(&proc, this->manifest.prot);
 	}
 
 	if (this->inclhdr.len > 0) {
 		Process_AddParameter(&proc, $("-include"));
-		Process_AddParameter(&proc, this->inclhdr);
+		Process_AddParameter(&proc, this->inclhdr.prot);
 	}
 
 	StringArray *deps = Deps_GetIncludes(this->deps);
 
 	forward (i, deps->len) {
 		Process_AddParameter(&proc, $("-I"));
-		Process_AddParameter(&proc, deps->buf[i]);
+		Process_AddParameter(&proc, deps->buf[i].prot);
 	}
 
 	if (this->verbose) {
 		String cmd = Process_GetCommandLine(&proc);
-		Logger_Info(&logger, cmd);
+		Logger_Info(&logger, cmd.prot);
 		String_Destroy(&cmd);
 	}
 
@@ -298,18 +299,18 @@ static def(bool, Compile, String src, String out) {
 
 static def(void, Link, StringArray *files) {
 	Process proc;
-	Process_Init(&proc, this->cc);
+	Process_Init(&proc, this->cc.prot);
 
 	Process_AddParameter(&proc, $("-o"));
-	Process_AddParameter(&proc, this->output);
+	Process_AddParameter(&proc, this->output.prot);
 
 	forward (i, files->len) {
-		Process_AddParameter(&proc, files->buf[i]);
+		Process_AddParameter(&proc, files->buf[i].prot);
 	}
 
 	forward (i, this->linkpaths->len) {
 		Process_AddParameter(&proc, $("-L"));
-		Process_AddParameter(&proc, this->linkpaths->buf[i]);
+		Process_AddParameter(&proc, this->linkpaths->buf[i].prot);
 	}
 
 	if (this->dbgsym) {
@@ -329,7 +330,7 @@ static def(void, Link, StringArray *files) {
 
 		Process_AddParameter(&proc, $("-l"));
 		Process_AddParameter(&proc, String_Slice(
-			this->link->buf[i],
+			this->link->buf[i].prot,
 			this->link->buf[i].buf[0] == '@'));
 	}
 
@@ -337,7 +338,7 @@ static def(void, Link, StringArray *files) {
 
 	if (this->verbose) {
 		String cmd = Process_GetCommandLine(&proc);
-		Logger_Info(&logger, cmd);
+		Logger_Info(&logger, cmd.prot);
 		String_Destroy(&cmd);
 	}
 
@@ -352,23 +353,23 @@ def(bool, Traverse, Deps_Component *node, size_t depth) {
 		String_Append(&prefix, ' ');
 	}
 
-	String headerPath = String_Clone(node->path);
-	String sourcePath = scall(GetSource, headerPath);
+	String headerPath = String_Clone(node->path.prot);
+	String sourcePath = scall(GetSource, headerPath.prot);
 
 	/* Skip all non-source files. */
 	if (sourcePath.len == 0) {
 		Logger_Debug(&logger,
 			$("%'%' has no corresponding source file"),
-			prefix, headerPath);
+			prefix.prot, headerPath.prot);
 	} else {
-		Logger_Info(&logger, $("%Processing %..."), prefix, sourcePath);
+		Logger_Info(&logger, $("%Processing %..."), prefix.prot, sourcePath.prot);
 
-		String output = call(GetOutput, sourcePath);
+		String output = call(GetOutput, sourcePath.prot);
 
 		if (output.len == 0) {
 			Logger_Error(&logger,
 				$("%No output path for '%' is mapped."),
-				prefix, sourcePath);
+				prefix.prot, sourcePath.prot);
 
 			String_Destroy(&headerPath);
 			String_Destroy(&sourcePath);
@@ -376,17 +377,17 @@ def(bool, Traverse, Deps_Component *node, size_t depth) {
 			throw(RuntimeError);
 		}
 
-		if (!Path_Exists(output)) {
-			Logger_Info(&logger, $("%Not built yet."), prefix);
-			call(AddToQueue, sourcePath, output);
+		if (!Path_Exists(output.prot)) {
+			Logger_Info(&logger, $("%Not built yet."), prefix.prot);
+			call(AddToQueue, sourcePath.prot, output.prot);
 			build = true;
-		} else if (File_IsModified(sourcePath, output)) {
-			Logger_Info(&logger, $("%Source modified."), prefix);
-			call(AddToQueue, sourcePath, output);
+		} else if (File_IsModified(sourcePath.prot, output.prot)) {
+			Logger_Info(&logger, $("%Source modified."), prefix.prot);
+			call(AddToQueue, sourcePath.prot, output.prot);
 			build = true;
-		} else if (File_IsModified(headerPath, output)) {
-			Logger_Info(&logger, $("%Header modified."), prefix);
-			call(AddToQueue, sourcePath, output);
+		} else if (File_IsModified(headerPath.prot, output.prot)) {
+			Logger_Info(&logger, $("%Header modified."), prefix.prot);
+			call(AddToQueue, sourcePath.prot, output.prot);
 			build = true;
 		}
 
@@ -400,7 +401,7 @@ def(bool, Traverse, Deps_Component *node, size_t depth) {
 	}
 
 	if (!build) {
-		Logger_Debug(&logger, $("%Not building."), prefix);
+		Logger_Debug(&logger, $("%Not building."), prefix.prot);
 	}
 
 	String_Destroy(&sourcePath);
@@ -421,18 +422,18 @@ def(bool, CreateQueue) {
 }
 
 def(void, PrintQueue) {
-	if (this->queue->len == 0 && Path_Exists(this->output)) {
+	if (this->queue->len == 0 && Path_Exists(this->output.prot)) {
 		Logger_Info(&logger, $("  Queue is empty."));
 	} else {
 		Logger_Info(&logger, $("  Queue:"));
 
 		forward (i, this->queue->len) {
 			Logger_Info(&logger, $(" - % --> %"),
-				this->queue->buf[i].source,
-				this->queue->buf[i].output);
+				this->queue->buf[i].source.prot,
+				this->queue->buf[i].output.prot);
 		}
 
-		Logger_Info(&logger, $(" - % (link)"), this->output);
+		Logger_Info(&logger, $(" - % (link)"), this->output.prot);
 	}
 }
 
@@ -440,25 +441,25 @@ def(void, CreateManifest) {
 	Deps_Modules *modules = Deps_GetModules(this->deps);
 
 	File file;
-	File_Open(&file, this->manifest,
+	File_Open(&file, this->manifest.prot,
 		FileStatus_Create    |
 		FileStatus_WriteOnly |
 		FileStatus_Truncate);
 	File_Write(&file, $("enum {\n"));
 
 	foreach (module, modules) {
-		String fmt = String_Format($("\tModules_%,\n"), module->name);
-		File_Write(&file, fmt);
+		String fmt = String_Format($("\tModules_%,\n"), module->name.prot);
+		File_Write(&file, fmt.prot);
 		String_Destroy(&fmt);
 
 		foreach (exc, module->exc) {
-			String fmt2 = String_Format($("\t%_%,\n"), module->name, *exc);
-			File_Write(&file, fmt2);
+			String fmt2 = String_Format($("\t%_%,\n"), module->name.prot, exc->prot);
+			File_Write(&file, fmt2.prot);
 			String_Destroy(&fmt2);
 		}
 
-		String fmt3 = String_Format($("\tModules_%_Length,\n"), module->name);
-		File_Write(&file, fmt3);
+		String fmt3 = String_Format($("\tModules_%_Length,\n"), module->name.prot);
+		File_Write(&file, fmt3.prot);
 		String_Destroy(&fmt3);
 	}
 
@@ -469,20 +470,20 @@ def(void, CreateManifest) {
 		"\tswitch (module) {\n"));
 
 	foreach (module, modules) {
-		String readable = String_ReplaceAll(module->name,
+		String readable = String_ReplaceAll(module->name.prot,
 			$("_"),
 			$("."));
 
 		String fmt = String_Format($(
 			"\t\tcase Modules_% ... Modules_%_Length:\n"
 			"\t\t\treturn \"%\";\n"),
-			module->name,
-			module->name,
-			readable);
+			module->name.prot,
+			module->name.prot,
+			readable.prot);
 
 		String_Destroy(&readable);
 
-		File_Write(&file, fmt);
+		File_Write(&file, fmt.prot);
 		String_Destroy(&fmt);
 	}
 
@@ -496,7 +497,7 @@ def(void, CreateManifest) {
 
 	Logger_Info(&logger,
 		$("Manifest written to '%'."),
-		this->manifest);
+		this->manifest.prot);
 }
 
 def(bool, Run) {
@@ -512,21 +513,24 @@ def(bool, Run) {
 		return false;
 	}
 
-	if (this->queue->len != 0 || !Path_Exists(this->output)) {
+	if (this->queue->len != 0 || !Path_Exists(this->output.prot)) {
 		forward (i, this->queue->len) {
-			String create = Path_GetDirectory(this->queue->buf[i].output);
+			ProtString create = Path_GetDirectory(this->queue->buf[i].output.prot);
 
 			if (!Path_Exists(create)) {
 				Path_Create(create, true);
 			}
 
-			String path = call(ShrinkPath, this->queue->buf[i].source);
+			String path = call(ShrinkPath, this->queue->buf[i].source.prot);
 
 			String strCur   = Integer_ToString(i + 1);
 			String strTotal = Integer_ToString(this->queue->len);
 
 			Logger_Info(&logger, $("Compiling %... [%/%]"),
-				path, strCur, strTotal);
+				path.prot, strCur.prot, strTotal.prot);
+
+			String_Destroy(&strCur);
+			String_Destroy(&strTotal);
 
 			bool ok = call(Compile, path, this->queue->buf[i].output);
 
@@ -542,10 +546,10 @@ def(bool, Run) {
 		StringArray *paths = Deps_GetPaths(this->deps);
 
 		forward (i, paths->len) {
-			String src = scall(GetSource, paths->buf[i]);
+			String src = scall(GetSource, paths->buf[i].prot);
 
 			if (src.len > 0) {
-				String path = call(GetOutput, src);
+				String path = call(GetOutput, src.prot);
 
 				if (path.len == 0) {
 					StringArray_Destroy(files);
@@ -556,9 +560,9 @@ def(bool, Run) {
 					return false;
 				}
 
-				String shrinked = call(ShrinkPath, path);
+				String shrinked = call(ShrinkPath, path.prot);
 
-				if (StringArray_Contains(files, shrinked)) {
+				if (StringArray_Contains(files, shrinked.prot)) {
 					String_Destroy(&shrinked);
 				} else {
 					StringArray_Push(&files, shrinked);

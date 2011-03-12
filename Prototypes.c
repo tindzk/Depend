@@ -3,14 +3,14 @@
 #define self Prototypes
 
 def(void, Init) {
-	this->path = $("");
+	this->path = String_New(0);
 }
 
 def(void, Destroy) {
 	String_Destroy(&this->path);
 }
 
-def(bool, SetOption, String name, String value) {
+def(bool, SetOption, ProtString name, ProtString value) {
 	if (String_Equals(name, $("file"))) {
 		String_Copy(&this->path, value);
 	}
@@ -24,11 +24,11 @@ def(void, Generate) {
 		return;
 	}
 
-	String s = String_New(Path_GetSize(this->path));
-	File_GetContents(this->path, &s);
+	String s = String_New(Path_GetSize(this->path.prot));
+	File_GetContents(this->path.prot, &s);
 
-	String iter = $("");
-	while (String_Split(s, '\n', &iter)) {
+	ProtString iter = $("");
+	while (String_Split(s.prot, '\n', &iter)) {
 		if (iter.len < 5) {
 			continue;
 		}
@@ -37,7 +37,7 @@ def(void, Generate) {
 			continue;
 		}
 
-		String line = String_Trim(iter);
+		ProtString line = String_Trim(iter);
 
 		if (String_BeginsWith(line, $("/*")) ||
 			String_BeginsWith(line, $("//")) ||

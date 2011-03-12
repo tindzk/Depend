@@ -110,6 +110,80 @@ enum {
 	Modules_Interface_Length,
 };
 
+static char* codes[] = {
+	[String_DoubleFree] = "DoubleFree",
+	[String_BufferOverflow] = "BufferOverflow",
+	[String_ElementMismatch] = "ElementMismatch",
+	[Pool_HasParent] = "HasParent",
+	[Pool_NotBundling] = "NotBundling",
+	[Pool_AlreadyBundling] = "AlreadyBundling",
+	[Memory_NullPointer] = "NullPointer",
+	[Memory_OutOfBounds] = "OutOfBounds",
+	[Memory_OutOfMemory] = "OutOfMemory",
+	[Memory_Overlapping] = "Overlapping",
+	[File_AccessDenied] = "AccessDenied",
+	[File_AlreadyExists] = "AlreadyExists",
+	[File_AttributeNonExistent] = "AttributeNonExistent",
+	[File_BufferTooSmall] = "BufferTooSmall",
+	[File_CannotOpenFile] = "CannotOpenFile",
+	[File_GettingAttributeFailed] = "GettingAttributeFailed",
+	[File_InvalidFileDescriptor] = "InvalidFileDescriptor",
+	[File_InvalidParameter] = "InvalidParameter",
+	[File_IsDirectory] = "IsDirectory",
+	[File_NotFound] = "NotFound",
+	[File_NotReadable] = "NotReadable",
+	[File_NotWritable] = "NotWritable",
+	[File_ReadingFailed] = "ReadingFailed",
+	[File_ReadingInterrupted] = "ReadingInterrupted",
+	[File_SeekingFailed] = "SeekingFailed",
+	[File_SettingAttributeFailed] = "SettingAttributeFailed",
+	[File_StatFailed] = "StatFailed",
+	[File_TruncatingFailed] = "TruncatingFailed",
+	[File_WritingFailed] = "WritingFailed",
+	[File_WritingInterrupted] = "WritingInterrupted",
+	[Integer_Overflow] = "Overflow",
+	[Integer_Underflow] = "Underflow",
+	[Time_GetTimeOfDayFailed] = "GetTimeOfDayFailed",
+	[Path_AccessDenied] = "AccessDenied",
+	[Path_AlreadyExists] = "AlreadyExists",
+	[Path_AttributeNonExistent] = "AttributeNonExistent",
+	[Path_BufferTooSmall] = "BufferTooSmall",
+	[Path_CreationFailed] = "CreationFailed",
+	[Path_DeletingFailed] = "DeletingFailed",
+	[Path_DirectoryNotEmpty] = "DirectoryNotEmpty",
+	[Path_EmptyPath] = "EmptyPath",
+	[Path_GettingAttributeFailed] = "GettingAttributeFailed",
+	[Path_InsufficientSpace] = "InsufficientSpace",
+	[Path_IsDir] = "IsDir",
+	[Path_NameTooLong] = "NameTooLong",
+	[Path_NonExistentFile] = "NonExistentFile",
+	[Path_NonExistentPath] = "NonExistentPath",
+	[Path_NotDirectory] = "NotDirectory",
+	[Path_PermissionDenied] = "PermissionDenied",
+	[Path_ReadingLinkFailed] = "ReadingLinkFailed",
+	[Path_ResolvingFailed] = "ResolvingFailed",
+	[Path_SettingAttributeFailed] = "SettingAttributeFailed",
+	[Path_SettingTimeFailed] = "SettingTimeFailed",
+	[Path_StatFailed] = "StatFailed",
+	[Path_TruncatingFailed] = "TruncatingFailed",
+	[Terminal_IoctlFailed] = "IoctlFailed",
+	[Terminal_ElementMismatch] = "ElementMismatch",
+	[Typography_IllegalNesting] = "IllegalNesting",
+	[Directory_CannotOpenDirectory] = "CannotOpenDirectory",
+	[Directory_ReadingFailed] = "ReadingFailed",
+	[Process_ForkFailed] = "ForkFailed",
+	[Process_SpawningProcessFailed] = "SpawningProcessFailed",
+	[Builder_RuntimeError] = "RuntimeError",
+};
+
+static inline char* Manifest_ResolveCode(unsigned int code) {
+	if (code > sizeof(codes) / sizeof(codes[0])) {
+		return "";
+	}
+
+	return codes[code];
+}
+
 static inline char* Manifest_ResolveName(int module) {
 	switch (module) {
 		case Modules_String ... Modules_String_Length:

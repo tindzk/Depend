@@ -466,6 +466,29 @@ def(void, CreateManifest) {
 	File_Write(&file, $(
 		"};\n"
 		"\n"
+		"static char* codes[] = {\n"
+	));
+
+	foreach (module, modules) {
+		foreach (exc, module->exc) {
+			String fmt = String_Format($("\t[%_%] = \"%\",\n"),
+				module->name.prot, exc->prot, exc->prot);
+			File_Write(&file, fmt.prot);
+			String_Destroy(&fmt);
+		}
+	}
+
+	File_Write(&file, $(
+		"};\n"
+		"\n"
+		"static inline char* Manifest_ResolveCode(unsigned int code) {\n"
+		"\tif (code > sizeof(codes) / sizeof(codes[0])) {\n"
+		"\t\treturn \"\";\n"
+		"\t}\n"
+		"\n"
+		"\treturn codes[code];\n"
+		"}\n"
+		"\n"
 		"static inline char* Manifest_ResolveName(int module) {\n"
 		"\tswitch (module) {\n"));
 

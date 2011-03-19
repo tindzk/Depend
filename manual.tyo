@@ -46,24 +46,26 @@
 
 	.section[Usage] {
 		.p {
-			Let's try  to build the  httpd application from  the Jivai
-			.path{examples/} directory:
+			To demonstrate its usage, we will try to self-host Jivai-Utils using
+			the .keyword{make}-created  binary.  While .path{Makefile} maintains
+			a static list of all  source files,  using Jivai-Utils will allow us
+			to resolve these automatically.
 		}
 
 		.command {
-			$ cd ../Jivai/examples
 			$ mkdir -p build/Jivai
-			$ ../../Jivai-Utils/jutils.bin \
-				build                    \
-				output=build/httpd.bin   \
-				main=httpd.c             \
-				include=../src           \
-				map=.:build              \
-				map=../src:build/Jivai   \
-				inclhdr=config.h         \
-				link=@bfd                \
-				dbgsym=yes               \
-				optimlevel=0
+			$ ./jutils.bin                   \
+				build                        \
+				output=a.out                 \
+				manifest=Manifest.h          \
+				main=Main.c                  \
+				include=../Jivai/src         \
+				map=.:build                  \
+				map=../Jivai/src:build/Jivai \
+				optimlevel=0                 \
+				dbgsym=yes                   \
+				inclhdr=../Jivai/config.h    \
+				link=@bfd
 		}
 	}
 

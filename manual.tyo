@@ -1,60 +1,75 @@
 .meta {
-	.title{Jivai-Utils}
+	.title{Depend}
+	.subtitle{High-performance build system}
 }
 
 .chapter[Introduction] {
 	.p {
-		Jivai-Utils is a set of tools easing the development with Jivai.
+		.i{Depend} is  a build system for  C and C++.  Its main  strength is the 
+		fact  that   it   resolves   the   dependencies  automatically.   It  is 
+		different   from  GNU   Autoconf  as   it   eliminates   the   need  for 
+		bootstrapping.  In contrast  to Autoconf,  Depend is  written in  pure C 
+		and thus  does  not  rely  on  any external applications.  Consequently, 
+		it has a much better performance.
 	}
 
 	.p {
-		The  main   strength  is  its   build  system  which   resolves  all
-		dependencies automatically.  It  is different  from GNU  Autoconf by
-		eliminating the  need for  bootstrapping.  In contrast  to Autoconf,
-		Jivai-Utils   does   not   rely   on   any   external  applications.
-		Therefore, it runs much faster.
+		Depend  enables  you to  build  whole  applications  utilising  only one 
+		command.  Unlike Autoconf,  Depend  does not require  you to  maintain a 
+		list  of  all  source  files.  These  are  resolved  automatically  each 
+		time you  run Depend.  Even for large  projects this  takes less  than a 
+		second.   For  this  to  work,   your   project  needs  to  specify  the 
+		dependencies  properly  (within  the  header  files).   However,  it  is 
+		still  possible to  add additional  files  or  to  completely  revert to 
+		static file lists.
 	}
 
 	.p {
-		Jivai-Utils enables  you to build  whole applications with  only one
-		command!  They do not even need to use the Jivai library. As long as
-		the dependencies are specified properly, it will work fine.
+		Another feature of Depend is that Depend only recompiles the files which 
+		actually have been  changed  and  those  which  depend  on these changed 
+		files.   This   minimizes  the   time   significantly   needed   by  the 
+		subsequent compilation runs significantly.
 	}
-}
 
-.chapter[Features] {
-	.list {
-		.item{Prototype generator}
-		.item{Dependency resolver}
-		.item{Build system}
+	.p {
+		Besides compilation and linking,  Depend  can print the whole dependency 
+		tree of  your project  in a  human-readable form.  Depend  also contains 
+		a prototype  generator which you  can pass a  path to a  source file and 
+		it will extract  the  prototypes  in  a  way  you can easily incorporate 
+		into your header file.
+	}
+
+	.section[Screenshot] {
+		.image{screenshot.png}
 	}
 }
 
 .chapter[Getting Started] {
 	.section[Requirements] {
-		Jivai-Utils depends on Jivai. In this tutorial the Jivai
-		repository is placed in the same directory as Jivai-Utils'.
+		Depend  depends  on  .url[../Jivai]{Jivai}.  Make  sure  that  the Jivai 
+		repository is placed in the same directory as Depend.
 	}
 
 	.section[Installation] {
 		.command {
-			$ git clone git://github.com/tindzk/Jivai-Utils.git
-			$ cd Jivai-Utils
+			$ git clone git://github.com/tindzk/Jivai.git
+			$ git clone git://github.com/tindzk/Depend.git
+			$ cd Depend
 			$ make
 		}
 	}
 
 	.section[Usage] {
 		.p {
-			To demonstrate its usage, we will try to self-host Jivai-Utils using
-			the .keyword{make}-created  binary.  While .path{Makefile} maintains
-			a static list of all  source files,  using Jivai-Utils will allow us
-			to resolve these automatically.
+			To demonstrate its usage,  we will  try to self-host Depend by using 
+			the    .keyword{make}-created    binary.    While    .path{Makefile} 
+			maintains a static list of all source files, Depend will allow us to 
+			resolve these automatically.
 		}
 
 		.command {
 			$ mkdir -p build/Jivai
-			$ ./jutils.bin                   \
+			$ ./Depend.bin                   \
 				build                        \
 				output=a.out                 \
 				manifest=Manifest.h          \
@@ -70,24 +85,22 @@
 	}
 
 	.section[Manually adding files] {
-		If certain files are not covered by .keyword{#import}s, you
-		can add them manually using the .keyword{add} parameter. It
-		also has rudimentary support for wildcards, e.g.
-		.keyword{add=src/Providers/*.c} will add all .path{.c} files
-		(and their dependencies) within .path{src/Providers}.
+		If certain files were not covered by .keyword{#include}s or .keyword{#import}s, you can add manually add additional ones using the .keyword{add} parameter. It also has rudimentary support for wildcards. For instance, .keyword{add=src/Providers/*.c} will add all .path{.c} files (and their dependencies) within .path{src/Providers}.
 	}
 
 	.section[Performance] {
 		.p {
-			In contrast  to the  shipped .path{Makefile},  this  will only  compile the
-			files which are  actually needed.  If a file  changes,  it will only
-			recompile those files which depend  on the changed one rendering the
-			build process much faster.
+			In contrast to the shipped .path{Makefile},  Debit will make sure it 
+			only compiles the files which are actually needed as it resolves the 
+			dependencies  automatically.  When  a  file  changes,  it  will only 
+			recompile those  files which depend on  the changed one,  ultimately 
+			rendering the build process much faster.
 		}
 
 		.p {
-			This  feature compares  the source  file's  date  with  the compiled
-			output. Therefore, it's possible to "fake" a file change by doing:
+			The   underlying  mechanism   is  to   compare  the   source  file's 
+			last-modified  date  with  the  output  file's.  Therefore,  you can 
+			simulate a file change by running:
 		}
 
 		.command {
@@ -95,64 +108,33 @@
 		}
 
 		.p {
-			And then execute the above .path{jutils.bin} command.  As you can see, only
+			Now rerun the above .path{Depend.bin} command.  As you can see, only 
 			a subset of the initially built files get recompiled.
 		}
 	}
 
 	.section[Dependency tree] {
 		.p {
-			Sometimes it's useful  to get an overview of  your project's overall
-			complexity. Jivai-Utils supports printing the whole dependency tree.
-			Just  replace  replace  the  .keyword{build}  with
-			.keyword{deptree}  in  the above command.
+			Sometimes it's useful  to get an overview of  your project's overall 
+			complexity.  Depend  supports printing  the  whole  dependency tree. 
+			Just replace  replace the .keyword{build}  with .keyword{deptree} in 
+			the above command.
 		}
 	}
 }
 
-.chapter[License] {
-	.p {
-		Licensed under the EUPL, Version 1.1 only (the
-		.i{"Licence"}); You may not use this work except in
-		compliance with the Licence.
+.chapter[Appendix] {
+	.section[License] {
+		Licensed under the EUPL, Version 1.1 only (the .i{"Licence"}); You may not use this work except in compliance with the Licence.
 	}
 
-	.p {
-		You may obtain a copy of the Licence at:
-
-		.url[http://www.osor.eu/eupl/european-union-public-licence-eupl-v.1.1] {
-			osor.eu
+	.section[See also] {
+		.list {
+			.item{.url[http://flattr.com/thing/69459/Depend-build-system-with-dependency-resolver]{Donate}}
+			.item{.url[http://github.com/tindzk/Depend]{Browse source}}
+			.item{.url[http://github.com/tindzk/Depend/issues]{Bug tracker}}
+			.item{.url[http://tindzk.github.com/]{Other projects}}
+			.item{.mail[tim.nieradzik@gmx.de]{Contact}}
 		}
 	}
-
-	.p {
-		Unless required by applicable law or agreed to in writing,
-		software distributed under the Licence is distributed on an
-		"AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-		either express or implied.
-	}
-
-	.p {
-		See the Licence for the specific language governing
-		permissions and limitations under the Licence.
-	}
-}
-
-.chapter[See also] {
-	.list {
-		.item{.url[http://github.com/tindzk/Jivai-Utils]{Browse source}}
-		.item{.url[http://github.com/tindzk]{GitHub account}}
-	}
-}
-
-.chapter[Donate] {
-	.url[http://flattr.com/thing/69459/Jivai-Utils-build-system-with-dependency-resolver] {
-		.image {
-			http://api.flattr.com/button/button-compact-static-100x17.png
-		}
-	}
-}
-
-.chapter[Contact] {
-	.mail[tim.nieradzik@gmx.de]{Tim Nieradzik}
 }

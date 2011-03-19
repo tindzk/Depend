@@ -1,10 +1,3 @@
 #import <Path.h>
-#import <Logger.h>
-#import <Integer.h>
-#import <Terminal.h>
-#import <Terminal/Controller.h>
 
-extern Logger logger;
-
-void Utils_OnLogMessage(__unused void *ptr, FmtString msg, Logger_Level level, ProtString file, int line);
-bool File_IsModified(ProtString sourceFile, ProtString outputFile);
+bool File_IsModified(RdString sourceFile, RdString outputFile);

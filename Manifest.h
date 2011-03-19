@@ -15,6 +15,8 @@ enum {
 	Memory_OutOfMemory,
 	Memory_Overlapping,
 	Modules_Memory_Length,
+	Modules_Kernel,
+	Modules_Kernel_Length,
 	Modules_Hex,
 	Modules_Hex_Length,
 	Modules_File,
@@ -47,8 +49,36 @@ enum {
 	Modules_BFD_Length,
 	Modules_Exception,
 	Modules_Exception_Length,
-	Modules_Kernel,
-	Modules_Kernel_Length,
+	Modules_Signal,
+	Signal_SigAlrm,
+	Signal_SigBus,
+	Signal_SigFpe,
+	Signal_SigIll,
+	Signal_SigInt,
+	Signal_SigPipe,
+	Signal_SigQuit,
+	Signal_SigSegv,
+	Signal_SigTerm,
+	Signal_SignalHandlerNotSet,
+	Signal_Unknown,
+	Modules_Signal_Length,
+	Modules_Logger,
+	Modules_Logger_Length,
+	Modules_Terminal,
+	Terminal_IoctlFailed,
+	Terminal_ElementMismatch,
+	Modules_Terminal_Length,
+	Modules_Application,
+	Modules_Application_Length,
+	Modules_Tree,
+	Modules_Tree_Length,
+	Modules_Typography,
+	Typography_IllegalNesting,
+	Modules_Typography_Length,
+	Modules_StringStream,
+	Modules_StringStream_Length,
+	Modules_Terminal_Controller,
+	Modules_Terminal_Controller_Length,
 	Modules_Time,
 	Time_GetTimeOfDayFailed,
 	Modules_Time_Length,
@@ -76,21 +106,6 @@ enum {
 	Path_StatFailed,
 	Path_TruncatingFailed,
 	Modules_Path_Length,
-	Modules_Logger,
-	Modules_Logger_Length,
-	Modules_Terminal,
-	Terminal_IoctlFailed,
-	Terminal_ElementMismatch,
-	Modules_Terminal_Length,
-	Modules_Tree,
-	Modules_Tree_Length,
-	Modules_Typography,
-	Typography_IllegalNesting,
-	Modules_Typography_Length,
-	Modules_StringStream,
-	Modules_StringStream_Length,
-	Modules_Terminal_Controller,
-	Modules_Terminal_Controller_Length,
 	Modules_Directory,
 	Directory_CannotOpenDirectory,
 	Directory_ReadingFailed,
@@ -143,6 +158,20 @@ static char* codes[] = {
 	[File_WritingInterrupted] = "WritingInterrupted",
 	[Integer_Overflow] = "Overflow",
 	[Integer_Underflow] = "Underflow",
+	[Signal_SigAlrm] = "SigAlrm",
+	[Signal_SigBus] = "SigBus",
+	[Signal_SigFpe] = "SigFpe",
+	[Signal_SigIll] = "SigIll",
+	[Signal_SigInt] = "SigInt",
+	[Signal_SigPipe] = "SigPipe",
+	[Signal_SigQuit] = "SigQuit",
+	[Signal_SigSegv] = "SigSegv",
+	[Signal_SigTerm] = "SigTerm",
+	[Signal_SignalHandlerNotSet] = "SignalHandlerNotSet",
+	[Signal_Unknown] = "Unknown",
+	[Terminal_IoctlFailed] = "IoctlFailed",
+	[Terminal_ElementMismatch] = "ElementMismatch",
+	[Typography_IllegalNesting] = "IllegalNesting",
 	[Time_GetTimeOfDayFailed] = "GetTimeOfDayFailed",
 	[Path_AccessDenied] = "AccessDenied",
 	[Path_AlreadyExists] = "AlreadyExists",
@@ -166,9 +195,6 @@ static char* codes[] = {
 	[Path_SettingTimeFailed] = "SettingTimeFailed",
 	[Path_StatFailed] = "StatFailed",
 	[Path_TruncatingFailed] = "TruncatingFailed",
-	[Terminal_IoctlFailed] = "IoctlFailed",
-	[Terminal_ElementMismatch] = "ElementMismatch",
-	[Typography_IllegalNesting] = "IllegalNesting",
 	[Directory_CannotOpenDirectory] = "CannotOpenDirectory",
 	[Directory_ReadingFailed] = "ReadingFailed",
 	[Process_ForkFailed] = "ForkFailed",
@@ -192,6 +218,8 @@ static inline char* Manifest_ResolveName(int module) {
 			return "Pool";
 		case Modules_Memory ... Modules_Memory_Length:
 			return "Memory";
+		case Modules_Kernel ... Modules_Kernel_Length:
+			return "Kernel";
 		case Modules_Hex ... Modules_Hex_Length:
 			return "Hex";
 		case Modules_File ... Modules_File_Length:
@@ -202,16 +230,14 @@ static inline char* Manifest_ResolveName(int module) {
 			return "BFD";
 		case Modules_Exception ... Modules_Exception_Length:
 			return "Exception";
-		case Modules_Kernel ... Modules_Kernel_Length:
-			return "Kernel";
-		case Modules_Time ... Modules_Time_Length:
-			return "Time";
-		case Modules_Path ... Modules_Path_Length:
-			return "Path";
+		case Modules_Signal ... Modules_Signal_Length:
+			return "Signal";
 		case Modules_Logger ... Modules_Logger_Length:
 			return "Logger";
 		case Modules_Terminal ... Modules_Terminal_Length:
 			return "Terminal";
+		case Modules_Application ... Modules_Application_Length:
+			return "Application";
 		case Modules_Tree ... Modules_Tree_Length:
 			return "Tree";
 		case Modules_Typography ... Modules_Typography_Length:
@@ -220,6 +246,10 @@ static inline char* Manifest_ResolveName(int module) {
 			return "StringStream";
 		case Modules_Terminal_Controller ... Modules_Terminal_Controller_Length:
 			return "Terminal.Controller";
+		case Modules_Time ... Modules_Time_Length:
+			return "Time";
+		case Modules_Path ... Modules_Path_Length:
+			return "Path";
 		case Modules_Directory ... Modules_Directory_Length:
 			return "Directory";
 		case Modules_Deps ... Modules_Deps_Length:

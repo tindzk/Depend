@@ -2,6 +2,7 @@
 #import <Tree.h>
 #import <Array.h>
 #import <String.h>
+#import <Logger.h>
 #import <Directory.h>
 
 #import "Utils.h"
@@ -31,6 +32,8 @@ record(ref(Component)) {
 class {
 	String main;
 
+	Logger *logger;
+
 	StringArray *paths;
 	StringArray *include;
 
@@ -42,10 +45,10 @@ class {
 	ref(Modules) *modules;
 };
 
-def(void, Init);
+def(void, Init, Logger *logger);
 def(void, Destroy);
-sdef(void, DestroyNode, ref(Component) *node);
-def(bool, SetOption, ProtString name, ProtString value);
+def(void, DestroyNode, ref(Component) *node);
+def(bool, SetOption, RdString name, RdString value);
 def(StringArray *, GetIncludes);
 def(ref(Modules) *, GetModules);
 def(ref(Component) *, GetComponent);

@@ -1,5 +1,6 @@
 #import <File.h>
 #import <String.h>
+#import <Logger.h>
 #import <Process.h>
 
 #import "Deps.h"
@@ -25,6 +26,8 @@ Array(ref(QueueItem),   QueueArray);
 class {
 	DepsInstance deps;
 
+	Logger *logger;
+
 	String manifest;
 	String output;
 	String cc;
@@ -41,9 +44,9 @@ class {
 	QueueArray *queue;
 };
 
-def(void, Init, DepsInstance deps);
+def(void, Init, Logger *logger, DepsInstance deps);
 def(void, Destroy);
-def(bool, SetOption, ProtString name, ProtString value);
+def(bool, SetOption, RdString name, RdString value);
 def(bool, CreateQueue);
 def(void, PrintQueue);
 def(bool, Run);

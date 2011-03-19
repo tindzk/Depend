@@ -1,68 +1,76 @@
+#import <Main.h>
+#import <Terminal/Controller.h>
+
 #import "Utils.h"
 #import "Interface.h"
 
-Logger logger;
-Terminal term;
+#define self Application
 
-int main(int argc, char* argv[]) {
-	Logger_Init(&logger, Callback(NULL, Utils_OnLogMessage),
-		Logger_Level_Fatal |
-		Logger_Level_Crit  |
-		Logger_Level_Error |
-		Logger_Level_Warn  |
-		Logger_Level_Info  |
-		Logger_Level_Trace);
+def(void, OnLogMessage, FmtString msg, Logger_Level level, RdString file, int line) {
+	RdString color  = $("black");
+	RdString slevel = Logger_ResolveLevel(level);
 
-	term = Terminal_New(File_StdIn, File_StdOut, true);
-	Terminal_Configure(&term, true, true);
+	if (level == Logger_Level_Fatal || level == Logger_Level_Crit || level == Logger_Level_Error) {
+		color = $("red");
+	} else if (level == Logger_Level_Warn || level == Logger_Level_Info) {
+		color = $("yellow");
+	} else if (level == Logger_Level_Debug || level == Logger_Level_Trace) {
+		color = $("cyan");
+	}
 
-	if (argc <= 1) {
-		Logger_Error(&logger,
+	Terminal_Controller controller = Terminal_Controller_New(&this->term);
+
+	if (BitMask_Has(this->logger.levels, Logger_Level_Debug)) {
+		String sline = Integer_ToString(line);
+
+		Terminal_Controller_Render(&controller,
+			$(".fg[%]{.b{[%]} $ .i{(%:%)}}\n"),
+			color, slevel, msg, file, sline.rd);
+
+		String_Destroy(&sline);
+	} else {
+		Terminal_Controller_Render(&controller,
+			$(".fg[%]{.b{[%]} $}\n"),
+			color, slevel, msg);
+	}
+}
+
+def(bool, Run) {
+	Terminal_Configure(&this->term, true, true);
+	BitMask_Clear(this->logger.levels, Logger_Level_Debug);
+
+	if (this->args->len == 0) {
+		Logger_Error(&this->logger,
 			$("Action missing. Run `% help' for an overview."),
-			String_FromNul(argv[0]));
+			this->base);
 
-		Terminal_Destroy(&term);
-
-		return ExitStatus_Failure;
+		return false;
 	}
 
 	Interface itf;
-	Interface_Init(&itf);
-	Interface_SetAction(&itf, String_FromNul(argv[1]));
+	Interface_Init(&itf, &this->logger);
+	Interface_SetAction(&itf, this->args->buf[0]);
 
-	bool success = true;
+	fwd(i, this->args->len) {
+		RdString name, value;
 
-	for (int i = 1; i < argc; i++) {
-		ProtString arg = String_FromNul(argv[i]);
-
-		ssize_t pos = String_Find(arg, '=');
-
-		if (pos == String_NotFound) {
+		if (!String_Parse($("%=%"), this->args->buf[i], &name, &value)) {
 			continue;
 		}
 
-		ProtString name  = String_Slice(arg, 0, pos);
-		ProtString value = String_Slice(arg, pos + 1);
-
-		success = Interface_SetOption(&itf, name, value);
-
-		if (!success) {
-			goto out;
+		if (!Interface_SetOption(&itf, name, value)) {
+			Interface_Destroy(&itf);
+			return false;
 		}
 	}
 
+	bool res = false;
+
 	try {
-		success = Interface_Run(&itf);
-	} catchAny {
-		Exception_Print(e);
+		res = Interface_Run(&itf);
 	} finally {
-		Terminal_Destroy(&term);
+		Interface_Destroy(&itf);
 	} tryEnd;
 
-out:
-	Interface_Destroy(&itf);
-
-	return success
-		? ExitStatus_Success
-		: ExitStatus_Failure;
+	return res;
 }

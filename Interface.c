@@ -2,16 +2,13 @@
 
 #define self Interface
 
-extern Logger logger;
-
-def(void, Init) {
+def(void, Init, Logger *logger) {
+	this->logger = logger;
 	this->action = ref(Action_Unsupported);
 
-	Deps_Init(&this->deps);
+	Deps_Init(&this->deps, logger);
 	Prototypes_Init(&this->proto);
-	Builder_Init(
-		&this->builder,
-		&this->deps);
+	Builder_Init(&this->builder, logger, &this->deps);
 }
 
 def(void, Destroy) {
@@ -20,7 +17,7 @@ def(void, Destroy) {
 	Deps_Destroy(&this->deps);
 }
 
-def(void, SetAction, ProtString action) {
+def(void, SetAction, RdString action) {
 	if (String_Equals(action, $("build"))) {
 		this->action = ref(Action_Build);
 	} else if (String_Equals(action, $("listdeps"))) {
@@ -36,12 +33,12 @@ def(void, SetAction, ProtString action) {
 	}
 }
 
-def(bool, SetOption, ProtString name, ProtString value) {
+def(bool, SetOption, RdString name, RdString value) {
 	if (String_Equals(name, $("debug"))) {
 		if (String_Equals(value, $("yes"))) {
-			BitMask_Set(logger.levels, Logger_Level_Debug);
+			BitMask_Set(this->logger->levels, Logger_Level_Debug);
 		} else {
-			BitMask_Clear(logger.levels, Logger_Level_Debug);
+			BitMask_Clear(this->logger->levels, Logger_Level_Debug);
 		}
 	}
 
@@ -100,7 +97,7 @@ def(bool, Run) {
 			return true;
 
 		case ref(Action_Help):
-			Logger_Info(&logger, $(
+			Logger_Info(this->logger, $(
 				"Supported actions are: "
 				"build, listdeps, deptree, print-queue, prototypes, help."
 			));
@@ -108,7 +105,7 @@ def(bool, Run) {
 			return true;
 
 		case ref(Action_Unsupported):
-			Logger_Error(&logger, $("Action unsupported."));
+			Logger_Error(this->logger, $("Action unsupported."));
 			return false;
 	}
 

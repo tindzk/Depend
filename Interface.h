@@ -1,3 +1,4 @@
+#import <Logger.h>
 #import <String.h>
 
 #import "Deps.h"
@@ -20,15 +21,17 @@ set(ref(Action)) {
 class {
 	ref(Action) action;
 
+	Logger *logger;
+
 	Deps deps;
 	Builder builder;
 	Prototypes proto;
 };
 
-def(void, Init);
+def(void, Init, Logger *logger);
 def(void, Destroy);
-def(void, SetAction, ProtString action);
-def(bool, SetOption, ProtString name, ProtString value);
+def(void, SetAction, RdString action);
+def(bool, SetOption, RdString name, RdString value);
 def(bool, Run);
 
 #undef self

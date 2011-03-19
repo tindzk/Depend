@@ -2,14 +2,13 @@
 
 #define self Deps
 
-extern Logger logger;
-
-def(void, Init) {
+def(void, Init, Logger *logger) {
+	this->logger  = logger;
 	this->main    = String_New(0);
 	this->modules = scall(Modules_New, 0);
 	this->include = StringArray_New(0);
 	this->paths   = StringArray_New(0);
-	this->tree    = Tree_New((void *) ref(DestroyNode));
+	this->tree    = Tree_New(Callback(NULL, ref(DestroyNode)));
 
 	this->component = (ref(Component) *) &this->tree.root;
 }
@@ -24,7 +23,7 @@ def(void, Destroy) {
 	StringArray_Destroy(this->include);
 	StringArray_Free(this->include);
 
-	foreach (module, this->modules) {
+	each(module, this->modules) {
 		String_Destroy(&module->name);
 
 		StringArray_Destroy(module->exc);
@@ -34,24 +33,24 @@ def(void, Destroy) {
 	scall(Modules_Free, this->modules);
 }
 
-sdef(void, DestroyNode, ref(Component) *node) {
+def(void, DestroyNode, ref(Component) *node) {
 	String_Destroy(&node->path);
 	scall(ModuleOffsets_Free, node->modules);
 }
 
-static def(void, ProcessFile, ProtString base, ProtString file, ref(Type) deptype);
+static def(void, ProcessFile, RdString base, RdString file, ref(Type) deptype);
 
 /* Very simple glob() implementation. Only one placeholder is
  * allowed. Escaping and expanding (e.g. {a, b, c}) might be
  * implemented in the future. If so, this function should be
  * moved to the Jivai sources.
  */
-static def(void, Add, ProtString value) {
+static def(void, Add, RdString value) {
 	ssize_t star = String_Find(value, '*');
 
 	if (star == String_NotFound) {
 		if (value.len > 0 && !Path_Exists(value)) {
-			Logger_Error(&logger,
+			Logger_Error(this->logger,
 				$("Manually added file '%' not found."),
 				value);
 		} else {
@@ -63,7 +62,7 @@ static def(void, Add, ProtString value) {
 
 	ssize_t slash = String_ReverseFind(value, star, '/');
 
-	ProtString path, left;
+	RdString path, left;
 
 	if (slash == String_NotFound) {
 		path = $(".");
@@ -73,7 +72,7 @@ static def(void, Add, ProtString value) {
 		left = String_Slice(value, slash + 1, star - slash - 1);
 	}
 
-	ProtString right = String_Slice(value, star + 1);
+	RdString right = String_Slice(value, star + 1);
 
 	Directory dir;
 	Directory_Entry item;
@@ -95,7 +94,7 @@ static def(void, Add, ProtString value) {
 	Directory_Destroy(&dir);
 }
 
-def(bool, SetOption, ProtString name, ProtString value) {
+def(bool, SetOption, RdString name, RdString value) {
 	if (String_Equals(name, $("main"))) {
 		String_Copy(&this->main, value);
 	} else if (String_Equals(name, $("add"))) {
@@ -123,10 +122,10 @@ def(StringArray *, GetPaths) {
 	return this->paths;
 }
 
-static def(String, GetLocalPath, ProtString base, ProtString file) {
+static def(String, GetLocalPath, RdString base, RdString file) {
 	String path = String_Format($("%/%"), base, file);
 
-	if (Path_Exists(path.prot)) {
+	if (Path_Exists(path.rd)) {
 		return path;
 	}
 
@@ -135,17 +134,17 @@ static def(String, GetLocalPath, ProtString base, ProtString file) {
 }
 
 /* Iterates over all include paths and uses the matching one. */
-static def(String, GetSystemPath, ProtString file) {
+static def(String, GetSystemPath, RdString file) {
 	String path = String_New(0);
 
-	forward (i, this->include->len) {
+	fwd(i, this->include->len) {
 		path.len = 0;
 
-		String_Append(&path, this->include->buf[i].prot);
+		String_Append(&path, this->include->buf[i].rd);
 		String_Append(&path, '/');
 		String_Append(&path, file);
 
-		if (Path_Exists(path.prot)) {
+		if (Path_Exists(path.rd)) {
 			return path;
 		}
 	}
@@ -154,7 +153,7 @@ static def(String, GetSystemPath, ProtString file) {
 	return String_New(0);
 }
 
-static def(String, GetFullPath, ProtString base, ProtString file, ref(Type) type) {
+static def(String, GetFullPath, RdString base, RdString file, ref(Type) type) {
 	String path;
 
 	if (type == ref(Type_Local)) {
@@ -174,7 +173,7 @@ static def(String, GetFullPath, ProtString base, ProtString file, ref(Type) type
 	return path;
 }
 
-static def(ref(Component) *, AddFile, ProtString absPath) {
+static def(ref(Component) *, AddFile, RdString absPath) {
 	this->component = Tree_AddNode(&this->tree, this->component);
 
 	this->component->path    = String_Clone(absPath);
@@ -189,25 +188,25 @@ static def(ref(Component) *, AddFile, ProtString absPath) {
 	return this->component;
 }
 
-static def(void, ScanFile, ProtString path) {
+static def(void, ScanFile, RdString path) {
 	String s = String_New(1024 * 15);
 	File_GetContents(path, &s);
 
 	ssize_t ofsModule = -1;
 
-	ProtString line = $("");
-	while (String_Split(s.prot, '\n', &line)) {
-		ProtString needle;
+	RdString line = $("");
+	while (String_Split(s.rd, '\n', &line)) {
+		RdString needle;
 
 		ssize_t offset = String_Find(line, needle = $("@exc "));
 
 		if (offset != String_NotFound) {
-			ProtString name = String_Trim(String_Slice(line, offset + needle.len));
+			RdString name = String_Trim(String_Slice(line, offset + needle.len));
 
 			if (ofsModule == -1) {
-				Logger_Error(&logger, $("Ignored exception '%'."), name);
+				Logger_Error(this->logger, $("Ignored exception '%'."), name);
 			} else {
-				Logger_Debug(&logger, $("Found exception %."), name);
+				Logger_Debug(this->logger, $("Found exception %."), name);
 
 				StringArray_Push(&this->modules->buf[ofsModule].exc, String_Clone(name));
 			}
@@ -216,10 +215,10 @@ static def(void, ScanFile, ProtString path) {
 		}
 
 		if (String_BeginsWith(line, needle = $("#define self "))) {
-			ProtString name = String_Trim(String_Slice(line, needle.len));
+			RdString name = String_Trim(String_Slice(line, needle.len));
 
-			foreach (item, this->modules) {
-				if (String_Equals(item->name.prot, name)) {
+			each(item, this->modules) {
+				if (String_Equals(item->name.rd, name)) {
 					ofsModule = getIndex(item, this->modules);
 					break;
 				}
@@ -235,7 +234,7 @@ static def(void, ScanFile, ProtString path) {
 
 				ofsModule = this->modules->len - 1;
 
-				Logger_Debug(&logger, $("Found module %."), name);
+				Logger_Debug(this->logger, $("Found module %."), name);
 			}
 
 			scall(ModuleOffsets_Push, &this->component->modules, ofsModule);
@@ -249,9 +248,9 @@ static def(void, ScanFile, ProtString path) {
 			continue;
 		}
 
-		ProtString type = String_Trim(String_Slice(line, needle.len));
+		RdString type = String_Trim(String_Slice(line, needle.len));
 
-		ProtString header;
+		RdString header;
 		bool quotes = false;
 
 		if (type.buf[0] == '<') {
@@ -261,7 +260,7 @@ static def(void, ScanFile, ProtString path) {
 			quotes = true;
 			header = String_Trim(String_Between(line, $("\""), $("\"")));
 		} else {
-			Logger_Error(&logger, $("Line '%' not understood."), line);
+			Logger_Error(this->logger, $("Line '%' not understood."), line);
 			continue;
 		}
 
@@ -277,7 +276,7 @@ static def(void, ScanFile, ProtString path) {
 	String_Destroy(&s);
 }
 
-static def(void, ProcessFile, ProtString base, ProtString file, ref(Type) deptype) {
+static def(void, ProcessFile, RdString base, RdString file, ref(Type) deptype) {
 	if (file.len == 0) {
 		return;
 	}
@@ -285,17 +284,17 @@ static def(void, ProcessFile, ProtString base, ProtString file, ref(Type) deptyp
 	String relPath = call(GetFullPath, base, file, deptype);
 
 	if (relPath.len > 0) {
-		String absPath = Path_Resolve(relPath.prot);
+		String absPath = Path_Resolve(relPath.rd);
 
 		if (absPath.len > 0) {
 			/* Returns a pointer to the node when the file wasn't
 			 * scanned yet.
 			 */
-			ref(Component) *node = call(AddFile, absPath.prot);
+			ref(Component) *node = call(AddFile, absPath.rd);
 
 			if (node != NULL) {
-				Logger_Debug(&logger, $("Adding '%'..."), absPath.prot);
-				call(ScanFile, absPath.prot);
+				Logger_Debug(this->logger, $("Adding '%'..."), absPath.rd);
+				call(ScanFile, absPath.rd);
 			}
 
 			this->component = this->component->parent;
@@ -308,13 +307,13 @@ static def(void, ProcessFile, ProtString base, ProtString file, ref(Type) deptyp
 }
 
 def(void, ListSourceFiles) {
-	forward (i, this->paths->len) {
-		String path = String_Clone(this->paths->buf[i].prot);
+	fwd(i, this->paths->len) {
+		String path = String_Clone(this->paths->buf[i].rd);
 
 		path.buf[path.len - 1] = 'c';
 
-		if (Path_Exists(path.prot)) {
-			Logger_Debug(&logger, path.prot);
+		if (Path_Exists(path.rd)) {
+			Logger_Debug(this->logger, path.rd);
 		}
 
 		String_Destroy(&path);
@@ -340,13 +339,13 @@ static def(void, PrintNode, ref(Component) *node, int indent) {
 	}
 
 	String_Print($("["));
-	String_Print(node->path.prot);
+	String_Print(node->path.rd);
 
 	if (node->modules->len > 0) {
 		String_Print($(" ("));
 
-		foreach (module, node->modules) {
-			String_Print(this->modules->buf[*module].name.prot);
+		each(module, node->modules) {
+			String_Print(this->modules->buf[*module].name.rd);
 
 			if (!isLast(module, node->modules)) {
 				String_Print($(", "));
@@ -369,12 +368,12 @@ def(void, PrintTree) {
 }
 
 def(void, Scan) {
-	if (this->main.len > 0 && !Path_Exists(this->main.prot)) {
-		Logger_Error(&logger, $("Main file '%' not found."),
-			this->main.prot);
+	if (this->main.len > 0 && !Path_Exists(this->main.rd)) {
+		Logger_Error(this->logger, $("Main file '%' not found."),
+			this->main.rd);
 
 		return;
 	}
 
-	call(ProcessFile, $("."), this->main.prot, ref(Type_Local));
+	call(ProcessFile, $("."), this->main.rd, ref(Type_Local));
 }

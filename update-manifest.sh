@@ -1,6 +1,6 @@
 #!/bin/sh
 
-./jutils.bin             \
+./Depend.bin             \
 	build                \
 	main=Main.c          \
 	include=../Jivai/src \

@@ -30,6 +30,6 @@ LIBFILES += $(LIBPATH)/BFD.c -lbfd
 LIBFILES += -I$(LIBPATH)
 
 all:
-	if test -f jutils.bin; then ./update-manifest.sh; fi
-	bash -c "$(CC) -o jutils.tmp $(CFLAGS) *.c $(LIBFILES)"
-	mv jutils.tmp jutils.bin
+	if test -f Depend.bin; then ./update-manifest.sh; fi
+	bash -c "$(CC) -o Depend.tmp $(CFLAGS) *.c $(LIBFILES)"
+	mv Depend.tmp Depend.bin

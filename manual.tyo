@@ -4,40 +4,13 @@
 }
 
 .chapter[Introduction] {
-	.p {
-		.i{Depend} is  a build system for  C and C++.  Its main  strength is the 
-		fact  that   it   resolves   the   dependencies  automatically.   It  is 
-		different   from  GNU   Autoconf  as   it   eliminates   the   need  for 
-		bootstrapping.  In contrast  to Autoconf,  Depend is  written in  pure C 
-		and thus  does  not  rely  on  any external applications.  Consequently, 
-		it has a much better performance.
-	}
+	.i{Depend} is a build system for C and C++. Its main strength is the fact that it resolves the dependencies automatically. It is different from GNU Autoconf as it eliminates the need for bootstrapping. In contrast to Autoconf, Depend is written in pure C and thus does not rely on any external applications. Consequently, it has a much better performance.
 
-	.p {
-		Depend  enables  you to  build  whole  applications  utilising  only one 
-		command.  Unlike Autoconf,  Depend  does not require  you to  maintain a 
-		list  of  all  source  files.  These  are  resolved  automatically  each 
-		time you  run Depend.  Even for large  projects this  takes less  than a 
-		second.   For  this  to  work,   your   project  needs  to  specify  the 
-		dependencies  properly  (within  the  header  files).   However,  it  is 
-		still  possible to  add additional  files  or  to  completely  revert to 
-		static file lists.
-	}
+	Depend enables you to build whole applications utilising only one command. Unlike Autoconf, Depend does not require you to maintain a list of all source files. These are resolved automatically each time you run Depend. Even for large projects this takes less than a second. For this to work, your project needs to specify the dependencies properly (within the header files). However, it is still possible to add additional files or to completely revert to static file lists.
 
-	.p {
-		Another feature of Depend is that Depend only recompiles the files which 
-		actually have been  changed  and  those  which  depend  on these changed 
-		files.   This   minimizes  the   time   significantly   needed   by  the 
-		subsequent compilation runs significantly.
-	}
+	Another feature of Depend is that Depend only recompiles the files which actually have been changed and those which depend on these changed files. This minimizes the time significantly needed by the subsequent compilation runs significantly.
 
-	.p {
-		Besides compilation and linking,  Depend  can print the whole dependency 
-		tree of  your project  in a  human-readable form.  Depend  also contains 
-		a prototype  generator which you  can pass a  path to a  source file and 
-		it will extract  the  prototypes  in  a  way  you can easily incorporate 
-		into your header file.
-	}
+	Besides compilation and linking, Depend can print the whole dependency tree of your project in a human-readable form. Depend also contains a prototype generator which you can pass a path to a source file and it will extract the prototypes in a way you can easily incorporate into your header file.
 
 	.section[Screenshot] {
 		.image{screenshot.png}
@@ -46,8 +19,7 @@
 
 .chapter[Getting Started] {
 	.section[Requirements] {
-		Depend  depends  on  .url[../Jivai]{Jivai}.  Make  sure  that  the Jivai 
-		repository is placed in the same directory as Depend.
+		Depend depends on .url[../Jivai]{Jivai}. Make sure that the Jivai repository is placed in the same directory as Depend.
 	}
 
 	.section[Installation] {
@@ -60,12 +32,7 @@
 	}
 
 	.section[Usage] {
-		.p {
-			To demonstrate its usage,  we will  try to self-host Depend by using 
-			the    .keyword{make}-created    binary.    While    .path{Makefile} 
-			maintains a static list of all source files, Depend will allow us to 
-			resolve these automatically.
-		}
+		To demonstrate its usage, we will try to self-host Depend by using the .keyword{make}-created binary. While .path{Makefile} maintains a static list of all source files, Depend will allow us to resolve these automatically.
 
 		.command {
 			$ mkdir -p build/Jivai
@@ -89,37 +56,19 @@
 	}
 
 	.section[Performance] {
-		.p {
-			In contrast to the shipped .path{Makefile},  Debit will make sure it 
-			only compiles the files which are actually needed as it resolves the 
-			dependencies  automatically.  When  a  file  changes,  it  will only 
-			recompile those  files which depend on  the changed one,  ultimately 
-			rendering the build process much faster.
-		}
+		In contrast to the shipped .path{Makefile}, Debit will make sure it only compiles the files which are actually needed as it resolves the dependencies automatically. When a file changes, it will only recompile those files which depend on the changed one, ultimately rendering the build process much faster.
 
-		.p {
-			The   underlying  mechanism   is  to   compare  the   source  file's 
-			last-modified  date  with  the  output  file's.  Therefore,  you can 
-			simulate a file change by running:
-		}
+		The underlying mechanism is to compare the source file's last-modified date with the output file's. Therefore, you can simulate a file change by running:
 
 		.command {
 			$ touch ../src/HTTP/Server.c
 		}
 
-		.p {
-			Now rerun the above .path{Depend.bin} command.  As you can see, only 
-			a subset of the initially built files get recompiled.
-		}
+		Now rerun the above .path{Depend.bin} command. As you can see, only a subset of the initially built files get recompiled.
 	}
 
 	.section[Dependency tree] {
-		.p {
-			Sometimes it's useful  to get an overview of  your project's overall 
-			complexity.  Depend  supports printing  the  whole  dependency tree. 
-			Just replace  replace the .keyword{build}  with .keyword{deptree} in 
-			the above command.
-		}
+		Sometimes it's useful to get an overview of your project's overall complexity. Depend supports printing the whole dependency tree. Just replace replace the .keyword{build} with .keyword{deptree} in the above command.
 	}
 }
 

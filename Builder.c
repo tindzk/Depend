@@ -2,7 +2,7 @@
 
 #define self Builder
 
-def(void, Init, Logger *logger, DepsInstance deps) {
+def(void, Init, Logger *logger, Deps *deps) {
 	this->deps      = deps;
 	this->logger    = logger;
 	this->output    = String_Clone($("a.out"));
@@ -288,7 +288,7 @@ static def(bool, Compile, String src, String out) {
 		String_Destroy(&cmd);
 	}
 
-	int res = Process_Spawn(Process_FromObject(&proc));
+	int res = Process_Spawn(&proc);
 
 	Process_Destroy(&proc);
 
@@ -331,7 +331,7 @@ static def(void, Link, StringArray *files) {
 			this->link->buf[i].buf[0] == '@'));
 	}
 
-	Process_Spawn(Process_FromObject(&proc));
+	Process_Spawn(&proc);
 
 	if (this->verbose) {
 		String cmd = Process_GetCommandLine(&proc);

@@ -24,7 +24,7 @@ Array(ref(DepsMapping), MappingArray);
 Array(ref(QueueItem),   QueueArray);
 
 class {
-	DepsInstance deps;
+	Deps *deps;
 
 	Logger *logger;
 
@@ -44,7 +44,7 @@ class {
 	QueueArray *queue;
 };
 
-def(void, Init, Logger *logger, DepsInstance deps);
+def(void, Init, Logger *logger, Deps *deps);
 def(void, Destroy);
 def(bool, SetOption, RdString name, RdString value);
 def(bool, CreateQueue);

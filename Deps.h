@@ -47,7 +47,7 @@ class {
 
 def(void, Init, Logger *logger);
 def(void, Destroy);
-def(void, DestroyNode, ref(Component) *node);
+def(void, DestroyNode, Tree_Node *ptr);
 def(bool, SetOption, RdString name, RdString value);
 def(StringArray *, GetIncludes);
 def(ref(Modules) *, GetModules);

@@ -8,7 +8,7 @@ def(void, Init, Logger *logger) {
 	this->modules = scall(Modules_New, 0);
 	this->include = StringArray_New(0);
 	this->paths   = StringArray_New(0);
-	this->tree    = Tree_New(Callback(NULL, ref(DestroyNode)));
+	this->tree    = Tree_New(Tree_DestroyNode_For(this, ref(DestroyNode)));
 
 	this->component = (ref(Component) *) &this->tree.root;
 }
@@ -33,7 +33,9 @@ def(void, Destroy) {
 	scall(Modules_Free, this->modules);
 }
 
-def(void, DestroyNode, ref(Component) *node) {
+def(void, DestroyNode, Tree_Node *ptr) {
+	ref(Component) *node = (ref(Component) *) ptr;
+
 	String_Destroy(&node->path);
 	scall(ModuleOffsets_Free, node->modules);
 }

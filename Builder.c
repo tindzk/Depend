@@ -437,8 +437,7 @@ def(void, PrintQueue) {
 def(void, CreateManifest) {
 	Deps_Modules *modules = Deps_GetModules(this->deps);
 
-	File file;
-	File_Open(&file, this->manifest.rd,
+	File file = File_New(this->manifest.rd,
 		FileStatus_Create    |
 		FileStatus_WriteOnly |
 		FileStatus_Truncate);
@@ -513,7 +512,7 @@ def(void, CreateManifest) {
 		"\treturn \"Unknown module\";\n"
 		"}\n"));
 
-	File_Close(&file);
+	File_Destroy(&file);
 
 	Logger_Info(this->logger,
 		$("Manifest written to '%'."),

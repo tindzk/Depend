@@ -1,24 +1,19 @@
 enum {
+	Modules_DynObject,
+	Modules_DynObject_Length,
+	Modules_Memory,
+	Memory_OutOfMemory,
+	Memory_Overlapping,
+	Modules_Memory_Length,
+	Modules_Buffer,
+	Modules_Buffer_Length,
 	Modules_String,
 	String_DoubleFree,
 	String_BufferOverflow,
 	String_ElementMismatch,
 	Modules_String_Length,
-	Modules_Pool,
-	Pool_HasParent,
-	Pool_NotBundling,
-	Pool_AlreadyBundling,
-	Modules_Pool_Length,
-	Modules_Memory,
-	Memory_NullPointer,
-	Memory_OutOfBounds,
-	Memory_OutOfMemory,
-	Memory_Overlapping,
-	Modules_Memory_Length,
 	Modules_Kernel,
 	Modules_Kernel_Length,
-	Modules_Hex,
-	Modules_Hex_Length,
 	Modules_Channel,
 	Channel_IsDirectory,
 	Channel_ReadingFailed,
@@ -27,45 +22,35 @@ enum {
 	Channel_WritingFailed,
 	Channel_WritingInterrupted,
 	Modules_Channel_Length,
+	Modules_System,
+	Modules_System_Length,
+	Modules_File,
+	File_AccessDenied,
+	File_AlreadyExists,
+	File_AttributeNonExistent,
+	File_BufferTooSmall,
+	File_CannotOpenFile,
+	File_GettingAttributeFailed,
+	File_InvalidFileDescriptor,
+	File_InvalidParameter,
+	File_IsDirectory,
+	File_NotFound,
+	File_NotWritable,
+	File_SeekingFailed,
+	File_SettingAttributeFailed,
+	File_StatFailed,
+	File_TruncatingFailed,
+	Modules_File_Length,
+	Modules_ELF,
+	ELF_InvalidFile,
+	ELF_UnknownError,
+	Modules_ELF_Length,
+	Modules_Hex,
+	Modules_Hex_Length,
 	Modules_Integer,
 	Integer_Overflow,
 	Integer_Underflow,
 	Modules_Integer_Length,
-	Modules_BFD,
-	Modules_BFD_Length,
-	Modules_Exception,
-	Exception_AssertFailed,
-	Modules_Exception_Length,
-	Modules_Signal,
-	Signal_SigAlrm,
-	Signal_SigBus,
-	Signal_SigFpe,
-	Signal_SigIll,
-	Signal_SigInt,
-	Signal_SigPipe,
-	Signal_SigQuit,
-	Signal_SigSegv,
-	Signal_SigTerm,
-	Signal_SignalHandlerNotSet,
-	Signal_Unknown,
-	Modules_Signal_Length,
-	Modules_Logger,
-	Modules_Logger_Length,
-	Modules_Terminal,
-	Terminal_IoctlFailed,
-	Terminal_ElementMismatch,
-	Modules_Terminal_Length,
-	Modules_Application,
-	Modules_Application_Length,
-	Modules_Tree,
-	Modules_Tree_Length,
-	Modules_Typography,
-	Typography_IllegalNesting,
-	Modules_Typography_Length,
-	Modules_StringStream,
-	Modules_StringStream_Length,
-	Modules_Terminal_Controller,
-	Modules_Terminal_Controller_Length,
 	Modules_Time,
 	Time_GetTimeOfDayFailed,
 	Modules_Time_Length,
@@ -93,23 +78,52 @@ enum {
 	Path_StatFailed,
 	Path_TruncatingFailed,
 	Modules_Path_Length,
-	Modules_File,
-	File_AccessDenied,
-	File_AlreadyExists,
-	File_AttributeNonExistent,
-	File_BufferTooSmall,
-	File_CannotOpenFile,
-	File_GettingAttributeFailed,
-	File_InvalidFileDescriptor,
-	File_InvalidParameter,
-	File_IsDirectory,
-	File_NotFound,
-	File_NotWritable,
-	File_SeekingFailed,
-	File_SettingAttributeFailed,
-	File_StatFailed,
-	File_TruncatingFailed,
-	Modules_File_Length,
+	Modules_LEB128,
+	Modules_LEB128_Length,
+	Modules_DWARF,
+	Modules_DWARF_Length,
+	Modules_Backtrace,
+	Modules_Backtrace_Length,
+	Modules_Exception,
+	Exception_AssertFailed,
+	Modules_Exception_Length,
+	Modules_Signal,
+	Signal_SigAlrm,
+	Signal_SigBus,
+	Signal_SigFpe,
+	Signal_SigIll,
+	Signal_SigInt,
+	Signal_SigPipe,
+	Signal_SigQuit,
+	Signal_SigSegv,
+	Signal_SigTerm,
+	Signal_SignalHandlerNotSet,
+	Signal_Unknown,
+	Modules_Signal_Length,
+	Modules_Logger,
+	Modules_Logger_Length,
+	Modules_Terminal,
+	Terminal_IoctlFailed,
+	Terminal_ElementMismatch,
+	Modules_Terminal_Length,
+	Modules_Memory_Map,
+	Modules_Memory_Map_Length,
+	Modules_Memory_Libc,
+	Modules_Memory_Libc_Length,
+	Modules_Memory_Logger,
+	Modules_Memory_Logger_Length,
+	Modules_Application,
+	Modules_Application_Length,
+	Modules_Ecriture,
+	Modules_Ecriture_Length,
+	Modules_StringReader,
+	Modules_StringReader_Length,
+	Modules_Ecriture_Parser,
+	Modules_Ecriture_Parser_Length,
+	Modules_Terminal_Controller,
+	Modules_Terminal_Controller_Length,
+	Modules_Tree,
+	Modules_Tree_Length,
 	Modules_Directory,
 	Directory_CannotOpenDirectory,
 	Directory_ReadingFailed,
@@ -130,39 +144,36 @@ enum {
 };
 
 static char* codes[] = {
+	[Memory_OutOfMemory] = "OutOfMemory",
+	[Memory_Overlapping] = "Overlapping",
 	[String_DoubleFree] = "DoubleFree",
 	[String_BufferOverflow] = "BufferOverflow",
 	[String_ElementMismatch] = "ElementMismatch",
-	[Pool_HasParent] = "HasParent",
-	[Pool_NotBundling] = "NotBundling",
-	[Pool_AlreadyBundling] = "AlreadyBundling",
-	[Memory_NullPointer] = "NullPointer",
-	[Memory_OutOfBounds] = "OutOfBounds",
-	[Memory_OutOfMemory] = "OutOfMemory",
-	[Memory_Overlapping] = "Overlapping",
 	[Channel_IsDirectory] = "IsDirectory",
 	[Channel_ReadingFailed] = "ReadingFailed",
 	[Channel_ReadingInterrupted] = "ReadingInterrupted",
 	[Channel_UnknownError] = "UnknownError",
 	[Channel_WritingFailed] = "WritingFailed",
 	[Channel_WritingInterrupted] = "WritingInterrupted",
+	[File_AccessDenied] = "AccessDenied",
+	[File_AlreadyExists] = "AlreadyExists",
+	[File_AttributeNonExistent] = "AttributeNonExistent",
+	[File_BufferTooSmall] = "BufferTooSmall",
+	[File_CannotOpenFile] = "CannotOpenFile",
+	[File_GettingAttributeFailed] = "GettingAttributeFailed",
+	[File_InvalidFileDescriptor] = "InvalidFileDescriptor",
+	[File_InvalidParameter] = "InvalidParameter",
+	[File_IsDirectory] = "IsDirectory",
+	[File_NotFound] = "NotFound",
+	[File_NotWritable] = "NotWritable",
+	[File_SeekingFailed] = "SeekingFailed",
+	[File_SettingAttributeFailed] = "SettingAttributeFailed",
+	[File_StatFailed] = "StatFailed",
+	[File_TruncatingFailed] = "TruncatingFailed",
+	[ELF_InvalidFile] = "InvalidFile",
+	[ELF_UnknownError] = "UnknownError",
 	[Integer_Overflow] = "Overflow",
 	[Integer_Underflow] = "Underflow",
-	[Exception_AssertFailed] = "AssertFailed",
-	[Signal_SigAlrm] = "SigAlrm",
-	[Signal_SigBus] = "SigBus",
-	[Signal_SigFpe] = "SigFpe",
-	[Signal_SigIll] = "SigIll",
-	[Signal_SigInt] = "SigInt",
-	[Signal_SigPipe] = "SigPipe",
-	[Signal_SigQuit] = "SigQuit",
-	[Signal_SigSegv] = "SigSegv",
-	[Signal_SigTerm] = "SigTerm",
-	[Signal_SignalHandlerNotSet] = "SignalHandlerNotSet",
-	[Signal_Unknown] = "Unknown",
-	[Terminal_IoctlFailed] = "IoctlFailed",
-	[Terminal_ElementMismatch] = "ElementMismatch",
-	[Typography_IllegalNesting] = "IllegalNesting",
 	[Time_GetTimeOfDayFailed] = "GetTimeOfDayFailed",
 	[Path_AccessDenied] = "AccessDenied",
 	[Path_AlreadyExists] = "AlreadyExists",
@@ -186,21 +197,20 @@ static char* codes[] = {
 	[Path_SettingTimeFailed] = "SettingTimeFailed",
 	[Path_StatFailed] = "StatFailed",
 	[Path_TruncatingFailed] = "TruncatingFailed",
-	[File_AccessDenied] = "AccessDenied",
-	[File_AlreadyExists] = "AlreadyExists",
-	[File_AttributeNonExistent] = "AttributeNonExistent",
-	[File_BufferTooSmall] = "BufferTooSmall",
-	[File_CannotOpenFile] = "CannotOpenFile",
-	[File_GettingAttributeFailed] = "GettingAttributeFailed",
-	[File_InvalidFileDescriptor] = "InvalidFileDescriptor",
-	[File_InvalidParameter] = "InvalidParameter",
-	[File_IsDirectory] = "IsDirectory",
-	[File_NotFound] = "NotFound",
-	[File_NotWritable] = "NotWritable",
-	[File_SeekingFailed] = "SeekingFailed",
-	[File_SettingAttributeFailed] = "SettingAttributeFailed",
-	[File_StatFailed] = "StatFailed",
-	[File_TruncatingFailed] = "TruncatingFailed",
+	[Exception_AssertFailed] = "AssertFailed",
+	[Signal_SigAlrm] = "SigAlrm",
+	[Signal_SigBus] = "SigBus",
+	[Signal_SigFpe] = "SigFpe",
+	[Signal_SigIll] = "SigIll",
+	[Signal_SigInt] = "SigInt",
+	[Signal_SigPipe] = "SigPipe",
+	[Signal_SigQuit] = "SigQuit",
+	[Signal_SigSegv] = "SigSegv",
+	[Signal_SigTerm] = "SigTerm",
+	[Signal_SignalHandlerNotSet] = "SignalHandlerNotSet",
+	[Signal_Unknown] = "Unknown",
+	[Terminal_IoctlFailed] = "IoctlFailed",
+	[Terminal_ElementMismatch] = "ElementMismatch",
 	[Directory_CannotOpenDirectory] = "CannotOpenDirectory",
 	[Directory_ReadingFailed] = "ReadingFailed",
 	[Process_ForkFailed] = "ForkFailed",
@@ -218,22 +228,38 @@ static inline char* Manifest_ResolveCode(unsigned int code) {
 
 static inline char* Manifest_ResolveName(int module) {
 	switch (module) {
-		case Modules_String ... Modules_String_Length:
-			return "String";
-		case Modules_Pool ... Modules_Pool_Length:
-			return "Pool";
+		case Modules_DynObject ... Modules_DynObject_Length:
+			return "DynObject";
 		case Modules_Memory ... Modules_Memory_Length:
 			return "Memory";
+		case Modules_Buffer ... Modules_Buffer_Length:
+			return "Buffer";
+		case Modules_String ... Modules_String_Length:
+			return "String";
 		case Modules_Kernel ... Modules_Kernel_Length:
 			return "Kernel";
-		case Modules_Hex ... Modules_Hex_Length:
-			return "Hex";
 		case Modules_Channel ... Modules_Channel_Length:
 			return "Channel";
+		case Modules_System ... Modules_System_Length:
+			return "System";
+		case Modules_File ... Modules_File_Length:
+			return "File";
+		case Modules_ELF ... Modules_ELF_Length:
+			return "ELF";
+		case Modules_Hex ... Modules_Hex_Length:
+			return "Hex";
 		case Modules_Integer ... Modules_Integer_Length:
 			return "Integer";
-		case Modules_BFD ... Modules_BFD_Length:
-			return "BFD";
+		case Modules_Time ... Modules_Time_Length:
+			return "Time";
+		case Modules_Path ... Modules_Path_Length:
+			return "Path";
+		case Modules_LEB128 ... Modules_LEB128_Length:
+			return "LEB128";
+		case Modules_DWARF ... Modules_DWARF_Length:
+			return "DWARF";
+		case Modules_Backtrace ... Modules_Backtrace_Length:
+			return "Backtrace";
 		case Modules_Exception ... Modules_Exception_Length:
 			return "Exception";
 		case Modules_Signal ... Modules_Signal_Length:
@@ -242,22 +268,24 @@ static inline char* Manifest_ResolveName(int module) {
 			return "Logger";
 		case Modules_Terminal ... Modules_Terminal_Length:
 			return "Terminal";
+		case Modules_Memory_Map ... Modules_Memory_Map_Length:
+			return "Memory.Map";
+		case Modules_Memory_Libc ... Modules_Memory_Libc_Length:
+			return "Memory.Libc";
+		case Modules_Memory_Logger ... Modules_Memory_Logger_Length:
+			return "Memory.Logger";
 		case Modules_Application ... Modules_Application_Length:
 			return "Application";
-		case Modules_Tree ... Modules_Tree_Length:
-			return "Tree";
-		case Modules_Typography ... Modules_Typography_Length:
-			return "Typography";
-		case Modules_StringStream ... Modules_StringStream_Length:
-			return "StringStream";
+		case Modules_Ecriture ... Modules_Ecriture_Length:
+			return "Ecriture";
+		case Modules_StringReader ... Modules_StringReader_Length:
+			return "StringReader";
+		case Modules_Ecriture_Parser ... Modules_Ecriture_Parser_Length:
+			return "Ecriture.Parser";
 		case Modules_Terminal_Controller ... Modules_Terminal_Controller_Length:
 			return "Terminal.Controller";
-		case Modules_Time ... Modules_Time_Length:
-			return "Time";
-		case Modules_Path ... Modules_Path_Length:
-			return "Path";
-		case Modules_File ... Modules_File_Length:
-			return "File";
+		case Modules_Tree ... Modules_Tree_Length:
+			return "Tree";
 		case Modules_Directory ... Modules_Directory_Length:
 			return "Directory";
 		case Modules_Deps ... Modules_Deps_Length:

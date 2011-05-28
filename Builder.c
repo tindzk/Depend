@@ -489,7 +489,7 @@ def(void, CreateManifest) {
 		"\tswitch (module) {\n"));
 
 	each(module, modules) {
-		String readable = String_ReplaceAll(module->name.rd,
+		CarrierString readable = String_ReplaceAll(module->name.rd,
 			$("_"),
 			$("."));
 
@@ -500,7 +500,7 @@ def(void, CreateManifest) {
 			module->name.rd,
 			readable.rd);
 
-		String_Destroy(&readable);
+		CarrierString_Destroy(&readable);
 
 		File_Write(&file, fmt.rd);
 		String_Destroy(&fmt);

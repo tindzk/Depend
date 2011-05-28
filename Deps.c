@@ -62,7 +62,7 @@ static def(void, Add, RdString value) {
 		return;
 	}
 
-	ssize_t slash = String_ReverseFind(value, star, '/');
+	ssize_t slash = String_ReverseFind(String_Slice(value, star), '/');
 
 	RdString path, left;
 
@@ -70,15 +70,17 @@ static def(void, Add, RdString value) {
 		path = $(".");
 		left = String_Slice(value, 0, star);
 	} else {
+		slash += star;
+
 		path = String_Slice(value, 0, slash);
 		left = String_Slice(value, slash + 1, star - slash - 1);
 	}
 
 	RdString right = String_Slice(value, star + 1);
 
-	Directory dir;
 	Directory_Entry item;
-	Directory_Init(&dir, path);
+
+	Directory dir = Directory_New(path);
 
 	while (Directory_Read(&dir, &item)) {
 		if (item.type != Directory_ItemType_Symlink
@@ -257,14 +259,16 @@ static def(void, ScanFile, RdString path) {
 
 		if (type.buf[0] == '<') {
 			quotes = false;
-			header = String_Trim(String_Between(line, $("<"), $(">")));
+			String_Between(line, $("<"), $(">"), &header);
 		} else if (type.buf[0] == '"') {
 			quotes = true;
-			header = String_Trim(String_Between(line, $("\""), $("\"")));
+			String_Between(line, $("\""), $("\""), &header);
 		} else {
 			Logger_Error(this->logger, $("Line '%' not understood."), line);
 			continue;
 		}
+
+		header = String_Trim(header);
 
 		ref(Type) deptype = quotes
 			? ref(Type_Local)

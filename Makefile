@@ -1,7 +1,7 @@
 JIVAI_PATH ?= ../Jivai
 
 # Compile with Clang using the default configuration.
-CC = clang -include Manifest.h -include $(JIVAI_PATH)/config.h
+CC = clang -include $(JIVAI_PATH)/config.h
 
 # Enable warnings.
 CFLAGS = -W -Wall -pipe
@@ -19,6 +19,9 @@ CFLAGS += -std=gnu99 -fblocks
 
 # Define the library path.
 LIBPATH = $(JIVAI_PATH)/src
+
+# Needed so that Jivai libraries know where to find the manifest file.
+LIBFILES += -I.
 
 # Only build these modules.
 LIBFILES += $(LIBPATH)/{Main,Application,Channel,Signal,Memory,Directory,System,Kernel,Block,Process,Path,Char,String{,Stream,Reader},Backtrace,Integer,Exception,Tree,Terminal{,/Controller},Ecriture{,/Parser},File,BufferedStream,FileStream,Hex,Logger,ELF,DWARF,Buffer,LEB128,Memory/{Map,Libc,Logger}}.c

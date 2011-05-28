@@ -28,7 +28,7 @@ class {
 
 	Logger *logger;
 
-	String manifest;
+	bool manifest;
 	String output;
 	String cc;
 	String inclhdr;

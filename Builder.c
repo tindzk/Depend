@@ -8,7 +8,7 @@ def(void, Init, Logger *logger, Deps *deps) {
 	this->output    = String_Clone($("a.out"));
 	this->cc        = String_Clone($("/usr/bin/clang"));
 	this->inclhdr   = String_New(0);
-	this->manifest  = String_New(0);
+	this->manifest  = false;
 	this->dbgsym    = false;
 	this->std       = String_Clone($("gnu99"));
 	this->blocks    = true;
@@ -24,7 +24,6 @@ def(void, Destroy) {
 	String_Destroy(&this->output);
 	String_Destroy(&this->cc);
 	String_Destroy(&this->inclhdr);
-	String_Destroy(&this->manifest);
 	String_Destroy(&this->std);
 
 	StringArray_Destroy(this->link);
@@ -101,7 +100,7 @@ def(bool, SetOption, RdString name, RdString value) {
 	} else if (String_Equals(name, $("inclhdr"))) {
 		String_Copy(&this->inclhdr, value);
 	} else if (String_Equals(name, $("manifest"))) {
-		String_Copy(&this->manifest, value);
+		this->manifest = true;
 	} else if (String_Equals(name, $("dbgsym"))) {
 		this->dbgsym = String_Equals(value, $("yes"));
 	} else if (String_Equals(name, $("std"))) {
@@ -264,11 +263,6 @@ static def(bool, Compile, String src, String out) {
 	Process_AddParameter(&proc, $("-Wall"));
 	Process_AddParameter(&proc, $("-pipe"));
 	Process_AddParameter(&proc, $("-Wshorten-64-to-32"));
-
-	if (this->manifest.len != 0) {
-		Process_AddParameter(&proc, $("-include"));
-		Process_AddParameter(&proc, this->manifest.rd);
-	}
 
 	if (this->inclhdr.len > 0) {
 		Process_AddParameter(&proc, $("-include"));
@@ -437,10 +431,11 @@ def(void, PrintQueue) {
 def(void, CreateManifest) {
 	Deps_Modules *modules = Deps_GetModules(this->deps);
 
-	File file = File_New(this->manifest.rd,
+	File file = File_New($("Manifest.h"),
 		FileStatus_Create    |
 		FileStatus_WriteOnly |
 		FileStatus_Truncate);
+
 	File_Write(&file, $("enum {\n"));
 
 	each(module, modules) {
@@ -459,11 +454,19 @@ def(void, CreateManifest) {
 		String_Destroy(&fmt3);
 	}
 
-	File_Write(&file, $(
-		"};\n"
-		"\n"
-		"static char* codes[] = {\n"
-	));
+	File_Write(&file, $("};\n\n"));
+	File_Write(&file, $("char* Manifest_ResolveCode(unsigned int code);\n"));
+	File_Write(&file, $("char* Manifest_ResolveName(int module);\n"));
+
+	File_Destroy(&file);
+
+	file = File_New($("Manifest.c"),
+		FileStatus_Create    |
+		FileStatus_WriteOnly |
+		FileStatus_Truncate);
+
+	File_Write(&file, $("#import \"Manifest.h\"\n\n"));
+	File_Write(&file, $("static char* codes[] = {\n"));
 
 	each(module, modules) {
 		each(exc, module->exc) {
@@ -477,7 +480,7 @@ def(void, CreateManifest) {
 	File_Write(&file, $(
 		"};\n"
 		"\n"
-		"static inline char* Manifest_ResolveCode(unsigned int code) {\n"
+		"char* Manifest_ResolveCode(unsigned int code) {\n"
 		"\tif (code > sizeof(codes) / sizeof(codes[0])) {\n"
 		"\t\treturn \"\";\n"
 		"\t}\n"
@@ -485,7 +488,7 @@ def(void, CreateManifest) {
 		"\treturn codes[code];\n"
 		"}\n"
 		"\n"
-		"static inline char* Manifest_ResolveName(int module) {\n"
+		"char* Manifest_ResolveName(int module) {\n"
 		"\tswitch (module) {\n"));
 
 	each(module, modules) {
@@ -515,12 +518,11 @@ def(void, CreateManifest) {
 	File_Destroy(&file);
 
 	Logger_Info(this->logger,
-		$("Manifest written to '%'."),
-		this->manifest.rd);
+		$("Manifest written to 'Manifest.h' and 'Manifest.c'."));
 }
 
 def(bool, Run) {
-	if (this->manifest.len != 0) {
+	if (this->manifest) {
 		call(CreateManifest);
 	}
 

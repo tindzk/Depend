@@ -62,7 +62,7 @@ def(bool, Run) {
 	}
 
 	Interface itf;
-	Interface_Init(&itf, &this->logger);
+	Interface_Init(&itf, &this->term, &this->logger);
 	Interface_SetAction(&itf, this->args->buf[0]);
 
 	RdString line = $("");

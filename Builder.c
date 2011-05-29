@@ -2,7 +2,8 @@
 
 #define self Builder
 
-def(void, Init, Logger *logger, Deps *deps) {
+def(void, Init, Terminal *term, Logger *logger, Deps *deps) {
+	this->term      = term;
 	this->deps      = deps;
 	this->logger    = logger;
 	this->output    = String_Clone($("a.out"));
@@ -76,7 +77,19 @@ static def(bool, Map, RdString value) {
 		Logger_Error(this->logger,
 			$("Destination path '%' does not exist."),
 			insert.dest.rd);
-		goto error;
+
+		Terminal_Prompt prompt;
+		Terminal_Prompt_Init(&prompt, this->term);
+
+		bool isYes = Terminal_Prompt_Ask(&prompt, $$("Create path?"));
+
+		Terminal_Prompt_Destroy(&prompt);
+
+		if (isYes) {
+			Path_Create(insert.dest.rd, true);
+		} else {
+			goto error;
+		}
 	}
 
 	MappingArray_Push(&this->mappings, insert);

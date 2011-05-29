@@ -1,5 +1,6 @@
 #import <Logger.h>
 #import <String.h>
+#import <Terminal.h>
 
 #import "Deps.h"
 #import "Utils.h"
@@ -28,7 +29,7 @@ class {
 	Prototypes proto;
 };
 
-def(void, Init, Logger *logger);
+def(void, Init, Terminal *term, Logger *logger);
 def(void, Destroy);
 def(void, SetAction, RdString action);
 def(bool, SetOption, RdString name, RdString value);

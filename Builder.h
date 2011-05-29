@@ -2,6 +2,8 @@
 #import <String.h>
 #import <Logger.h>
 #import <Process.h>
+#import <Terminal.h>
+#import <Terminal/Prompt.h>
 
 #import "Deps.h"
 #import "Utils.h"
@@ -27,6 +29,7 @@ class {
 	Deps *deps;
 
 	Logger *logger;
+	Terminal *term;
 
 	bool manifest;
 	String output;
@@ -44,7 +47,7 @@ class {
 	QueueArray *queue;
 };
 
-def(void, Init, Logger *logger, Deps *deps);
+def(void, Init, Terminal *term, Logger *logger, Deps *deps);
 def(void, Destroy);
 def(bool, SetOption, RdString name, RdString value);
 def(bool, CreateQueue);

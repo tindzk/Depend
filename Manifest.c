@@ -149,6 +149,14 @@ char* Manifest_ResolveName(int module) {
 			return "Deps";
 		case Modules_Process ... Modules_Process_Length:
 			return "Process";
+		case Modules_Block ... Modules_Block_Length:
+			return "Block";
+		case Modules_Unicode ... Modules_Unicode_Length:
+			return "Unicode";
+		case Modules_Terminal_Buffer ... Modules_Terminal_Buffer_Length:
+			return "Terminal.Buffer";
+		case Modules_Terminal_Prompt ... Modules_Terminal_Prompt_Length:
+			return "Terminal.Prompt";
 		case Modules_Builder ... Modules_Builder_Length:
 			return "Builder";
 		case Modules_Prototypes ... Modules_Prototypes_Length:

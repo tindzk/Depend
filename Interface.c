@@ -2,13 +2,13 @@
 
 #define self Interface
 
-def(void, Init, Logger *logger) {
+def(void, Init, Terminal *term, Logger *logger) {
 	this->logger = logger;
 	this->action = ref(Action_Unsupported);
 
 	Deps_Init(&this->deps, logger);
 	Prototypes_Init(&this->proto);
-	Builder_Init(&this->builder, logger, &this->deps);
+	Builder_Init(&this->builder, term, logger, &this->deps);
 }
 
 def(void, Destroy) {

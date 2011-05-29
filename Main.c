@@ -47,14 +47,28 @@ def(bool, Run) {
 		return false;
 	}
 
+	if (this->args->len == 1) {
+		Logger_Error(&this->logger, $("Filename missing."));
+		return false;
+	}
+
+	String contents = String_New(1024);
+	File_GetContents(this->args->buf[1], &contents);
+
+	if (contents.len == String_GetSize(contents)) {
+		Logger_Error(&this->logger, $("File too large."));
+		String_Destroy(&contents);
+		return false;
+	}
+
 	Interface itf;
 	Interface_Init(&itf, &this->logger);
 	Interface_SetAction(&itf, this->args->buf[0]);
 
-	fwd(i, this->args->len) {
+	RdString line = $("");
+	while (String_Split(contents.rd, '\n', &line)) {
 		RdString name, value;
-
-		if (!String_Parse($("%=%"), this->args->buf[i], &name, &value)) {
+		if (!String_Parse($("%=%"), line, &name, &value)) {
 			continue;
 		}
 

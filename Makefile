@@ -30,6 +30,6 @@ LIBFILES += $(LIBPATH)/{Main,Application,Channel,Signal,Memory,Directory,System,
 LIBFILES += -I$(LIBPATH)
 
 all:
-	if test -f Depend.bin; then ./update-manifest.sh; fi
+	if test -f Depend.exe; then ./update-manifest.sh; fi
 	bash -c "$(CC) -o Depend.tmp $(CFLAGS) *.c $(LIBFILES)"
-	mv Depend.tmp Depend.bin
+	mv Depend.tmp Depend.exe

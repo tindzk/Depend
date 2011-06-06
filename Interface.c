@@ -6,7 +6,7 @@ def(void, Init, Terminal *term, Logger *logger) {
 	this->logger = logger;
 	this->action = ref(Action_Unsupported);
 
-	Deps_Init(&this->deps, logger);
+	this->deps = Deps_new(logger);
 	Prototypes_Init(&this->proto);
 	Builder_Init(&this->builder, term, logger, &this->deps);
 }
@@ -14,7 +14,7 @@ def(void, Init, Terminal *term, Logger *logger) {
 def(void, Destroy) {
 	Builder_Destroy(&this->builder);
 	Prototypes_Destroy(&this->proto);
-	Deps_Destroy(&this->deps);
+	Deps_destroy(&this->deps);
 }
 
 def(void, SetAction, RdString action) {
@@ -22,8 +22,6 @@ def(void, SetAction, RdString action) {
 		this->action = ref(Action_Build);
 	} else if (String_Equals(action, $("listdeps"))) {
 		this->action = ref(Action_ListDeps);
-	} else if (String_Equals(action, $("deptree"))) {
-		this->action = ref(Action_DepTree);
 	} else if (String_Equals(action, $("print-queue"))) {
 		this->action = ref(Action_PrintQueue);
 	} else if (String_Equals(action, $("prototypes"))) {
@@ -42,7 +40,7 @@ def(bool, SetOption, RdString name, RdString value) {
 		}
 	}
 
-	if (!Deps_SetOption(&this->deps, name, value)) {
+	if (!Deps_setOption(&this->deps, name, value)) {
 		return false;
 	}
 
@@ -60,7 +58,7 @@ def(bool, SetOption, RdString name, RdString value) {
 def(bool, Run) {
 	switch (this->action) {
 		case ref(Action_Build):
-			Deps_Scan(&this->deps);
+			Deps_scan(&this->deps);
 
 			if (!Builder_Run(&this->builder)) {
 				return false;
@@ -69,19 +67,18 @@ def(bool, Run) {
 			return true;
 
 		case ref(Action_ListDeps):
-			Deps_Scan(&this->deps);
-			Deps_ListSourceFiles(&this->deps);
+			Deps_scan(&this->deps);
 
-			return true;
+			Deps_Components *comps = Deps_getComponents(&this->deps);
 
-		case ref(Action_DepTree):
-			Deps_Scan(&this->deps);
-			Deps_PrintTree(&this->deps);
+			fwd(i, comps->len) {
+				Logger_Info(this->logger, $("%"), comps->buf[i].path.rd);
+			}
 
 			return true;
 
 		case ref(Action_PrintQueue):
-			Deps_Scan(&this->deps);
+			Deps_scan(&this->deps);
 
 			if (!Builder_CreateQueue(&this->builder)) {
 				return false;
@@ -99,7 +96,7 @@ def(bool, Run) {
 		case ref(Action_Help):
 			Logger_Info(this->logger, $(
 				"Supported actions are: "
-				"build, listdeps, deptree, print-queue, prototypes, help."
+				"build, listdeps, print-queue, prototypes, help."
 			));
 
 			return true;

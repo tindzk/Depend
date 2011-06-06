@@ -68,7 +68,7 @@
 	}
 
 	.section[Dependency tree] {
-		Sometimes it's useful to get an overview of your project's overall complexity. Depend supports printing the whole dependency tree. Just replace replace the .keyword{build} with .keyword{deptree} in the above command.
+		Sometimes it's useful to get an overview of your project's overall complexity. Depend supports printing the whole dependency tree. Just replace replace the .keyword{build} with .keyword{listdeps} in the above command.
 	}
 }
 

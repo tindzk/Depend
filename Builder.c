@@ -282,7 +282,7 @@ static def(bool, Compile, String src, String out) {
 		Process_AddParameter(&proc, this->inclhdr.rd);
 	}
 
-	StringArray *deps = Deps_GetIncludes(this->deps);
+	StringArray *deps = Deps_getIncludes(this->deps);
 
 	fwd(i, deps->len) {
 		Process_AddParameter(&proc, $("-I"));
@@ -349,7 +349,7 @@ static def(void, Link, StringArray *files) {
 	Process_Destroy(&proc);
 }
 
-def(bool, Traverse, Deps_Component *node, size_t depth) {
+def(bool, Traverse, Deps_Component *comp, size_t depth) {
 	bool build = false;
 
 	String prefix = String_New(depth * 2);
@@ -357,7 +357,7 @@ def(bool, Traverse, Deps_Component *node, size_t depth) {
 		String_Append(&prefix, ' ');
 	}
 
-	String headerPath = String_Clone(node->path.rd);
+	String headerPath = String_Clone(comp->path.rd);
 	String sourcePath = scall(GetSource, headerPath.rd);
 
 	/* Skip all non-source files. */
@@ -398,9 +398,14 @@ def(bool, Traverse, Deps_Component *node, size_t depth) {
 		String_Destroy(&output);
 	}
 
-	fwd(i, node->len) {
-		if (call(Traverse, node->buf[i], depth + 1)) {
-			build = true;
+	if (depth != 1) {
+		Deps_Components *comps = Deps_getComponents(this->deps);
+
+		fwd(i, comp->deps->len) {
+			size_t ofs = comp->deps->buf[i];
+			if (call(Traverse, &comps->buf[ofs], depth + 1)) {
+				build = true;
+			}
 		}
 	}
 
@@ -416,10 +421,10 @@ def(bool, Traverse, Deps_Component *node, size_t depth) {
 }
 
 def(bool, CreateQueue) {
-	Deps_Component *comps = Deps_GetComponent(this->deps);
+	Deps_Components *comps = Deps_getComponents(this->deps);
 
-	each(comp, comps) {
-		call(Traverse, *comp, 0);
+	fwd(i, comps->len) {
+		call(Traverse, &comps->buf[i], 0);
 	}
 
 	return true;
@@ -442,7 +447,7 @@ def(void, PrintQueue) {
 }
 
 def(void, CreateManifest) {
-	Deps_Modules *modules = Deps_GetModules(this->deps);
+	Deps_Modules *modules = Deps_getModules(this->deps);
 
 	File file = File_New($("Manifest.h"),
 		FileStatus_Create    |
@@ -577,10 +582,10 @@ def(bool, Run) {
 
 		StringArray *files = StringArray_New(0);
 
-		StringArray *paths = Deps_GetPaths(this->deps);
+		Deps_Components *comps = Deps_getComponents(this->deps);
 
-		fwd(i, paths->len) {
-			String src = scall(GetSource, paths->buf[i].rd);
+		fwd(i, comps->len) {
+			String src = scall(GetSource, comps->buf[i].path.rd);
 
 			if (src.len > 0) {
 				String path = call(GetOutput, src.rd);

@@ -22,40 +22,39 @@ record(ref(Module)) {
 
 Array(ref(Module), ref(Modules));
 Array(size_t,      ref(ModuleOffsets));
+Array(size_t,      ref(ComponentOffsets));
 
 record(ref(Component)) {
-	Tree_Define(ref(Component));
-
 	String path;
-	ref(ModuleOffsets) *modules;
+	ref(ModuleOffsets)    *modules;
+	ref(ComponentOffsets) *deps;
 };
+
+Array(ref(Component), ref(Components));
 
 class {
-	String main;
-
-	Logger *logger;
-
-	StringArray *paths;
-	StringArray *include;
-
-	/* Dependency tree. */
-	Tree tree;
-	ref(Component) *component;
-
-	/* All modules flattened. */
-	ref(Modules) *modules;
+	String          main;
+	Logger          *logger;
+	StringArray     *include;
+	ref(Modules)    *modules;
+	ref(Components) *components;
 };
 
-def(void, Init, Logger *logger);
-def(void, Destroy);
-def(void, DestroyNode, Tree_Node *ptr);
-def(bool, SetOption, RdString name, RdString value);
-def(StringArray *, GetIncludes);
-def(ref(Modules) *, GetModules);
-def(ref(Component) *, GetComponent);
-def(StringArray *, GetPaths);
-def(void, ListSourceFiles);
-def(void, PrintTree);
-def(void, Scan);
+rsdef(self, new, Logger *logger);
+def(void, destroy);
+def(bool, setOption, RdString name, RdString value);
+def(void, scan);
+
+static alwaysInline def(StringArray *, getIncludes) {
+	return this->include;
+}
+
+static alwaysInline def(ref(Modules) *, getModules) {
+	return this->modules;
+}
+
+static alwaysInline def(ref(Components) *, getComponents) {
+	return this->components;
+}
 
 #undef self

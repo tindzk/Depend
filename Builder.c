@@ -398,17 +398,6 @@ def(bool, Traverse, Deps_Component *comp, size_t depth) {
 		String_Destroy(&output);
 	}
 
-	if (depth != 1) {
-		Deps_Components *comps = Deps_getComponents(this->deps);
-
-		fwd(i, comp->deps->len) {
-			size_t ofs = comp->deps->buf[i];
-			if (call(Traverse, &comps->buf[ofs], depth + 1)) {
-				build = true;
-			}
-		}
-	}
-
 	if (!build) {
 		Logger_Debug(this->logger, $("%Not building."), prefix.rd);
 	}

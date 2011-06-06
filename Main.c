@@ -74,9 +74,12 @@ def(bool, Run) {
 
 		if (!Interface_SetOption(&itf, name, value)) {
 			Interface_Destroy(&itf);
+			String_Destroy(&contents);
 			return false;
 		}
 	}
+
+	String_Destroy(&contents);
 
 	bool res = false;
 

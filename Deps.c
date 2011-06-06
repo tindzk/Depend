@@ -119,7 +119,9 @@ static def(String, resolve, RdString base, RdString file, ref(Type) deptype) {
 	return absPath;
 }
 
-static def(void, scanFile, ref(Component) *comp) {
+static def(void, scanFile, size_t ofs) {
+	ref(Component) *comp = &this->components->buf[ofs];
+
 	String s = String_New(1024 * 15);
 	File_GetContents(comp->path.rd, &s);
 
@@ -210,17 +212,22 @@ static def(void, scanFile, ref(Component) *comp) {
 			Logger_Debug(this->logger, $("Absolute path is '%'."), absPath.rd);
 
 			/* Dependency offset. */
-			ssize_t ofs = call(getComponentOffset, absPath.rd);
+			ssize_t depOfs = call(getComponentOffset, absPath.rd);
 
-			if (ofs == -1) {
-				ofs = call(addComponent, absPath);
+			if (depOfs == -1) {
+				depOfs = call(addComponent, absPath);
 				Logger_Debug(this->logger, $("Scanning dependency..."));
-				call(scanFile, &this->components->buf[ofs]);
+				call(scanFile, depOfs);
 			} else {
 				String_Destroy(&absPath);
 			}
 
-			scall(ComponentOffsets_Push, &comp->deps, ofs);
+			/* We must assume that the calls to resolve() and
+			 * addComponent() have pushed some elements to the array
+			 * which may have caused the pointer to be invalid now.
+			 */
+			comp = &this->components->buf[ofs];
+			scall(ComponentOffsets_Push, &comp->deps, depOfs);
 		}
 	}
 
@@ -231,11 +238,10 @@ static def(void, processFile, RdString base, RdString file, ref(Type) deptype) {
 	String absPath = call(resolve, base, file, deptype);
 
 	if (absPath.len != 0 && call(getComponentOffset, absPath.rd) == -1) {
-		size_t pos = call(addComponent, absPath);
-		ref(Component) *comp = &this->components->buf[pos];
-
 		Logger_Debug(this->logger, $("Adding '%'..."), absPath.rd);
-		call(scanFile, comp);
+
+		size_t pos = call(addComponent, absPath);
+		call(scanFile, pos);
 	} else {
 		String_Destroy(&absPath);
 	}

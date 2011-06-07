@@ -57,13 +57,13 @@ static def(String, getOutput, RdString path) {
 	return out;
 }
 
-static def(void, traverse, Deps_Component *comp) {
+static def(bool, traverse, Deps_Component *comp) {
 	RdString headerPath = comp->header.rd;
 	RdString sourcePath = comp->source.rd;
 
 	if (sourcePath.len == 0) {
 		Logger_Info(this->logger, $("Skipping %..."), headerPath);
-		return;
+		return false;
 	}
 
 	Logger_Info(this->logger, $("Processing %..."), sourcePath);
@@ -80,30 +80,50 @@ static def(void, traverse, Deps_Component *comp) {
 	if (!Path_Exists(output.rd)) {
 		Logger_Info(this->logger, $("Not built yet."));
 		call(addToQueue, sourcePath, output);
-		return;
+		return true;
 	}
 
 	if (File_IsModified(sourcePath, output.rd)) {
 		Logger_Info(this->logger, $("Source modified."));
 		call(addToQueue, sourcePath, output);
-		return;
+		return true;
 	}
 
 	if (headerPath.len != 0 && File_IsModified(headerPath, output.rd)) {
 		Logger_Info(this->logger, $("Header modified."));
 		call(addToQueue, sourcePath, output);
-		return;
+		return true;
 	}
 
 	Logger_Debug(this->logger, $("Not building."));
 	String_Destroy(&output);
+	return false;
+}
+
+static def(void, addDependants, Deps_Components *comps, size_t ofs) {
+	fwd(i, comps->len) {
+		Deps_ComponentOffsets *deps = comps->buf[i].deps;
+
+		fwd (j, deps->len) {
+			if (deps->buf[j] == ofs) {
+				RdString sourcePath = comps->buf[i].source.rd;
+				Logger_Info(this->logger, $("Pulling in dependant %..."),
+					sourcePath);
+				String output = call(getOutput, sourcePath);
+				call(addToQueue, sourcePath, output);
+				break;
+			}
+		}
+	}
 }
 
 def(void, create) {
 	Deps_Components *comps = Deps_getComponents(this->deps);
 
 	fwd(i, comps->len) {
-		call(traverse, &comps->buf[i]);
+		if (call(traverse, &comps->buf[i])) {
+			call(addDependants, comps, i);
+		}
 	}
 }
 

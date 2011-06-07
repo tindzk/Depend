@@ -7,23 +7,9 @@
 
 #import "Deps.h"
 #import "Utils.h"
+#import "Queue.h"
 
 #define self Builder
-
-// @exc RuntimeError
-
-record(ref(QueueItem)) {
-	String source;
-	String output;
-};
-
-record(ref(DepsMapping)) {
-	String src;
-	String dest;
-};
-
-Array(ref(DepsMapping), MappingArray);
-Array(ref(QueueItem),   QueueArray);
 
 class {
 	Deps *deps;
@@ -44,14 +30,11 @@ class {
 	StringArray *link;
 	StringArray *linkpaths;
 	MappingArray *mappings;
-	QueueArray *queue;
 };
 
 def(void, Init, Terminal *term, Logger *logger, Deps *deps);
 def(void, Destroy);
 def(bool, SetOption, RdString name, RdString value);
-def(bool, CreateQueue);
-def(void, PrintQueue);
 def(bool, Run);
 
 #undef self

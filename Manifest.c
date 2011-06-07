@@ -72,7 +72,7 @@ static char* codes[] = {
 	[Directory_ReadingFailed] = "ReadingFailed",
 	[Process_ForkFailed] = "ForkFailed",
 	[Process_SpawningProcessFailed] = "SpawningProcessFailed",
-	[Builder_RuntimeError] = "RuntimeError",
+	[Queue_RuntimeError] = "RuntimeError",
 };
 
 char* Manifest_ResolveCode(unsigned int code) {
@@ -157,6 +157,8 @@ char* Manifest_ResolveName(int module) {
 			return "Terminal.Buffer";
 		case Modules_Terminal_Prompt ... Modules_Terminal_Prompt_Length:
 			return "Terminal.Prompt";
+		case Modules_Queue ... Modules_Queue_Length:
+			return "Queue";
 		case Modules_Builder ... Modules_Builder_Length:
 			return "Builder";
 		case Modules_Prototypes ... Modules_Prototypes_Length:

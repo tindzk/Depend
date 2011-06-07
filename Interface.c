@@ -22,8 +22,6 @@ def(void, SetAction, RdString action) {
 		this->action = ref(Action_Build);
 	} else if (String_Equals(action, $("listdeps"))) {
 		this->action = ref(Action_ListDeps);
-	} else if (String_Equals(action, $("print-queue"))) {
-		this->action = ref(Action_PrintQueue);
 	} else if (String_Equals(action, $("prototypes"))) {
 		this->action = ref(Action_Prototypes);
 	} else if (String_Equals(action, $("help"))) {
@@ -77,17 +75,6 @@ def(bool, Run) {
 
 			return true;
 
-		case ref(Action_PrintQueue):
-			Deps_scan(&this->deps);
-
-			if (!Builder_CreateQueue(&this->builder)) {
-				return false;
-			}
-
-			Builder_PrintQueue(&this->builder);
-
-			return true;
-
 		case ref(Action_Prototypes):
 			Prototypes_Generate(&this->proto);
 
@@ -96,7 +83,7 @@ def(bool, Run) {
 		case ref(Action_Help):
 			Logger_Info(this->logger, $(
 				"Supported actions are: "
-				"build, listdeps, print-queue, prototypes, help."
+				"build, listdeps, prototypes, help."
 			));
 
 			return true;

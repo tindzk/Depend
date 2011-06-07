@@ -16,7 +16,6 @@ def(void, Init, Terminal *term, Logger *logger, Deps *deps) {
 	this->optmlevel = 0;
 	this->verbose   = false;
 	this->link      = StringArray_New(0);
-	this->queue     = QueueArray_New(0);
 	this->mappings  = MappingArray_New(0);
 	this->linkpaths = StringArray_New(0);
 }
@@ -33,24 +32,18 @@ def(void, Destroy) {
 	StringArray_Destroy(this->linkpaths);
 	StringArray_Free(this->linkpaths);
 
-	each(item, this->queue) {
-		String_Destroy(&item->source);
-		String_Destroy(&item->output);
-	}
-
 	each(item, this->mappings) {
 		String_Destroy(&item->src);
 		String_Destroy(&item->dest);
 	}
 
 	MappingArray_Free(this->mappings);
-	QueueArray_Free(this->queue);
 }
 
 static def(bool, Map, RdString value) {
 	bool src = true;
 	RdString s = $("");
-	ref(DepsMapping) insert;
+	DepsMapping insert;
 
 	while (String_Split(value, ':', &s)) {
 		if (src) {
@@ -165,84 +158,6 @@ static def(String, ShrinkPath, RdString path) {
 	return String_Clone(path);
 }
 
-static def(String, GetOutput, RdString path) {
-	String realpath = Path_Resolve(path);
-
-	fwd(i, this->mappings->len) {
-		String mapping = Path_Resolve(this->mappings->buf[i].src.rd);
-
-		if (String_BeginsWith(realpath.rd, mapping.rd)) {
-			String out = String_Clone(this->mappings->buf[i].dest.rd);
-			String_Append(&out, String_Slice(realpath.rd, mapping.len));
-
-			if (String_EndsWith(out.rd, $(".cpp"))) {
-				String_Crop(&out, 0, -4);
-			} else if (String_EndsWith(out.rd, $(".c"))) {
-				String_Crop(&out, 0, -2);
-			}
-
-			String_Append(&out, $(".o"));
-
-			String_Destroy(&realpath);
-			String_Destroy(&mapping);
-
-			return out;
-		}
-
-		String_Destroy(&mapping);
-	}
-
-	String_Destroy(&realpath);
-
-	return String_New(0);
-}
-
-static sdef(String, GetSource, RdString path) {
-	ssize_t pos = String_ReverseFind(path, '.');
-
-	if (pos == String_NotFound) {
-		return String_New(0);
-	}
-
-	RdString ext = String_Slice(path, pos);
-
-	if (String_Equals(ext, $("c")) ||
-		String_Equals(ext, $("cpp")))
-	{
-		/* Already a source file. */
-		return String_Clone(path);
-	}
-
-	String res = String_Clone(String_Slice(path, 0, pos + 1));
-
-	String_Append(&res, 'c');
-
-	if (!Path_Exists(res.rd)) {
-		String_Append(&res, $("pp"));
-
-		if (!Path_Exists(res.rd)) {
-			res.len = 0;
-		}
-	}
-
-	return res;
-}
-
-static def(void, AddToQueue, RdString source, RdString output) {
-	fwd(i, this->queue->len) {
-		if (String_Equals(this->queue->buf[i].source.rd, source)) {
-			return;
-		}
-	}
-
-	ref(QueueItem) item = {
-		.source = String_Clone(source),
-		.output = String_Clone(output)
-	};
-
-	QueueArray_Push(&this->queue, item);
-}
-
 static def(bool, Compile, String src, String out) {
 	Process proc = Process_New(this->cc.rd);
 
@@ -349,92 +264,6 @@ static def(void, Link, StringArray *files) {
 	Process_Destroy(&proc);
 }
 
-def(bool, Traverse, Deps_Component *comp, size_t depth) {
-	bool build = false;
-
-	String prefix = String_New(depth * 2);
-	rpt(depth * 2) {
-		String_Append(&prefix, ' ');
-	}
-
-	String headerPath = String_Clone(comp->path.rd);
-	String sourcePath = scall(GetSource, headerPath.rd);
-
-	/* Skip all non-source files. */
-	if (sourcePath.len == 0) {
-		Logger_Debug(this->logger,
-			$("%'%' has no corresponding source file"),
-			prefix.rd, headerPath.rd);
-	} else {
-		Logger_Info(this->logger, $("%Processing %..."), prefix.rd, sourcePath.rd);
-
-		String output = call(GetOutput, sourcePath.rd);
-
-		if (output.len == 0) {
-			Logger_Error(this->logger,
-				$("%No output path for '%' is mapped."),
-				prefix.rd, sourcePath.rd);
-
-			String_Destroy(&headerPath);
-			String_Destroy(&sourcePath);
-
-			throw(RuntimeError);
-		}
-
-		if (!Path_Exists(output.rd)) {
-			Logger_Info(this->logger, $("%Not built yet."), prefix.rd);
-			call(AddToQueue, sourcePath.rd, output.rd);
-			build = true;
-		} else if (File_IsModified(sourcePath.rd, output.rd)) {
-			Logger_Info(this->logger, $("%Source modified."), prefix.rd);
-			call(AddToQueue, sourcePath.rd, output.rd);
-			build = true;
-		} else if (File_IsModified(headerPath.rd, output.rd)) {
-			Logger_Info(this->logger, $("%Header modified."), prefix.rd);
-			call(AddToQueue, sourcePath.rd, output.rd);
-			build = true;
-		}
-
-		String_Destroy(&output);
-	}
-
-	if (!build) {
-		Logger_Debug(this->logger, $("%Not building."), prefix.rd);
-	}
-
-	String_Destroy(&sourcePath);
-	String_Destroy(&headerPath);
-	String_Destroy(&prefix);
-
-	return build;
-}
-
-def(bool, CreateQueue) {
-	Deps_Components *comps = Deps_getComponents(this->deps);
-
-	fwd(i, comps->len) {
-		call(Traverse, &comps->buf[i], 0);
-	}
-
-	return true;
-}
-
-def(void, PrintQueue) {
-	if (this->queue->len == 0 && Path_Exists(this->output.rd)) {
-		Logger_Info(this->logger, $("  Queue is empty."));
-	} else {
-		Logger_Info(this->logger, $("  Queue:"));
-
-		fwd(i, this->queue->len) {
-			Logger_Info(this->logger, $(" - % --> %"),
-				this->queue->buf[i].source.rd,
-				this->queue->buf[i].output.rd);
-		}
-
-		Logger_Info(this->logger, $(" - % (link)"), this->output.rd);
-	}
-}
-
 def(void, CreateManifest) {
 	Deps_Modules *modules = Deps_getModules(this->deps);
 
@@ -537,76 +366,50 @@ def(bool, Run) {
 		return true;
 	}
 
-	if (!call(CreateQueue)) {
-		return false;
-	}
+	Queue queue = Queue_new(this->logger, this->deps, this->mappings);
+	Queue_create(&queue);
 
-	if (this->queue->len != 0 || !Path_Exists(this->output.rd)) {
-		fwd(i, this->queue->len) {
-			RdString create = Path_GetDirectory(this->queue->buf[i].output.rd);
+	size_t cnt = 1;
 
-			if (!Path_Exists(create)) {
-				Path_Create(create, true);
-			}
+	while (Queue_hasNext(&queue)) {
+		Queue_Item item = Queue_getNext(&queue);
 
-			String path = call(ShrinkPath, this->queue->buf[i].source.rd);
+		RdString create = Path_GetDirectory(item.output.rd);
 
-			String strCur   = Integer_ToString(i + 1);
-			String strTotal = Integer_ToString(this->queue->len);
-
-			Logger_Info(this->logger, $("Compiling %... [%/%]"),
-				path.rd, strCur.rd, strTotal.rd);
-
-			String_Destroy(&strCur);
-			String_Destroy(&strTotal);
-
-			bool ok = call(Compile, path, this->queue->buf[i].output);
-
-			String_Destroy(&path);
-
-			if (!ok) {
-				return false;
-			}
+		if (!Path_Exists(create)) {
+			Path_Create(create, true);
 		}
 
-		StringArray *files = StringArray_New(0);
+		String path = call(ShrinkPath, item.source.rd);
 
-		Deps_Components *comps = Deps_getComponents(this->deps);
+		String strCur   = Integer_ToString(cnt);
+		String strTotal = Integer_ToString(Queue_getTotal(&queue));
 
-		fwd(i, comps->len) {
-			String src = scall(GetSource, comps->buf[i].path.rd);
+		Logger_Info(this->logger, $("Compiling %... [%/%]"),
+			path.rd, strCur.rd, strTotal.rd);
 
-			if (src.len > 0) {
-				String path = call(GetOutput, src.rd);
+		String_Destroy(&strCur);
+		String_Destroy(&strTotal);
 
-				if (path.len == 0) {
-					StringArray_Destroy(files);
-					StringArray_Free(files);
+		bool ok = call(Compile, path, item.output);
 
-					String_Destroy(&src);
+		String_Destroy(&path);
 
-					return false;
-				}
-
-				String shrinked = call(ShrinkPath, path.rd);
-
-				if (StringArray_Contains(files, shrinked.rd)) {
-					String_Destroy(&shrinked);
-				} else {
-					StringArray_Push(&files, shrinked);
-				}
-
-				String_Destroy(&path);
-			}
-
-			String_Destroy(&src);
+		if (!ok) {
+			return false;
 		}
 
-		call(Link, files);
-
-		StringArray_Destroy(files);
-		StringArray_Free(files);
+		cnt++;
 	}
+
+	StringArray *files = Queue_getLinkingFiles(&queue);
+
+	call(Link, files);
+
+	StringArray_Destroy(files);
+	StringArray_Free(files);
+
+	Queue_destroy(&queue);
 
 	return true;
 }

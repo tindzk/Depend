@@ -12,7 +12,6 @@
 set(ref(Action)) {
 	ref(Action_Build),
 	ref(Action_ListDeps),
-	ref(Action_PrintQueue),
 	ref(Action_Prototypes),
 	ref(Action_Help),
 	ref(Action_Unsupported)

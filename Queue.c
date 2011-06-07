@@ -68,35 +68,31 @@ static def(String, getSource, RdString path) {
 }
 
 static def(String, getOutput, RdString path) {
+	size_t len = Path_GetExtension(path).len + 1;
+
+	String out = String_New(0);
 	String realpath = Path_Resolve(path);
 
 	fwd(i, this->mappings->len) {
 		String mapping = Path_Resolve(this->mappings->buf[i].src.rd);
 
 		if (String_BeginsWith(realpath.rd, mapping.rd)) {
-			String out = String_Clone(this->mappings->buf[i].dest.rd);
-			String_Append(&out, String_Slice(realpath.rd, mapping.len));
+			RdString path = String_Slice(realpath.rd, mapping.len, -len);
 
-			if (String_EndsWith(out.rd, $(".cpp"))) {
-				String_Crop(&out, 0, -4);
-			} else if (String_EndsWith(out.rd, $(".c"))) {
-				String_Crop(&out, 0, -2);
-			}
-
-			String_Append(&out, $(".o"));
-
-			String_Destroy(&realpath);
-			String_Destroy(&mapping);
-
-			return out;
+			out = String_Format($("%%.o"),
+				this->mappings->buf[i].dest.rd, path);
 		}
 
 		String_Destroy(&mapping);
+
+		if (out.len != 0) {
+			break;
+		}
 	}
 
 	String_Destroy(&realpath);
 
-	return String_New(0);
+	return out;
 }
 
 static def(void, traverse, Deps_Component *comp) {

@@ -102,11 +102,15 @@ static def(bool, traverse, Deps_Component *comp) {
 
 static def(void, addDependants, Deps_Components *comps, size_t ofs) {
 	fwd(i, comps->len) {
+		RdString sourcePath = comps->buf[i].source.rd;
 		Deps_ComponentOffsets *deps = comps->buf[i].deps;
+
+		if (sourcePath.len == 0) {
+			continue;
+		}
 
 		fwd (j, deps->len) {
 			if (deps->buf[j] == ofs) {
-				RdString sourcePath = comps->buf[i].source.rd;
 				Logger_Info(this->logger, $("Pulling in dependant %..."),
 					sourcePath);
 				String output = call(getOutput, sourcePath);

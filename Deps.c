@@ -120,7 +120,8 @@ static def(size_t, addComponent, String absPath, bool source) {
 		.source  = src,
 		.header  = hdr,
 		.modules = scall(ModuleOffsets_New, 1),
-		.deps    = scall(ComponentOffsets_New, 16)
+		.deps    = scall(ComponentOffsets_New, 16),
+		.build   = false
 	};
 
 	scall(Components_Push, &this->components, comp);

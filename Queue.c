@@ -79,19 +79,22 @@ static def(bool, traverse, Deps_Component *comp) {
 
 	if (!Path_Exists(output.rd)) {
 		Logger_Info(this->logger, $("Not built yet."));
-		call(addToQueue, sourcePath, output);
-		return true;
+		goto build;
 	}
 
 	if (File_IsModified(sourcePath, output.rd)) {
 		Logger_Info(this->logger, $("Source modified."));
-		call(addToQueue, sourcePath, output);
-		return true;
+		goto build;
 	}
 
 	if (headerPath.len != 0 && File_IsModified(headerPath, output.rd)) {
 		Logger_Info(this->logger, $("Header modified."));
+		goto build;
+	}
+
+	when(build) {
 		call(addToQueue, sourcePath, output);
+		comps->buf[i].build = true;
 		return true;
 	}
 
@@ -102,6 +105,11 @@ static def(bool, traverse, Deps_Component *comp) {
 
 static def(void, addDependants, Deps_Components *comps, size_t ofs) {
 	fwd(i, comps->len) {
+		/* Already building? */
+		if (comps->buf[i].build) {
+			continue;
+		}
+
 		RdString sourcePath = comps->buf[i].source.rd;
 		Deps_ComponentOffsets *deps = comps->buf[i].deps;
 
@@ -115,6 +123,7 @@ static def(void, addDependants, Deps_Components *comps, size_t ofs) {
 					sourcePath);
 				String output = call(getOutput, sourcePath);
 				call(addToQueue, sourcePath, output);
+				comps->buf[i].build = true;
 				break;
 			}
 		}
@@ -128,6 +137,11 @@ def(void, create) {
 		if (call(traverse, &comps->buf[i])) {
 			call(addDependants, comps, i);
 		}
+	}
+
+	/* Reset `build' flag. */
+	fwd(i, comps->len) {
+		comps->buf[i].build = false;
 	}
 }
 

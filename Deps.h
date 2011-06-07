@@ -29,6 +29,7 @@ record(ref(Component)) {
 	String header;
 	ref(ModuleOffsets)    *modules;
 	ref(ComponentOffsets) *deps;
+	bool build;
 };
 
 Array(ref(Component), ref(Components));

@@ -21,16 +21,18 @@ def(void, destroy) {
 	scall(Items_Free, this->queue);
 }
 
-static def(void, addToQueue, RdString source, RdString output) {
+static def(void, addToQueue, String source, String output) {
 	fwd(i, this->queue->len) {
-		if (String_Equals(this->queue->buf[i].source.rd, source)) {
+		if (String_Equals(this->queue->buf[i].source.rd, source.rd)) {
+			String_Destroy(&source);
+			String_Destroy(&output);
 			return;
 		}
 	}
 
 	ref(Item) item = {
-		.source = String_Clone(source),
-		.output = String_Clone(output)
+		.source = source,
+		.output = output
 	};
 
 	scall(Items_Push, &this->queue, item);
@@ -96,15 +98,14 @@ static def(String, getOutput, RdString path) {
 }
 
 static def(void, traverse, Deps_Component *comp) {
-	bool build = false;
-
-	String headerPath = String_Clone(comp->path.rd);
-	String sourcePath = call(getSource, headerPath.rd);
+	RdString headerPath = comp->path.rd;
+	String   sourcePath = call(getSource, headerPath);
 
 	/* Skip all non-source files. */
 	if (sourcePath.len == 0) {
 		Logger_Debug(this->logger,
-			$("'%' has no corresponding source file"), headerPath.rd);
+			$("'%' has no corresponding source file."), headerPath);
+		String_Destroy(&sourcePath);
 	} else {
 		Logger_Info(this->logger, $("Processing %..."), sourcePath.rd);
 
@@ -112,37 +113,27 @@ static def(void, traverse, Deps_Component *comp) {
 
 		if (output.len == 0) {
 			Logger_Error(this->logger,
-				$("No output path for '%' is mapped."), sourcePath.rd);
-
-			String_Destroy(&headerPath);
+				$("No output path is mapped for '%'."), sourcePath.rd);
+			String_Destroy(&output);
 			String_Destroy(&sourcePath);
-
 			throw(RuntimeError);
 		}
 
 		if (!Path_Exists(output.rd)) {
 			Logger_Info(this->logger, $("Not built yet."));
-			call(addToQueue, sourcePath.rd, output.rd);
-			build = true;
+			call(addToQueue, sourcePath, output);
 		} else if (File_IsModified(sourcePath.rd, output.rd)) {
 			Logger_Info(this->logger, $("Source modified."));
-			call(addToQueue, sourcePath.rd, output.rd);
-			build = true;
-		} else if (File_IsModified(headerPath.rd, output.rd)) {
+			call(addToQueue, sourcePath, output);
+		} else if (File_IsModified(headerPath, output.rd)) {
 			Logger_Info(this->logger, $("Header modified."));
-			call(addToQueue, sourcePath.rd, output.rd);
-			build = true;
+			call(addToQueue, sourcePath, output);
+		} else {
+			Logger_Debug(this->logger, $("Not building."));
+			String_Destroy(&output);
+			String_Destroy(&sourcePath);
 		}
-
-		String_Destroy(&output);
 	}
-
-	if (!build) {
-		Logger_Debug(this->logger, $("Not building."));
-	}
-
-	String_Destroy(&sourcePath);
-	String_Destroy(&headerPath);
 }
 
 def(void, create) {

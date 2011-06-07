@@ -16,7 +16,8 @@ def(void, destroy) {
 	each(component, this->components) {
 		scall(ComponentOffsets_Free, component->deps);
 		scall(ModuleOffsets_Free, component->modules);
-		String_Destroy(&component->path);
+		String_Destroy(&component->source);
+		String_Destroy(&component->header);
 	}
 
 	scall(Components_Free, this->components);
@@ -82,7 +83,9 @@ static def(String, getFullPath, RdString base, RdString file, ref(Type) type) {
 
 static def(ssize_t, getComponentOffset, RdString absPath) {
 	fwd(i, this->components->len) {
-		if (String_Equals(this->components->buf[i].path.rd, absPath)) {
+		if (String_Equals(this->components->buf[i].header.rd, absPath) ||
+			String_Equals(this->components->buf[i].source.rd, absPath))
+		{
 			return i;
 		}
 	}
@@ -90,9 +93,32 @@ static def(ssize_t, getComponentOffset, RdString absPath) {
 	return -1;
 }
 
-static def(size_t, addComponent, String absPath) {
+static def(size_t, addComponent, String absPath, bool source) {
+	String hdr, src;
+
+	if (source) {
+		src = absPath;
+		hdr = String_Format($("%h"), String_Slice(absPath.rd, 0, -1));
+
+		if (!Path_Exists(hdr.rd)) {
+			Logger_Debug(this->logger,
+				$("'%' has no corresponding header file."), src.rd);
+			hdr.len = 0;
+		}
+	} else {
+		src = String_Format($("%c"), String_Slice(absPath.rd, 0, -1));
+		hdr = absPath;
+
+		if (!Path_Exists(src.rd)) {
+			Logger_Debug(this->logger,
+				$("'%' has no corresponding source file."), hdr.rd);
+			src.len = 0;
+		}
+	}
+
 	ref(Component) comp = {
-		.path    = absPath,
+		.source  = src,
+		.header  = hdr,
 		.modules = scall(ModuleOffsets_New, 1),
 		.deps    = scall(ComponentOffsets_New, 16)
 	};
@@ -122,8 +148,12 @@ static def(String, resolve, RdString base, RdString file, ref(Type) deptype) {
 static def(void, scanFile, size_t ofs) {
 	ref(Component) *comp = &this->components->buf[ofs];
 
+	RdString path = (comp->header.len != 0)
+		? comp->header.rd
+		: comp->source.rd;
+
 	String s = String_New(1024 * 15);
-	File_GetContents(comp->path.rd, &s);
+	File_GetContents(path, &s);
 
 	ssize_t ofsModule = -1;
 
@@ -203,7 +233,7 @@ static def(void, scanFile, size_t ofs) {
 		Logger_Debug(this->logger, $("Resolving dependency '%'..."), dep);
 
 		String absPath = call(resolve,
-			Path_GetDirectory(comp->path.rd),
+			Path_GetDirectory(path),
 			dep, deptype);
 
 		if (absPath.len == 0) {
@@ -215,7 +245,7 @@ static def(void, scanFile, size_t ofs) {
 			ssize_t depOfs = call(getComponentOffset, absPath.rd);
 
 			if (depOfs == -1) {
-				depOfs = call(addComponent, absPath);
+				depOfs = call(addComponent, absPath, false);
 				Logger_Debug(this->logger, $("Scanning dependency..."));
 				call(scanFile, depOfs);
 			} else {
@@ -234,13 +264,13 @@ static def(void, scanFile, size_t ofs) {
 	String_Destroy(&s);
 }
 
-static def(void, processFile, RdString base, RdString file, ref(Type) deptype) {
+static def(void, processSourceFile, RdString base, RdString file, ref(Type) deptype) {
 	String absPath = call(resolve, base, file, deptype);
 
 	if (absPath.len != 0 && call(getComponentOffset, absPath.rd) == -1) {
 		Logger_Debug(this->logger, $("Adding '%'..."), absPath.rd);
 
-		size_t pos = call(addComponent, absPath);
+		size_t pos = call(addComponent, absPath, true);
 		call(scanFile, pos);
 	} else {
 		String_Destroy(&absPath);
@@ -261,7 +291,7 @@ static def(void, add, RdString value) {
 				$("Manually added file '%' not found."),
 				value);
 		} else {
-			call(processFile, $("."), value, ref(Type_Local));
+			call(processSourceFile, $("."), value, ref(Type_Local));
 		}
 
 		return;
@@ -297,7 +327,7 @@ static def(void, add, RdString value) {
 		if (String_BeginsWith(item.name, left) &&
 			String_EndsWith(item.name, right))
 		{
-			call(processFile, path, item.name, ref(Type_Local));
+			call(processSourceFile, path, item.name, ref(Type_Local));
 		}
 	}
 
@@ -328,5 +358,5 @@ def(void, scan) {
 		return;
 	}
 
-	call(processFile, $("."), this->main.rd, ref(Type_Local));
+	call(processSourceFile, $("."), this->main.rd, ref(Type_Local));
 }

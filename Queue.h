@@ -9,8 +9,8 @@
 // @exc RuntimeError
 
 record(ref(Item)) {
-	String source;
-	String output;
+	RdString source;
+	String   output;
 };
 
 Array(ref(Item), ref(Items));

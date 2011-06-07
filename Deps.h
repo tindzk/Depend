@@ -25,7 +25,8 @@ Array(size_t,      ref(ModuleOffsets));
 Array(size_t,      ref(ComponentOffsets));
 
 record(ref(Component)) {
-	String path;
+	String source;
+	String header;
 	ref(ModuleOffsets)    *modules;
 	ref(ComponentOffsets) *deps;
 };

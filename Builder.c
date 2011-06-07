@@ -380,7 +380,7 @@ def(bool, Run) {
 			Path_Create(create, true);
 		}
 
-		String path = call(ShrinkPath, item.source.rd);
+		String path = call(ShrinkPath, item.source);
 
 		String strCur   = Integer_ToString(cnt);
 		String strTotal = Integer_ToString(Queue_getTotal(&queue));

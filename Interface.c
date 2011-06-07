@@ -70,7 +70,8 @@ def(bool, Run) {
 			Deps_Components *comps = Deps_getComponents(&this->deps);
 
 			fwd(i, comps->len) {
-				Logger_Info(this->logger, $("%"), comps->buf[i].path.rd);
+				Logger_Info(this->logger, $("Source: %  Header: %"),
+					comps->buf[i].source.rd, comps->buf[i].header.rd);
 			}
 
 			return true;

@@ -94,7 +94,7 @@ static def(bool, traverse, Deps_Component *comp) {
 
 	when(build) {
 		call(addToQueue, sourcePath, output);
-		comps->buf[i].build = true;
+		comp->build = true;
 		return true;
 	}
 

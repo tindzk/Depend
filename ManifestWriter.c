@@ -107,7 +107,7 @@ def(void, create) {
 	call(writeHeader, modules);
 	call(writeSource, modules);
 
-	Logger_Info(this->logger,
+	Logger_Debug(this->logger,
 		$("Manifest written to 'Manifest.h' and 'Manifest.c'."));
 }
 

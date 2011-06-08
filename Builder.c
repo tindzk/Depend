@@ -189,8 +189,55 @@ static def(bool, Compile, String src, String out) {
 
 	Process_AddParameter(&proc, $("-W"));
 	Process_AddParameter(&proc, $("-Wall"));
+	Process_AddParameter(&proc, $("-Wextra"));
+	Process_AddParameter(&proc, $("-Wattributes"));
+	Process_AddParameter(&proc, $("-Wbad-function-cast"));
+	Process_AddParameter(&proc, $("-Wcast-align"));
+	Process_AddParameter(&proc, $("-Wcast-qual"));
+	Process_AddParameter(&proc, $("-Wchar-subscripts"));
+	Process_AddParameter(&proc, $("-Wdeclaration-after-statement"));
+	Process_AddParameter(&proc, $("-Wdisabled-optimization"));
+	Process_AddParameter(&proc, $("-Werror-implicit-function-declaration"));
+	Process_AddParameter(&proc, $("-Wfatal-errors"));
+	Process_AddParameter(&proc, $("-Wfloat-equal"));
+	Process_AddParameter(&proc, $("-Winit-self"));
+	Process_AddParameter(&proc, $("-Winline"));
+	Process_AddParameter(&proc, $("-Wmissing-declarations"));
+	Process_AddParameter(&proc, $("-Wmissing-field-initializers"));
+	Process_AddParameter(&proc, $("-Wmissing-format-attribute"));
+	Process_AddParameter(&proc, $("-Wmissing-include-dirs"));
+	Process_AddParameter(&proc, $("-Wmissing-noreturn"));
+	Process_AddParameter(&proc, $("-Wnested-externs"));
+	Process_AddParameter(&proc, $("-Wold-style-definition"));
+	Process_AddParameter(&proc, $("-Wpacked"));
+	Process_AddParameter(&proc, $("-Wparentheses"));
+	Process_AddParameter(&proc, $("-Wpointer-sign"));
+	Process_AddParameter(&proc, $("-Wredundant-decls"));
+	Process_AddParameter(&proc, $("-Wreturn-type"));
+	Process_AddParameter(&proc, $("-Wsequence-point"));
 	Process_AddParameter(&proc, $("-Wshadow"));
 	Process_AddParameter(&proc, $("-Wshorten-64-to-32"));
+	Process_AddParameter(&proc, $("-Wsign-compare"));
+	Process_AddParameter(&proc, $("-Wstrict-prototypes"));
+	Process_AddParameter(&proc, $("-Wswitch"));
+	Process_AddParameter(&proc, $("-Wswitch-default"));
+	Process_AddParameter(&proc, $("-Wswitch-enum"));
+	Process_AddParameter(&proc, $("-Wundef"));
+	Process_AddParameter(&proc, $("-Wuninitialized"));
+	Process_AddParameter(&proc, $("-Wunused"));
+	Process_AddParameter(&proc, $("-Wunused-parameter"));
+	Process_AddParameter(&proc, $("-Wunused-value"));
+	Process_AddParameter(&proc, $("-Wwrite-strings"));
+
+	Process_AddParameter(&proc, $("-fstrict-aliasing"));
+	Process_AddParameter(&proc, $("-Wstrict-aliasing=2"));
+
+	Process_AddParameter(&proc, $("-fstrict-overflow"));
+	Process_AddParameter(&proc, $("-Wstrict-overflow=5"));
+
+	Process_AddParameter(&proc, $("-funit-at-a-time"));
+	Process_AddParameter(&proc, $("-fno-omit-frame-pointer"));
+
 	Process_AddParameter(&proc, $("-pipe"));
 
 	if (this->inclhdr.len > 0) {
@@ -292,8 +339,8 @@ def(void, CreateManifest) {
 	}
 
 	File_Write(&file, $("};\n\n"));
-	File_Write(&file, $("char* Manifest_ResolveCode(unsigned int code);\n"));
-	File_Write(&file, $("char* Manifest_ResolveName(int module);\n"));
+	File_Write(&file, $("const char* Manifest_ResolveCode(unsigned int code);\n"));
+	File_Write(&file, $("const char* Manifest_ResolveName(int module);\n"));
 
 	File_Destroy(&file);
 
@@ -303,7 +350,7 @@ def(void, CreateManifest) {
 		FileStatus_Truncate);
 
 	File_Write(&file, $("#import \"Manifest.h\"\n\n"));
-	File_Write(&file, $("static char* codes[] = {\n"));
+	File_Write(&file, $("static const char* codes[] = {\n"));
 
 	each(module, modules) {
 		each(exc, module->exc) {
@@ -317,7 +364,7 @@ def(void, CreateManifest) {
 	File_Write(&file, $(
 		"};\n"
 		"\n"
-		"char* Manifest_ResolveCode(unsigned int code) {\n"
+		"const char* Manifest_ResolveCode(unsigned int code) {\n"
 		"\tif (code > sizeof(codes) / sizeof(codes[0])) {\n"
 		"\t\treturn \"\";\n"
 		"\t}\n"
@@ -325,7 +372,7 @@ def(void, CreateManifest) {
 		"\treturn codes[code];\n"
 		"}\n"
 		"\n"
-		"char* Manifest_ResolveName(int module) {\n"
+		"const char* Manifest_ResolveName(int module) {\n"
 		"\tswitch (module) {\n"));
 
 	each(module, modules) {

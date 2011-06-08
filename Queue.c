@@ -93,6 +93,7 @@ static def(bool, traverse, Deps_Component *comp) {
 	}
 
 	when(build) {
+		Logger_Debug(this->logger, $("Building %."), sourcePath);
 		call(addToQueue, sourcePath, output);
 		comp->build = true;
 		return true;
@@ -134,6 +135,10 @@ def(void, create) {
 	Deps_Components *comps = Deps_getComponents(this->deps);
 
 	fwd(i, comps->len) {
+		if (comps->buf[i].build) {
+			continue;
+		}
+
 		if (call(traverse, &comps->buf[i])) {
 			call(addDependants, comps, i);
 		}

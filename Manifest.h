@@ -155,5 +155,5 @@ enum {
 	Modules_Interface_Length,
 };
 
-char* Manifest_ResolveCode(unsigned int code);
-char* Manifest_ResolveName(int module);
+const char* Manifest_ResolveCode(unsigned int code);
+const char* Manifest_ResolveName(int module);

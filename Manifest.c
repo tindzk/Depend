@@ -1,6 +1,6 @@
 #import "Manifest.h"
 
-static char* codes[] = {
+static const char* codes[] = {
 	[Memory_OutOfMemory] = "OutOfMemory",
 	[Memory_Overlapping] = "Overlapping",
 	[String_DoubleFree] = "DoubleFree",
@@ -75,7 +75,7 @@ static char* codes[] = {
 	[Queue_RuntimeError] = "RuntimeError",
 };
 
-char* Manifest_ResolveCode(unsigned int code) {
+const char* Manifest_ResolveCode(unsigned int code) {
 	if (code > sizeof(codes) / sizeof(codes[0])) {
 		return "";
 	}
@@ -83,7 +83,7 @@ char* Manifest_ResolveCode(unsigned int code) {
 	return codes[code];
 }
 
-char* Manifest_ResolveName(int module) {
+const char* Manifest_ResolveName(int module) {
 	switch (module) {
 		case Modules_DynObject ... Modules_DynObject_Length:
 			return "DynObject";

@@ -62,11 +62,11 @@ static def(bool, traverse, Deps_Component *comp) {
 	RdString sourcePath = comp->source.rd;
 
 	if (sourcePath.len == 0) {
-		Logger_Info(this->logger, $("Skipping %..."), headerPath);
+		Logger_Debug(this->logger, $("Skipping %..."), headerPath);
 		return false;
 	}
 
-	Logger_Info(this->logger, $("Processing %..."), sourcePath);
+	Logger_Debug(this->logger, $("Processing %..."), sourcePath);
 
 	String output = call(getOutput, sourcePath);
 
@@ -78,17 +78,17 @@ static def(bool, traverse, Deps_Component *comp) {
 	}
 
 	if (!Path_Exists(output.rd)) {
-		Logger_Info(this->logger, $("Not built yet."));
+		Logger_Debug(this->logger, $("Not built yet."));
 		goto build;
 	}
 
 	if (File_IsModified(sourcePath, output.rd)) {
-		Logger_Info(this->logger, $("Source modified."));
+		Logger_Debug(this->logger, $("Source modified."));
 		goto build;
 	}
 
 	if (headerPath.len != 0 && File_IsModified(headerPath, output.rd)) {
-		Logger_Info(this->logger, $("Header modified."));
+		Logger_Debug(this->logger, $("Header modified."));
 		goto build;
 	}
 
@@ -119,7 +119,7 @@ static def(void, addDependants, Deps_Components *comps, size_t ofs) {
 
 		fwd (j, deps->len) {
 			if (deps->buf[j] == ofs) {
-				Logger_Info(this->logger, $("Pulling in dependant %..."),
+				Logger_Debug(this->logger, $("Pulling in dependant %..."),
 					sourcePath);
 				String output = call(getOutput, sourcePath);
 				call(addToQueue, sourcePath, output);

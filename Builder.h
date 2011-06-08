@@ -1,4 +1,3 @@
-#import <File.h>
 #import <String.h>
 #import <Logger.h>
 #import <Process.h>
@@ -8,6 +7,7 @@
 #import "Deps.h"
 #import "Utils.h"
 #import "Queue.h"
+#import "ManifestWriter.h"
 
 #define self Builder
 

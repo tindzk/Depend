@@ -145,6 +145,8 @@ enum {
 	Modules_Queue,
 	Queue_RuntimeError,
 	Modules_Queue_Length,
+	Modules_ManifestWriter,
+	Modules_ManifestWriter_Length,
 	Modules_Builder,
 	Modules_Builder_Length,
 	Modules_Prototypes,

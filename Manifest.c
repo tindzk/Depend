@@ -159,6 +159,8 @@ char* Manifest_ResolveName(int module) {
 			return "Terminal.Prompt";
 		case Modules_Queue ... Modules_Queue_Length:
 			return "Queue";
+		case Modules_ManifestWriter ... Modules_ManifestWriter_Length:
+			return "ManifestWriter";
 		case Modules_Builder ... Modules_Builder_Length:
 			return "Builder";
 		case Modules_Prototypes ... Modules_Prototypes_Length:

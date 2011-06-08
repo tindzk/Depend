@@ -298,7 +298,7 @@ static def(void, Link, StringArray *files) {
 		Process_AddParameter(&proc, $("-l"));
 		Process_AddParameter(&proc, String_Slice(
 			this->link->buf[i].rd,
-			this->link->buf[i].buf[0] == '@'));
+			(this->link->buf[i].buf[0] == '@') ? 1 : 0));
 	}
 
 	Process_Spawn(&proc);

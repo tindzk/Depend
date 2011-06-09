@@ -211,8 +211,8 @@ static def(void, scanFile, size_t ofs) {
 
 		RdString type = String_Trim(String_Slice(line, needle.len));
 
-		RdString header;
 		bool quotes = false;
+		RdString header = $("");
 
 		if (type.buf[0] == '<') {
 			quotes = false;

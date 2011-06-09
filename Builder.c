@@ -229,6 +229,8 @@ static def(bool, Compile, String src, String out) {
 	Process_AddParameter(&proc, $("-Wunused-value"));
 	Process_AddParameter(&proc, $("-Wwrite-strings"));
 
+	Process_AddParameter(&proc, $("-fsigned-char"));
+
 	Process_AddParameter(&proc, $("-fstrict-aliasing"));
 	Process_AddParameter(&proc, $("-Wstrict-aliasing=2"));
 

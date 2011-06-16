@@ -8,7 +8,8 @@ rsdef(self, new, Logger *logger, Deps *deps, MappingArray *mappings) {
 		.queue    = scall(Items_New, 0),
 		.deps     = deps,
 		.mappings = mappings,
-		.ofs      = 0
+		.ofs      = 0,
+		.running  = 0
 	};
 }
 
@@ -23,7 +24,8 @@ def(void, destroy) {
 static def(void, addToQueue, RdString source, String output) {
 	ref(Item) item = {
 		.source = source,
-		.output = output
+		.output = output,
+		.pid    = 0
 	};
 
 	scall(Items_Push, &this->queue, item);
@@ -154,14 +156,31 @@ def(bool, hasNext) {
 	return this->ofs < this->queue->len;
 }
 
-def(ref(Item), getNext) {
+def(ref(Item) *, getNext) {
 	assert(this->ofs < this->queue->len);
 	this->ofs++;
-	return this->queue->buf[this->ofs - 1];
+	return &this->queue->buf[this->ofs - 1];
 }
 
-def(size_t, getTotal) {
-	return this->queue->len;
+def(void, setBuilding, ref(Item) *item, pid_t pid) {
+	assert(item != NULL);
+	item->pid = pid;
+	this->running++;
+}
+
+def(void, setBuilt, pid_t pid) {
+	assert(this->running != 0);
+
+	fwd(i, this->queue->len) {
+		if (this->queue->buf[i].pid == pid) {
+			this->queue->buf[i].built = true;
+			this->queue->buf[i].pid = 0;
+			this->running--;
+			return;
+		}
+	}
+
+	assert(0);
 }
 
 def(StringArray *, getLinkingFiles) {

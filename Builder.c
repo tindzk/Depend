@@ -18,6 +18,7 @@ def(void, Init, Terminal *term, Logger *logger, Deps *deps) {
 	this->link      = StringArray_New(0);
 	this->mappings  = MappingArray_New(0);
 	this->linkpaths = StringArray_New(0);
+	this->workers   = 1;
 }
 
 def(void, Destroy) {
@@ -115,6 +116,13 @@ def(bool, SetOption, RdString name, RdString value) {
 		this->blocks = String_Equals(value, $("yes"));
 	} else if (String_Equals(name, $("optimlevel"))) {
 		this->optmlevel = Int16_Parse(value);
+	} else if (String_Equals(name, $("workers"))) {
+		this->workers = Int16_Parse(value);
+
+		if (this->workers == 0) {
+			Logger_Error(this->logger, $("Cannot have zero workers."));
+			return false;
+		}
 	} else if (String_Equals(name, $("link"))) {
 		StringArray_Push(&this->link, String_Clone(value));
 	} else if (String_Equals(name, $("linkpath"))) {
@@ -158,132 +166,27 @@ static def(String, ShrinkPath, RdString path) {
 	return String_Clone(path);
 }
 
-static def(bool, Compile, String src, String out) {
-	Process proc = Process_New(this->cc.rd);
-
-	Process_AddParameter(&proc, $("-o"));
-	Process_AddParameter(&proc, out.rd);
-
-	Process_AddParameter(&proc, $("-c"));
-	Process_AddParameter(&proc, src.rd);
-
-	String std = String_Concat($("-std="), this->std.rd);
-	Process_AddParameter(&proc, std.rd);
-	String_Destroy(&std);
-
-	if (this->blocks) {
-		Process_AddParameter(&proc, $("-fblocks"));
-	}
-
-	String strLevel = Integer_ToString(this->optmlevel);
-	String optim    = String_Format($("-O%"), strLevel.rd);
-
-	Process_AddParameter(&proc, optim.rd);
-
-	String_Destroy(&optim);
-	String_Destroy(&strLevel);
-
-	if (this->dbgsym) {
-		Process_AddParameter(&proc, $("-g"));
-	}
-
-	Process_AddParameter(&proc, $("-W"));
-	Process_AddParameter(&proc, $("-Wall"));
-	Process_AddParameter(&proc, $("-Wextra"));
-	Process_AddParameter(&proc, $("-Wattributes"));
-	Process_AddParameter(&proc, $("-Wbad-function-cast"));
-	Process_AddParameter(&proc, $("-Wcast-align"));
-	Process_AddParameter(&proc, $("-Wcast-qual"));
-	Process_AddParameter(&proc, $("-Wchar-subscripts"));
-	Process_AddParameter(&proc, $("-Wdeclaration-after-statement"));
-	Process_AddParameter(&proc, $("-Wdisabled-optimization"));
-	Process_AddParameter(&proc, $("-Werror-implicit-function-declaration"));
-	Process_AddParameter(&proc, $("-Wfatal-errors"));
-	Process_AddParameter(&proc, $("-Wfloat-equal"));
-	Process_AddParameter(&proc, $("-Winit-self"));
-	Process_AddParameter(&proc, $("-Winline"));
-	Process_AddParameter(&proc, $("-Wmissing-declarations"));
-	Process_AddParameter(&proc, $("-Wmissing-field-initializers"));
-	Process_AddParameter(&proc, $("-Wmissing-format-attribute"));
-	Process_AddParameter(&proc, $("-Wmissing-include-dirs"));
-	Process_AddParameter(&proc, $("-Wmissing-noreturn"));
-	Process_AddParameter(&proc, $("-Wnested-externs"));
-	Process_AddParameter(&proc, $("-Wold-style-definition"));
-	Process_AddParameter(&proc, $("-Wpacked"));
-	Process_AddParameter(&proc, $("-Wparentheses"));
-	Process_AddParameter(&proc, $("-Wpointer-sign"));
-	Process_AddParameter(&proc, $("-Wredundant-decls"));
-	Process_AddParameter(&proc, $("-Wreturn-type"));
-	Process_AddParameter(&proc, $("-Wsequence-point"));
-	Process_AddParameter(&proc, $("-Wshadow"));
-	Process_AddParameter(&proc, $("-Wshorten-64-to-32"));
-	Process_AddParameter(&proc, $("-Wsign-compare"));
-	Process_AddParameter(&proc, $("-Wstrict-prototypes"));
-	Process_AddParameter(&proc, $("-Wswitch"));
-	Process_AddParameter(&proc, $("-Wswitch-default"));
-	Process_AddParameter(&proc, $("-Wswitch-enum"));
-	Process_AddParameter(&proc, $("-Wundef"));
-	Process_AddParameter(&proc, $("-Wuninitialized"));
-	Process_AddParameter(&proc, $("-Wunused"));
-	Process_AddParameter(&proc, $("-Wunused-parameter"));
-	Process_AddParameter(&proc, $("-Wunused-value"));
-	Process_AddParameter(&proc, $("-Wwrite-strings"));
-
-	Process_AddParameter(&proc, $("-fsigned-char"));
-
-	Process_AddParameter(&proc, $("-fstrict-aliasing"));
-	Process_AddParameter(&proc, $("-Wstrict-aliasing=2"));
-
-	Process_AddParameter(&proc, $("-fstrict-overflow"));
-	Process_AddParameter(&proc, $("-Wstrict-overflow=5"));
-
-	Process_AddParameter(&proc, $("-funit-at-a-time"));
-	Process_AddParameter(&proc, $("-fno-omit-frame-pointer"));
-
-	Process_AddParameter(&proc, $("-pipe"));
-
-	if (this->inclhdr.len > 0) {
-		Process_AddParameter(&proc, $("-include"));
-		Process_AddParameter(&proc, this->inclhdr.rd);
-	}
-
-	StringArray *deps = Deps_getIncludes(this->deps);
-
-	fwd(i, deps->len) {
-		Process_AddParameter(&proc, $("-I"));
-		Process_AddParameter(&proc, deps->buf[i].rd);
-	}
-
-	if (this->verbose) {
-		String cmd = Process_GetCommandLine(&proc);
-		Logger_Info(this->logger, cmd.rd);
-		String_Destroy(&cmd);
-	}
-
-	int res = Process_Spawn(&proc);
-
-	Process_Destroy(&proc);
-
-	return res < 0;
+def(void, onLinked, __unused pid_t pid, __unused int status) {
+	EventLoop_Quit(EventLoop_GetInstance());
 }
 
-static def(void, Link, StringArray *files) {
-	Process proc = Process_New(this->cc.rd);
+static def(void, link, StringArray *files) {
+	Process proc = Process_new(this->cc.rd);
 
-	Process_AddParameter(&proc, $("-o"));
-	Process_AddParameter(&proc, this->output.rd);
+	Process_addParameter(&proc, $("-o"));
+	Process_addParameter(&proc, this->output.rd);
 
 	fwd(i, files->len) {
-		Process_AddParameter(&proc, files->buf[i].rd);
+		Process_addParameter(&proc, files->buf[i].rd);
 	}
 
 	fwd(i, this->linkpaths->len) {
-		Process_AddParameter(&proc, $("-L"));
-		Process_AddParameter(&proc, this->linkpaths->buf[i].rd);
+		Process_addParameter(&proc, $("-L"));
+		Process_addParameter(&proc, this->linkpaths->buf[i].rd);
 	}
 
 	if (this->dbgsym) {
-		Process_AddParameter(&proc, $("-g"));
+		Process_addParameter(&proc, $("-g"));
 	}
 
 	fwd(i, this->link->len) {
@@ -292,26 +195,198 @@ static def(void, Link, StringArray *files) {
 		}
 
 		if (this->link->buf[i].buf[0] == '@') {
-			Process_AddParameter(&proc, $("-Wl,-Bdynamic"));
+			Process_addParameter(&proc, $("-Wl,-Bdynamic"));
 		} else {
-			Process_AddParameter(&proc, $("-Wl,-Bstatic"));
+			Process_addParameter(&proc, $("-Wl,-Bstatic"));
 		}
 
-		Process_AddParameter(&proc, $("-l"));
-		Process_AddParameter(&proc, String_Slice(
+		Process_addParameter(&proc, $("-l"));
+		Process_addParameter(&proc, String_Slice(
 			this->link->buf[i].rd,
 			(this->link->buf[i].buf[0] == '@') ? 1 : 0));
 	}
 
-	Process_Spawn(&proc);
+	pid_t pid = Process_spawn(&proc);
+	Signal_uponChildTermination(Signal_GetInstance(), pid,
+		Signal_OnChildTerminate_For(this, ref(onLinked)));
 
 	if (this->verbose) {
-		String cmd = Process_GetCommandLine(&proc);
+		String cmd = Process_getCommandLine(&proc);
 		Logger_Info(this->logger, cmd.rd);
 		String_Destroy(&cmd);
 	}
 
-	Process_Destroy(&proc);
+	Process_destroy(&proc);
+}
+
+static def(void, enqueue);
+
+def(void, onCompiled, pid_t pid, int status) {
+	Queue_setBuilt(&this->queue, pid);
+
+	if (status == ExitStatus_Failure) {
+		EventLoop_Quit(EventLoop_GetInstance());
+		return;
+	}
+
+	if (Queue_hasNext(&this->queue)) {
+		call(enqueue);
+	} else if (Queue_getRunning(&this->queue) == 0) {
+		StringArray *files = Queue_getLinkingFiles(&this->queue);
+
+		call(link, files);
+
+		StringArray_Destroy(files);
+		StringArray_Free(files);
+
+		EventLoop_Quit(EventLoop_GetInstance());
+	}
+}
+
+static def(pid_t, compile, String src, String out) {
+	Process proc = Process_new(this->cc.rd);
+
+	Process_addParameter(&proc, $("-o"));
+	Process_addParameter(&proc, out.rd);
+
+	Process_addParameter(&proc, $("-c"));
+	Process_addParameter(&proc, src.rd);
+
+	String std = String_Concat($("-std="), this->std.rd);
+	Process_addParameter(&proc, std.rd);
+	String_Destroy(&std);
+
+	if (this->blocks) {
+		Process_addParameter(&proc, $("-fblocks"));
+	}
+
+	String strLevel = Integer_ToString(this->optmlevel);
+	String optim    = String_Format($("-O%"), strLevel.rd);
+
+	Process_addParameter(&proc, optim.rd);
+
+	String_Destroy(&optim);
+	String_Destroy(&strLevel);
+
+	if (this->dbgsym) {
+		Process_addParameter(&proc, $("-g"));
+	}
+
+	Process_addParameter(&proc, $("-W"));
+	Process_addParameter(&proc, $("-Wall"));
+	Process_addParameter(&proc, $("-Wextra"));
+	Process_addParameter(&proc, $("-Wattributes"));
+	Process_addParameter(&proc, $("-Wbad-function-cast"));
+	Process_addParameter(&proc, $("-Wcast-align"));
+	Process_addParameter(&proc, $("-Wcast-qual"));
+	Process_addParameter(&proc, $("-Wchar-subscripts"));
+	Process_addParameter(&proc, $("-Wdeclaration-after-statement"));
+	Process_addParameter(&proc, $("-Wdisabled-optimization"));
+	Process_addParameter(&proc, $("-Werror-implicit-function-declaration"));
+	Process_addParameter(&proc, $("-Wfatal-errors"));
+	Process_addParameter(&proc, $("-Wfloat-equal"));
+	Process_addParameter(&proc, $("-Winit-self"));
+	Process_addParameter(&proc, $("-Winline"));
+	Process_addParameter(&proc, $("-Wmissing-declarations"));
+	Process_addParameter(&proc, $("-Wmissing-field-initializers"));
+	Process_addParameter(&proc, $("-Wmissing-format-attribute"));
+	Process_addParameter(&proc, $("-Wmissing-include-dirs"));
+	Process_addParameter(&proc, $("-Wmissing-noreturn"));
+	Process_addParameter(&proc, $("-Wnested-externs"));
+	Process_addParameter(&proc, $("-Wold-style-definition"));
+	Process_addParameter(&proc, $("-Wpacked"));
+	Process_addParameter(&proc, $("-Wparentheses"));
+	Process_addParameter(&proc, $("-Wpointer-sign"));
+	Process_addParameter(&proc, $("-Wredundant-decls"));
+	Process_addParameter(&proc, $("-Wreturn-type"));
+	Process_addParameter(&proc, $("-Wsequence-point"));
+	Process_addParameter(&proc, $("-Wshadow"));
+	Process_addParameter(&proc, $("-Wshorten-64-to-32"));
+	Process_addParameter(&proc, $("-Wsign-compare"));
+	Process_addParameter(&proc, $("-Wstrict-prototypes"));
+	Process_addParameter(&proc, $("-Wswitch"));
+	Process_addParameter(&proc, $("-Wswitch-default"));
+	Process_addParameter(&proc, $("-Wswitch-enum"));
+	Process_addParameter(&proc, $("-Wundef"));
+	Process_addParameter(&proc, $("-Wuninitialized"));
+	Process_addParameter(&proc, $("-Wunused"));
+	Process_addParameter(&proc, $("-Wunused-parameter"));
+	Process_addParameter(&proc, $("-Wunused-value"));
+	Process_addParameter(&proc, $("-Wwrite-strings"));
+
+	Process_addParameter(&proc, $("-fsigned-char"));
+
+	Process_addParameter(&proc, $("-fstrict-aliasing"));
+	Process_addParameter(&proc, $("-Wstrict-aliasing=2"));
+
+	Process_addParameter(&proc, $("-fstrict-overflow"));
+	Process_addParameter(&proc, $("-Wstrict-overflow=5"));
+
+	Process_addParameter(&proc, $("-funit-at-a-time"));
+	Process_addParameter(&proc, $("-fno-omit-frame-pointer"));
+
+	Process_addParameter(&proc, $("-pipe"));
+
+	if (this->inclhdr.len > 0) {
+		Process_addParameter(&proc, $("-include"));
+		Process_addParameter(&proc, this->inclhdr.rd);
+	}
+
+	StringArray *deps = Deps_getIncludes(this->deps);
+
+	fwd(i, deps->len) {
+		Process_addParameter(&proc, $("-I"));
+		Process_addParameter(&proc, deps->buf[i].rd);
+	}
+
+	if (this->verbose) {
+		String cmd = Process_getCommandLine(&proc);
+		Logger_Info(this->logger, cmd.rd);
+		String_Destroy(&cmd);
+	}
+
+	pid_t pid = Process_spawn(&proc);
+	Signal_uponChildTermination(Signal_GetInstance(), pid,
+		Signal_OnChildTerminate_For(this, ref(onCompiled)));
+
+	Process_destroy(&proc);
+
+	return pid;
+}
+
+static def(void, enqueue) {
+	while (Queue_hasNext(&this->queue)
+		&& Queue_getRunning(&this->queue) < this->workers)
+	{
+		Queue_Item *item = Queue_getNext(&this->queue);
+
+		RdString create = Path_GetDirectory(item->output.rd);
+
+		if (!Path_Exists(create)) {
+			Path_Create(create, true);
+		}
+
+		String path = call(ShrinkPath, item->source);
+
+		String strCur   = Integer_ToString(Queue_getOffset(&this->queue));
+		String strTotal = Integer_ToString(Queue_getTotal(&this->queue));
+
+		Logger_Info(this->logger, $("Compiling %... [%/%]"),
+			path.rd, strCur.rd, strTotal.rd);
+
+		String_Destroy(&strCur);
+		String_Destroy(&strTotal);
+
+		pid_t pid = call(compile, path, item->output);
+		Queue_setBuilding(&this->queue, item, pid);
+
+		String_Destroy(&path);
+	}
+}
+
+def(void, exit, __unused Signal_Type type) {
+	Logger_Info(this->logger, $("Early exit."));
+	EventLoop_Quit(EventLoop_GetInstance());
 }
 
 def(bool, Run) {
@@ -326,50 +401,19 @@ def(bool, Run) {
 		return true;
 	}
 
-	Queue queue = Queue_new(this->logger, this->deps, this->mappings);
-	Queue_create(&queue);
+	Signal_listen(Signal_GetInstance());
 
-	size_t cnt = 1;
+	Signal_uponTermination(Signal_GetInstance(),
+		Signal_OnTerminate_For(this, ref(exit)));
 
-	while (Queue_hasNext(&queue)) {
-		Queue_Item item = Queue_getNext(&queue);
+	this->queue = Queue_new(this->logger, this->deps, this->mappings);
+	Queue_create(&this->queue);
 
-		RdString create = Path_GetDirectory(item.output.rd);
+	call(enqueue);
 
-		if (!Path_Exists(create)) {
-			Path_Create(create, true);
-		}
+	EventLoop_Run(EventLoop_GetInstance());
 
-		String path = call(ShrinkPath, item.source);
-
-		String strCur   = Integer_ToString(cnt);
-		String strTotal = Integer_ToString(Queue_getTotal(&queue));
-
-		Logger_Info(this->logger, $("Compiling %... [%/%]"),
-			path.rd, strCur.rd, strTotal.rd);
-
-		String_Destroy(&strCur);
-		String_Destroy(&strTotal);
-
-		bool ok = call(Compile, path, item.output);
-
-		String_Destroy(&path);
-
-		if (!ok) {
-			return false;
-		}
-
-		cnt++;
-	}
-
-	StringArray *files = Queue_getLinkingFiles(&queue);
-
-	call(Link, files);
-
-	StringArray_Destroy(files);
-	StringArray_Free(files);
-
-	Queue_destroy(&queue);
+	Queue_destroy(&this->queue);
 
 	return true;
 }

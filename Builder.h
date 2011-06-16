@@ -4,6 +4,9 @@
 #import <Terminal.h>
 #import <Terminal/Prompt.h>
 
+#import <Signal.h>
+#import <EventLoop.h>
+
 #import "Deps.h"
 #import "Utils.h"
 #import "Queue.h"
@@ -26,10 +29,13 @@ class {
 	bool blocks;
 	int optmlevel;
 	bool verbose;
+	size_t workers;
 
 	StringArray *link;
 	StringArray *linkpaths;
 	MappingArray *mappings;
+
+	Queue queue;
 };
 
 def(void, Init, Terminal *term, Logger *logger, Deps *deps);

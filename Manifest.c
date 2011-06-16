@@ -55,17 +55,33 @@ static const char* codes[] = {
 	[Path_StatFailed] = "StatFailed",
 	[Path_TruncatingFailed] = "TruncatingFailed",
 	[Exception_AssertFailed] = "AssertFailed",
-	[Signal_SigAlrm] = "SigAlrm",
-	[Signal_SigBus] = "SigBus",
-	[Signal_SigFpe] = "SigFpe",
-	[Signal_SigIll] = "SigIll",
-	[Signal_SigInt] = "SigInt",
-	[Signal_SigPipe] = "SigPipe",
-	[Signal_SigQuit] = "SigQuit",
-	[Signal_SigSegv] = "SigSegv",
-	[Signal_SigTerm] = "SigTerm",
-	[Signal_SignalHandlerNotSet] = "SignalHandlerNotSet",
-	[Signal_Unknown] = "Unknown",
+	[NetworkAddress_GetAddrInfoFailed] = "GetAddrInfoFailed",
+	[SocketConnection_ConnectionRefused] = "ConnectionRefused",
+	[SocketConnection_ConnectionReset] = "ConnectionReset",
+	[SocketConnection_FileDescriptorUnusable] = "FileDescriptorUnusable",
+	[SocketConnection_InvalidFileDescriptor] = "InvalidFileDescriptor",
+	[SocketConnection_NotConnected] = "NotConnected",
+	[SocketConnection_UnknownError] = "UnknownError",
+	[Socket_SetSocketOption] = "SetSocketOption",
+	[Socket_SocketFailed] = "SocketFailed",
+	[SocketServer_AddressInUse] = "AddressInUse",
+	[SocketServer_AcceptFailed] = "AcceptFailed",
+	[SocketServer_BindFailed] = "BindFailed",
+	[SocketServer_ListenFailed] = "ListenFailed",
+	[SocketServer_SetSocketOption] = "SetSocketOption",
+	[ChannelWatcher_ChannelAlreadyAdded] = "ChannelAlreadyAdded",
+	[ChannelWatcher_ChannelNotSupported] = "ChannelNotSupported",
+	[ChannelWatcher_InvalidChannel] = "InvalidChannel",
+	[ChannelWatcher_SettingCloexecFailed] = "SettingCloexecFailed",
+	[ChannelWatcher_UnknownChannel] = "UnknownChannel",
+	[ChannelWatcher_UnknownError] = "UnknownError",
+	[Signal_Alarm] = "Alarm",
+	[Signal_ArithmeticError] = "ArithmeticError",
+	[Signal_BusError] = "BusError",
+	[Signal_IllegalInstruction] = "IllegalInstruction",
+	[Signal_InvalidMemoryAccess] = "InvalidMemoryAccess",
+	[Signal_Pipe] = "Pipe",
+	[Signal_UnknownError] = "UnknownError",
 	[Terminal_IoctlFailed] = "IoctlFailed",
 	[Terminal_ElementMismatch] = "ElementMismatch",
 	[Directory_CannotOpenDirectory] = "CannotOpenDirectory",
@@ -119,6 +135,20 @@ const char* Manifest_ResolveName(int module) {
 			return "Backtrace";
 		case Modules_Exception ... Modules_Exception_Length:
 			return "Exception";
+		case Modules_EventQueue ... Modules_EventQueue_Length:
+			return "EventQueue";
+		case Modules_NetworkAddress ... Modules_NetworkAddress_Length:
+			return "NetworkAddress";
+		case Modules_SocketConnection ... Modules_SocketConnection_Length:
+			return "SocketConnection";
+		case Modules_Socket ... Modules_Socket_Length:
+			return "Socket";
+		case Modules_SocketServer ... Modules_SocketServer_Length:
+			return "SocketServer";
+		case Modules_ChannelWatcher ... Modules_ChannelWatcher_Length:
+			return "ChannelWatcher";
+		case Modules_EventLoop ... Modules_EventLoop_Length:
+			return "EventLoop";
 		case Modules_Signal ... Modules_Signal_Length:
 			return "Signal";
 		case Modules_Logger ... Modules_Logger_Length:

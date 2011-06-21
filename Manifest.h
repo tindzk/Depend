@@ -130,6 +130,8 @@ enum {
 	Signal_Pipe,
 	Signal_UnknownError,
 	Modules_Signal_Length,
+	Modules_FPU,
+	Modules_FPU_Length,
 	Modules_Logger,
 	Modules_Logger_Length,
 	Modules_Terminal,

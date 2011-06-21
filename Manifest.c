@@ -151,6 +151,8 @@ const char* Manifest_ResolveName(int module) {
 			return "EventLoop";
 		case Modules_Signal ... Modules_Signal_Length:
 			return "Signal";
+		case Modules_FPU ... Modules_FPU_Length:
+			return "FPU";
 		case Modules_Logger ... Modules_Logger_Length:
 			return "Logger";
 		case Modules_Terminal ... Modules_Terminal_Length:

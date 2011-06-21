@@ -181,8 +181,6 @@ enum {
 	Modules_ManifestWriter_Length,
 	Modules_Builder,
 	Modules_Builder_Length,
-	Modules_Prototypes,
-	Modules_Prototypes_Length,
 	Modules_Interface,
 	Modules_Interface_Length,
 };

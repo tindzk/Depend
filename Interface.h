@@ -5,14 +5,12 @@
 #import "Deps.h"
 #import "Utils.h"
 #import "Builder.h"
-#import "Prototypes.h"
 
 #define self Interface
 
 set(ref(Action)) {
 	ref(Action_Build),
 	ref(Action_ListDeps),
-	ref(Action_Prototypes),
 	ref(Action_Help),
 	ref(Action_Unsupported)
 };
@@ -24,7 +22,6 @@ class {
 
 	Deps deps;
 	Builder builder;
-	Prototypes proto;
 };
 
 def(void, Init, Terminal *term, Logger *logger);

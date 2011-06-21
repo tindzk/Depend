@@ -195,8 +195,6 @@ const char* Manifest_ResolveName(int module) {
 			return "ManifestWriter";
 		case Modules_Builder ... Modules_Builder_Length:
 			return "Builder";
-		case Modules_Prototypes ... Modules_Prototypes_Length:
-			return "Prototypes";
 		case Modules_Interface ... Modules_Interface_Length:
 			return "Interface";
 	}

@@ -7,13 +7,11 @@ def(void, Init, Terminal *term, Logger *logger) {
 	this->action = ref(Action_Unsupported);
 
 	this->deps = Deps_new(logger);
-	Prototypes_Init(&this->proto);
 	Builder_Init(&this->builder, term, logger, &this->deps);
 }
 
 def(void, Destroy) {
 	Builder_Destroy(&this->builder);
-	Prototypes_Destroy(&this->proto);
 	Deps_destroy(&this->deps);
 }
 
@@ -22,8 +20,6 @@ def(void, SetAction, RdString action) {
 		this->action = ref(Action_Build);
 	} else if (String_Equals(action, $("listdeps"))) {
 		this->action = ref(Action_ListDeps);
-	} else if (String_Equals(action, $("prototypes"))) {
-		this->action = ref(Action_Prototypes);
 	} else if (String_Equals(action, $("help"))) {
 		this->action = ref(Action_Help);
 	}
@@ -39,10 +35,6 @@ def(bool, SetOption, RdString name, RdString value) {
 	}
 
 	if (!Deps_setOption(&this->deps, name, value)) {
-		return false;
-	}
-
-	if (!Prototypes_SetOption(&this->proto, name, value)) {
 		return false;
 	}
 
@@ -76,15 +68,10 @@ def(bool, Run) {
 
 			return true;
 
-		case ref(Action_Prototypes):
-			Prototypes_Generate(&this->proto);
-
-			return true;
-
 		case ref(Action_Help):
 			Logger_Info(this->logger, $(
 				"Supported actions are: "
-				"build, listdeps, prototypes, help."
+				"build, listdeps, help."
 			));
 
 			return true;

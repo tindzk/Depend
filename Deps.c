@@ -283,7 +283,7 @@ static def(void, processSourceFile, RdString base, RdString file, ref(Type) dept
  * implemented in the future. If so, this function should be
  * moved to the Jivai sources.
  */
-static def(void, add, RdString value) {
+def(void, add, RdString value) {
 	ssize_t star = String_Find(value, '*');
 
 	if (star == String_NotFound) {
@@ -335,16 +335,12 @@ static def(void, add, RdString value) {
 	Directory_Destroy(&dir);
 }
 
-def(bool, setOption, RdString name, RdString value) {
-	if (String_Equals(name, $("main"))) {
-		String_Copy(&this->main, value);
-	} else if (String_Equals(name, $("add"))) {
-		call(add, value);
-	} else if (String_Equals(name, $("include"))) {
-		StringArray_Push(&this->include, String_Clone(value));
-	}
+def(void, setMain, RdString value) {
+	String_Copy(&this->main, value);
+}
 
-	return true;
+def(void, addInclude, RdString value) {
+	StringArray_Push(&this->include, String_Clone(value));
 }
 
 def(void, scan) {

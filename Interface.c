@@ -14,29 +14,52 @@ def(void, Destroy) {
 	Deps_destroy(&this->deps);
 }
 
-static def(bool, setOption, RdString name, RdString value) {
+static def(void, setOption, RdString name, RdString value) {
 	if (String_Equals(name, $("debug"))) {
 		if (String_Equals(value, $("yes"))) {
 			BitMask_Set(this->logger->levels, Logger_Level_Debug);
 		} else {
 			BitMask_Clear(this->logger->levels, Logger_Level_Debug);
 		}
-	}
-
-	if (!Deps_setOption(&this->deps, name, value)) {
-		goto error;
-	}
-
-	if (!Builder_SetOption(&this->builder, name, value)) {
-		goto error;
-	}
-
-	when (error) {
+	} else if (String_Equals(name, $("main"))) {
+		Deps_setMain(&this->deps, value);
+	} else if (String_Equals(name, $("add"))) {
+		Deps_add(&this->deps, value);
+	} else if (String_Equals(name, $("include"))) {
+		Deps_addInclude(&this->deps, value);
+	} else if (String_Equals(name, $("output"))) {
+		Builder_setOutput(&this->builder, value);
+	} else if (String_Equals(name, $("map"))) {
+		Builder_map(&this->builder, value);
+	} else if (String_Equals(name, $("cc"))) {
+		Builder_setCompiler(&this->builder, value);
+	} else if (String_Equals(name, $("inclhdr"))) {
+		Builder_setInclHeader(&this->builder, value);
+	} else if (String_Equals(name, $("manifest"))) {
+		Builder_setManifest(&this->builder,
+			String_Equals(value, $("yes")));
+	} else if (String_Equals(name, $("dbgsym"))) {
+		Builder_setDebuggingSymbols(&this->builder,
+			String_Equals(value, $("yes")));
+	} else if (String_Equals(name, $("std"))) {
+		Builder_setStandard(&this->builder, value);
+	} else if (String_Equals(name, $("blocks"))) {
+		Builder_setBlocks(&this->builder,
+			String_Equals(value, $("yes")));
+	} else if (String_Equals(name, $("optimlevel"))) {
+		Builder_setOptimLevel(&this->builder, UInt16_Parse(value));
+	} else if (String_Equals(name, $("workers"))) {
+		Builder_setWorkers(&this->builder, UInt16_Parse(value));
+	} else if (String_Equals(name, $("link"))) {
+		Builder_addLink(&this->builder, value);
+	} else if (String_Equals(name, $("linkpath"))) {
+		Builder_addLinkPath(&this->builder, value);
+	} else if (String_Equals(name, $("verbose"))) {
+		Builder_setVerbose(&this->builder,
+			String_Equals(value, $("yes")));
+	} else {
 		Logger_Error(this->logger, $("Unrecognized option '%'"), name);
-		return false;
 	}
-
-	return true;
 }
 
 static def(void, readConfig, RdString path) {

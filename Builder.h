@@ -40,7 +40,19 @@ class {
 
 def(void, Init, Terminal *term, Logger *logger, Deps *deps);
 def(void, Destroy);
-def(bool, SetOption, RdString name, RdString value);
+def(bool, map, RdString value);
+def(void, setOutput, RdString value);
+def(void, setCompiler, RdString value);
+def(void, setInclHeader, RdString value);
+def(void, setManifest, bool value);
+def(void, setDebuggingSymbols, bool value);
+def(void, setStandard, RdString value);
+def(void, setBlocks, bool value);
+def(void, setOptimLevel, u16 value);
+def(void, setWorkers, u16 value);
+def(void, addLink, RdString value);
+def(void, addLinkPath, RdString value);
+def(void, setVerbose, bool value);
 def(bool, Run);
 
 #undef self

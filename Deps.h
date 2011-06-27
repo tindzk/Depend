@@ -45,6 +45,9 @@ class {
 rsdef(self, new, Logger *logger);
 def(void, destroy);
 def(bool, setOption, RdString name, RdString value);
+def(void, add, RdString value);
+def(void, setMain, RdString s);
+def(void, addInclude, RdString s);
 def(void, scan);
 
 static alwaysInline def(StringArray *, getIncludes) {

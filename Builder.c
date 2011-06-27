@@ -41,7 +41,7 @@ def(void, Destroy) {
 	MappingArray_Free(this->mappings);
 }
 
-static def(bool, Map, RdString value) {
+def(bool, map, RdString value) {
 	bool src = true;
 	RdString s = $("");
 	DepsMapping insert;
@@ -97,41 +97,57 @@ error:
 	return false;
 }
 
-def(bool, SetOption, RdString name, RdString value) {
-	if (String_Equals(name, $("output"))) {
-		String_Copy(&this->output, value);
-	} else if (String_Equals(name, $("map"))) {
-		return call(Map, value);
-	} else if (String_Equals(name, $("cc"))) {
-		String_Copy(&this->cc, value);
-	} else if (String_Equals(name, $("inclhdr"))) {
-		String_Copy(&this->inclhdr, value);
-	} else if (String_Equals(name, $("manifest"))) {
-		this->manifest = true;
-	} else if (String_Equals(name, $("dbgsym"))) {
-		this->dbgsym = String_Equals(value, $("yes"));
-	} else if (String_Equals(name, $("std"))) {
-		String_Copy(&this->std, value);
-	} else if (String_Equals(name, $("blocks"))) {
-		this->blocks = String_Equals(value, $("yes"));
-	} else if (String_Equals(name, $("optimlevel"))) {
-		this->optmlevel = Int16_Parse(value);
-	} else if (String_Equals(name, $("workers"))) {
-		this->workers = Int16_Parse(value);
+def(void, setOutput, RdString value) {
+	String_Copy(&this->output, value);
+}
 
-		if (this->workers == 0) {
-			Logger_Error(this->logger, $("Cannot have zero workers."));
-			return false;
-		}
-	} else if (String_Equals(name, $("link"))) {
-		StringArray_Push(&this->link, String_Clone(value));
-	} else if (String_Equals(name, $("linkpath"))) {
-		StringArray_Push(&this->linkpaths, String_Clone(value));
-	} else if (String_Equals(name, $("verbose"))) {
-		this->verbose = true;
+def(void, setCompiler, RdString value) {
+	String_Copy(&this->cc, value);
+}
+
+def(void, setInclHeader, RdString value) {
+	String_Copy(&this->inclhdr, value);
+}
+
+def(void, setManifest, bool value) {
+	this->manifest = value;
+}
+
+def(void, setDebuggingSymbols, bool value) {
+	this->dbgsym = value;
+}
+
+def(void, setStandard, RdString value) {
+	String_Copy(&this->std, value);
+}
+
+def(void, setBlocks, bool value) {
+	this->blocks = value;
+}
+
+def(void, setOptimLevel, u16 value) {
+	this->optmlevel = value;
+}
+
+def(void, setWorkers, u16 value) {
+	this->workers = value;
+
+	if (this->workers == 0) {
+		Logger_Error(this->logger, $("Cannot have zero workers."));
+		this->workers++;
 	}
+}
 
-	return true;
+def(void, addLink, RdString value) {
+	StringArray_Push(&this->link, String_Clone(value));
+}
+
+def(void, addLinkPath, RdString value) {
+	StringArray_Push(&this->linkpaths, String_Clone(value));
+}
+
+def(void, setVerbose, bool value) {
+	this->verbose = value;
 }
 
 static sdef(String, ShrinkPathEx, RdString shortpath, RdString path) {

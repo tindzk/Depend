@@ -65,10 +65,17 @@ static def(void, setOption, RdString name, RdString value) {
 static def(void, readConfig, RdString path) {
 	String contents = File_GetContents(path);
 
-	RdString line = $("");
-	while (String_Split(contents.rd, '\n', &line)) {
+	RdString iter = $("");
+	while (String_Split(contents.rd, '\n', &iter)) {
+		RdString line = String_Trim(iter);
+
+		if (line.len == 0 || line.buf[0] == '#') {
+			continue;
+		}
+
 		RdString name, value;
 		if (!String_Parse($("%=%"), line, &name, &value)) {
+			Logger_Error(this->logger, $("Invalid line '%'"), line);
 			continue;
 		}
 

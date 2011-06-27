@@ -39,52 +39,13 @@ def(bool, Run) {
 	Terminal_Configure(&this->term, true, true);
 	BitMask_Clear(this->logger.levels, Logger_Level_Debug);
 
-	if (this->args->len == 0) {
-		Logger_Error(&this->logger,
-			$("Action missing. Run `% help' for an overview."),
-			this->base);
-
-		return false;
-	}
-
-	if (this->args->len == 1) {
-		Logger_Error(&this->logger, $("Filename missing."));
-		return false;
-	}
-
-	String contents = String_New(1024);
-	File_GetContents(this->args->buf[1], &contents);
-
-	if (contents.len == String_GetSize(contents)) {
-		Logger_Error(&this->logger, $("File too large."));
-		String_Destroy(&contents);
-		return false;
-	}
-
 	Interface itf;
 	Interface_Init(&itf, &this->term, &this->logger);
-	Interface_SetAction(&itf, this->args->buf[0]);
-
-	RdString line = $("");
-	while (String_Split(contents.rd, '\n', &line)) {
-		RdString name, value;
-		if (!String_Parse($("%=%"), line, &name, &value)) {
-			continue;
-		}
-
-		if (!Interface_SetOption(&itf, name, value)) {
-			Interface_Destroy(&itf);
-			String_Destroy(&contents);
-			return false;
-		}
-	}
-
-	String_Destroy(&contents);
 
 	bool res = false;
 
 	try {
-		res = Interface_Run(&itf);
+		res = Interface_run(&itf, this->args, this->base);
 	} finally {
 		Interface_Destroy(&itf);
 	} tryEnd;

@@ -9,15 +9,13 @@
 #define self Interface
 
 set(ref(Action)) {
+	ref(Action_Unknown),
 	ref(Action_Build),
 	ref(Action_ListDeps),
-	ref(Action_Help),
-	ref(Action_Unsupported)
+	ref(Action_Help)
 };
 
 class {
-	ref(Action) action;
-
 	Logger *logger;
 
 	Deps deps;
@@ -26,8 +24,6 @@ class {
 
 def(void, Init, Terminal *term, Logger *logger);
 def(void, Destroy);
-def(void, SetAction, RdString action);
-def(bool, SetOption, RdString name, RdString value);
-def(bool, Run);
+def(bool, run, RdStringArray *args, RdString base);
 
 #undef self

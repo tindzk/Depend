@@ -405,7 +405,7 @@ def(void, exit, __unused Signal_Type type) {
 	EventLoop_Quit(EventLoop_GetInstance());
 }
 
-def(bool, Run) {
+def(void, run) {
 	if (this->manifest) {
 		ManifestWriter manifest =
 			ManifestWriter_new(this->logger, this->deps);
@@ -414,7 +414,15 @@ def(bool, Run) {
 	}
 
 	if (this->mappings->len == 0) {
-		return true;
+		return;
+	}
+
+	this->queue = Queue_new(this->logger, this->deps, this->mappings);
+	Queue_create(&this->queue);
+
+	if (!Queue_hasNext(&this->queue)) {
+		Logger_Info(this->logger, $("Nothing to do."));
+		return;
 	}
 
 	Signal_listen(Signal_GetInstance());
@@ -422,14 +430,9 @@ def(bool, Run) {
 	Signal_uponTermination(Signal_GetInstance(),
 		Signal_OnTerminate_For(this, ref(exit)));
 
-	this->queue = Queue_new(this->logger, this->deps, this->mappings);
-	Queue_create(&this->queue);
-
 	call(enqueue);
 
 	EventLoop_Run(EventLoop_GetInstance());
 
 	Queue_destroy(&this->queue);
-
-	return true;
 }

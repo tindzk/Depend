@@ -103,9 +103,9 @@ static def(void, printHelp, RdString base) {
 		$("Supported actions are: build, deps, help."));
 }
 
-static def(bool, build) {
+static def(void, build) {
 	Deps_scan(&this->deps);
-	return Builder_Run(&this->builder);
+	Builder_run(&this->builder);
 }
 
 static def(void, listDeps) {
@@ -146,7 +146,7 @@ def(bool, run, RdStringArray *args, RdString base) {
 		call(readConfig, args->buf[1]);
 
 		if (action == ref(Action_Build)) {
-			return call(build);
+			call(build);
 		} else if (action == ref(Action_ListDeps)) {
 			call(listDeps);
 		}

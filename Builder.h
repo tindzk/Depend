@@ -53,6 +53,6 @@ def(void, setWorkers, u16 value);
 def(void, addLink, RdString value);
 def(void, addLinkPath, RdString value);
 def(void, setVerbose, bool value);
-def(bool, Run);
+def(void, run);
 
 #undef self

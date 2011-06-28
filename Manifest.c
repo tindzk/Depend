@@ -189,6 +189,8 @@ const char* Manifest_ResolveName(int module) {
 			return "Terminal.Buffer";
 		case Modules_Terminal_Prompt ... Modules_Terminal_Prompt_Length:
 			return "Terminal.Prompt";
+		case Modules_CPU ... Modules_CPU_Length:
+			return "CPU";
 		case Modules_Queue ... Modules_Queue_Length:
 			return "Queue";
 		case Modules_ManifestWriter ... Modules_ManifestWriter_Length:

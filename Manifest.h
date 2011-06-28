@@ -174,6 +174,8 @@ enum {
 	Modules_Terminal_Buffer_Length,
 	Modules_Terminal_Prompt,
 	Modules_Terminal_Prompt_Length,
+	Modules_CPU,
+	Modules_CPU_Length,
 	Modules_Queue,
 	Queue_RuntimeError,
 	Modules_Queue_Length,

@@ -7,6 +7,7 @@
 #import <Signal.h>
 #import <EventLoop.h>
 
+#import "CPU.h"
 #import "Deps.h"
 #import "Utils.h"
 #import "Queue.h"

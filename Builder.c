@@ -19,7 +19,7 @@ rsdef(self, new, Terminal *term, Logger *logger, Deps *deps) {
 		.link      = StringArray_New(0),
 		.mappings  = MappingArray_New(0),
 		.linkpaths = StringArray_New(0),
-		.workers   = 1
+		.workers   = CPU_getCores()
 	};
 }
 
@@ -135,8 +135,8 @@ def(void, setWorkers, u16 value) {
 	this->workers = value;
 
 	if (this->workers == 0) {
-		Logger_Error(this->logger, $("Cannot have zero workers."));
-		this->workers++;
+		/* Auto-detect workers. */
+		this->workers = CPU_getCores();
 	}
 }
 
@@ -420,6 +420,10 @@ def(void, run) {
 		Logger_Info(this->logger, $("Nothing to do."));
 		return;
 	}
+
+	String workers = Integer_ToString(this->workers);
+	Logger_Info(this->logger, $("Using % worker(s)."), workers.rd);
+	String_Destroy(&workers);
 
 	Signal_listen(Signal_GetInstance());
 

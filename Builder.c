@@ -152,33 +152,27 @@ def(void, setVerbose, bool value) {
 	this->verbose = value;
 }
 
-static sdef(String, ShrinkPathEx, RdString shortpath, RdString path) {
-	String realpath = Path_Resolve(shortpath);
-
-	String res = String_New(0);
-
-	if (String_BeginsWith(path, realpath.rd)) {
-		if (!String_Equals(shortpath, $("."))) {
-			String_Append(&res, shortpath);
-			String_Append(&res, '/');
-		}
-
-		String_Append(&res, String_Slice(path, realpath.len + 1));
-	}
-
-	String_Destroy(&realpath);
-
-	return res;
-}
-
-static def(String, ShrinkPath, RdString path) {
+static def(String, shrinkPath, RdString path) {
 	each(mapping, this->mappings) {
-		String shortpath = mapping->src;
-		String res = scall(ShrinkPathEx, shortpath.rd, path);
+		RdString shortPath = mapping->src.rd;
+		String realPath    = Path_Resolve(shortPath);
 
-		if (res.len > 0) {
+		if (String_BeginsWith(path, realPath.rd)) {
+			String res = String_New(0);
+
+			if (!String_Equals(shortPath, '.')) {
+				String_Append(&res, shortPath);
+				String_Append(&res, '/');
+			}
+
+			String_Append(&res, String_Slice(path, realPath.len + 1));
+
+			String_Destroy(&realPath);
+
 			return res;
 		}
+
+		String_Destroy(&realPath);
 	}
 
 	return String_Clone(path);
@@ -384,7 +378,7 @@ static def(void, enqueue) {
 			Path_Create(create, true);
 		}
 
-		String path = call(ShrinkPath, item->source);
+		String path = call(shrinkPath, item->source);
 
 		String strCur   = Integer_ToString(Queue_getOffset(&this->queue));
 		String strTotal = Integer_ToString(Queue_getTotal(&this->queue));

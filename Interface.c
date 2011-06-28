@@ -2,15 +2,14 @@
 
 #define self Interface
 
-def(void, Init, Terminal *term, Logger *logger) {
-	this->logger = logger;
-	this->deps = Deps_new(logger);
-
-	Builder_Init(&this->builder, term, logger, &this->deps);
+def(void, init, Terminal *term, Logger *logger) {
+	this->logger  = logger;
+	this->deps    = Deps_new(logger);
+	this->builder = Builder_new(term, logger, &this->deps);
 }
 
-def(void, Destroy) {
-	Builder_Destroy(&this->builder);
+def(void, destroy) {
+	Builder_destroy(&this->builder);
 	Deps_destroy(&this->deps);
 }
 

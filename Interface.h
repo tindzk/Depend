@@ -22,8 +22,8 @@ class {
 	Builder builder;
 };
 
-def(void, Init, Terminal *term, Logger *logger);
-def(void, Destroy);
+def(void, init, Terminal *term, Logger *logger);
+def(void, destroy);
 def(bool, run, RdStringArray *args, RdString base);
 
 #undef self

@@ -2,26 +2,28 @@
 
 #define self Builder
 
-def(void, Init, Terminal *term, Logger *logger, Deps *deps) {
-	this->term      = term;
-	this->deps      = deps;
-	this->logger    = logger;
-	this->output    = String_Clone($("a.out"));
-	this->cc        = String_Clone($("/usr/bin/clang"));
-	this->inclhdr   = String_New(0);
-	this->manifest  = false;
-	this->dbgsym    = false;
-	this->std       = String_Clone($("gnu99"));
-	this->blocks    = true;
-	this->optmlevel = 0;
-	this->verbose   = false;
-	this->link      = StringArray_New(0);
-	this->mappings  = MappingArray_New(0);
-	this->linkpaths = StringArray_New(0);
-	this->workers   = 1;
+rsdef(self, new, Terminal *term, Logger *logger, Deps *deps) {
+	return (self) {
+		.term      = term,
+		.deps      = deps,
+		.logger    = logger,
+		.output    = String_Clone($("a.out")),
+		.cc        = String_Clone($("/usr/bin/clang")),
+		.inclhdr   = String_New(0),
+		.manifest  = false,
+		.dbgsym    = false,
+		.std       = String_Clone($("gnu99")),
+		.blocks    = true,
+		.optmlevel = 0,
+		.verbose   = false,
+		.link      = StringArray_New(0),
+		.mappings  = MappingArray_New(0),
+		.linkpaths = StringArray_New(0),
+		.workers   = 1
+	};
 }
 
-def(void, Destroy) {
+def(void, destroy) {
 	String_Destroy(&this->output);
 	String_Destroy(&this->cc);
 	String_Destroy(&this->inclhdr);

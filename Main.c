@@ -40,14 +40,14 @@ def(bool, Run) {
 	BitMask_Clear(this->logger.levels, Logger_Level_Debug);
 
 	Interface itf;
-	Interface_Init(&itf, &this->term, &this->logger);
+	Interface_init(&itf, &this->term, &this->logger);
 
 	bool res = false;
 
 	try {
 		res = Interface_run(&itf, this->args, this->base);
 	} finally {
-		Interface_Destroy(&itf);
+		Interface_destroy(&itf);
 	} tryEnd;
 
 	return res;

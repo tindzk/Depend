@@ -38,8 +38,8 @@ class {
 	Queue queue;
 };
 
-def(void, Init, Terminal *term, Logger *logger, Deps *deps);
-def(void, Destroy);
+rsdef(self, new, Terminal *term, Logger *logger, Deps *deps);
+def(void, destroy);
 def(bool, map, RdString value);
 def(void, setOutput, RdString value);
 def(void, setCompiler, RdString value);

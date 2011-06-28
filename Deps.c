@@ -158,14 +158,13 @@ static def(void, scanFile, size_t ofs) {
 
 	ssize_t ofsModule = -1;
 
-	RdString line = $("");
-	while (String_Split(s.rd, '\n', &line)) {
-		RdString needle;
+	RdString iter = $("");
+	while (String_Split(s.rd, '\n', &iter)) {
+		RdString line = String_Trim(iter);
 
-		ssize_t offset = String_Find(line, needle = $("@exc "));
-
-		if (offset != String_NotFound) {
-			RdString name = String_Trim(String_Slice(line, offset + needle.len));
+		RdString name;
+		if (String_Parse($("exc(%)"), line, &name)) {
+			name = String_Trim(name);
 
 			if (ofsModule == -1) {
 				Logger_Error(this->logger, $("Ignored exception '%'."), name);
@@ -177,6 +176,7 @@ static def(void, scanFile, size_t ofs) {
 			continue;
 		}
 
+		RdString needle;
 		if (String_BeginsWith(line, needle = $("#define self "))) {
 			RdString name = String_Trim(String_Slice(line, needle.len));
 

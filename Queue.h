@@ -6,7 +6,7 @@
 
 #define self Queue
 
-// @exc RuntimeError
+exc(RuntimeError)
 
 record(ref(Item)) {
 	RdString source;

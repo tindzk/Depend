@@ -47,6 +47,7 @@ def(void, destroy);
 def(bool, setOption, RdString name, RdString value);
 def(void, add, RdString value);
 def(void, setMain, RdString s);
+def(RdString, getMain);
 def(void, addInclude, RdString s);
 def(void, scan);
 

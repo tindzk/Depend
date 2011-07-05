@@ -339,6 +339,10 @@ def(void, setMain, RdString value) {
 	String_Copy(&this->main, value);
 }
 
+def(RdString, getMain) {
+	return this->main.rd;
+}
+
 def(void, addInclude, RdString value) {
 	StringArray_Push(&this->include, String_Clone(value));
 }

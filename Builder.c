@@ -7,7 +7,7 @@ rsdef(self, new, Terminal *term, Logger *logger, Deps *deps) {
 		.term      = term,
 		.deps      = deps,
 		.logger    = logger,
-		.output    = String_Clone($("a.out")),
+		.output    = String_New(0),
 		.cc        = String_Clone($("/usr/bin/clang")),
 		.inclhdr   = String_New(0),
 		.runtime   = String_New(0),
@@ -423,6 +423,20 @@ def(void, run) {
 	if (this->mappings->len == 0) {
 		return;
 	}
+
+	if (this->output.len == 0) {
+		RdString main = Deps_getMain(this->deps);
+		RdString ext  = Path_GetExtension(main);
+
+		if (ext.len == 0) {
+			String_Copy(&this->output, $("a.out"));
+		} else {
+			String_Append(&this->output, FmtString($("%.exe"),
+				String_Slice(main, 0, -ext.len - 1)));
+		}
+	}
+
+	Logger_Info(this->logger, $("Writing to %."), this->output.rd);
 
 	this->queue = Queue_new(this->logger, this->deps, this->mappings);
 	Queue_create(&this->queue);

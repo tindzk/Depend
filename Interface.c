@@ -142,6 +142,12 @@ def(bool, run, RdStringArray *args, RdString base) {
 			return false;
 		}
 
+		/* System-wide settings. */
+		RdString sys = $("/Settings/Depend.cfg");
+		if (Path_Exists(sys)) {
+			call(readConfig, sys);
+		}
+
 		call(readConfig, args->buf[1]);
 
 		if (action == ref(Action_Build)) {

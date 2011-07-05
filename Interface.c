@@ -51,6 +51,8 @@ static def(void, setOption, RdString name, RdString value) {
 		Builder_setWorkers(&this->builder, UInt16_Parse(value));
 	} else if (String_Equals(name, $("link"))) {
 		Builder_addLink(&this->builder, value);
+	} else if (String_Equals(name, $("runtime"))) {
+		Builder_setRuntime(&this->builder, value);
 	} else if (String_Equals(name, $("linkpath"))) {
 		Builder_addLinkPath(&this->builder, value);
 	} else if (String_Equals(name, $("verbose"))) {

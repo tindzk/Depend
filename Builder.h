@@ -23,6 +23,7 @@ class {
 
 	bool manifest;
 	String output;
+	String runtime;
 	String cc;
 	String inclhdr;
 	bool dbgsym;
@@ -43,6 +44,7 @@ rsdef(self, new, Terminal *term, Logger *logger, Deps *deps);
 def(void, destroy);
 def(bool, map, RdString value);
 def(void, setOutput, RdString value);
+def(void, setRuntime, RdString value);
 def(void, setCompiler, RdString value);
 def(void, setInclHeader, RdString value);
 def(void, setManifest, bool value);

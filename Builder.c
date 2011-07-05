@@ -10,6 +10,7 @@ rsdef(self, new, Terminal *term, Logger *logger, Deps *deps) {
 		.output    = String_Clone($("a.out")),
 		.cc        = String_Clone($("/usr/bin/clang")),
 		.inclhdr   = String_New(0),
+		.runtime   = String_New(0),
 		.manifest  = false,
 		.dbgsym    = false,
 		.std       = String_Clone($("gnu99")),
@@ -103,6 +104,10 @@ def(void, setOutput, RdString value) {
 	String_Copy(&this->output, value);
 }
 
+def(void, setRuntime, RdString value) {
+	String_Copy(&this->runtime, value);
+}
+
 def(void, setCompiler, RdString value) {
 	String_Copy(&this->cc, value);
 }
@@ -191,6 +196,12 @@ static def(void, link, StringArray *files) {
 	fwd(i, files->len) {
 		Process_addParameter(&proc, files->buf[i].rd);
 	}
+
+	Process_addParameter(&proc, $("-L"));
+	Process_addParameter(&proc, this->runtime.rd);
+
+	Process_addParameter(&proc, $("-B"));
+	Process_addParameter(&proc, this->runtime.rd);
 
 	fwd(i, this->linkpaths->len) {
 		Process_addParameter(&proc, $("-L"));

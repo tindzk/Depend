@@ -152,7 +152,7 @@ def(bool, run, RdStringArray *args, RdString base) {
 
 		call(readConfig, args->buf[1]);
 
-		String fullPath = Path_Resolve(args->buf[1]);
+		String fullPath = Path_expandFile(args->buf[1]);
 
 		RdString basePath = Path_GetDirectory(fullPath.rd, false);
 

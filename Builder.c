@@ -28,6 +28,7 @@ def(void, destroy) {
 	String_Destroy(&this->output);
 	String_Destroy(&this->cc);
 	String_Destroy(&this->inclhdr);
+	String_Destroy(&this->runtime);
 	String_Destroy(&this->std);
 
 	StringArray_Destroy(this->link);
@@ -160,7 +161,7 @@ def(void, setVerbose, bool value) {
 static def(String, shrinkPath, RdString path) {
 	each(mapping, this->mappings) {
 		RdString shortPath = mapping->src.rd;
-		String realPath    = Path_Resolve(shortPath);
+		String realPath    = Path_expand(shortPath);
 
 		if (String_BeginsWith(path, realPath.rd)) {
 			String res = String_New(0);

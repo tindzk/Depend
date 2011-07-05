@@ -35,10 +35,10 @@ static def(String, getOutput, RdString path) {
 	size_t len = Path_GetExtension(path).len + 1;
 
 	String out = String_New(0);
-	String realpath = Path_Resolve(path);
+	String realpath = Path_expand(path);
 
 	fwd(i, this->mappings->len) {
-		String mapping = Path_Resolve(this->mappings->buf[i].src.rd);
+		String mapping = Path_expand(this->mappings->buf[i].src.rd);
 
 		if (String_BeginsWith(realpath.rd, mapping.rd)) {
 			RdString path = String_Slice(realpath.rd, mapping.len, -len);

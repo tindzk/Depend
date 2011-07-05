@@ -49,7 +49,6 @@ enum {
 	Path_CreationFailed,
 	Path_DeletingFailed,
 	Path_DirectoryNotEmpty,
-	Path_EmptyPath,
 	Path_GettingAttributeFailed,
 	Path_InsufficientSpace,
 	Path_IsDir,

@@ -26,7 +26,6 @@ static const char* codes[] = {
 	[Path_CreationFailed] = "CreationFailed",
 	[Path_DeletingFailed] = "DeletingFailed",
 	[Path_DirectoryNotEmpty] = "DirectoryNotEmpty",
-	[Path_EmptyPath] = "EmptyPath",
 	[Path_GettingAttributeFailed] = "GettingAttributeFailed",
 	[Path_InsufficientSpace] = "InsufficientSpace",
 	[Path_IsDir] = "IsDir",

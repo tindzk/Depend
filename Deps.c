@@ -138,7 +138,7 @@ static def(String, resolve, RdString base, RdString file, ref(Type) deptype) {
 	String absPath = String_New(0);
 
 	if (relPath.len != 0) {
-		 absPath = Path_Resolve(relPath.rd);
+		 absPath = Path_expand(relPath.rd);
 	}
 
 	String_Destroy(&relPath);

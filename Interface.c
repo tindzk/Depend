@@ -104,13 +104,13 @@ static def(void, printHelp, RdString base) {
 		$("Supported actions are: build, deps, help."));
 }
 
-static def(void, build) {
-	Deps_scan(&this->deps);
+static def(void, build, RdString basePath) {
+	Deps_scan(&this->deps, basePath);
 	Builder_run(&this->builder);
 }
 
-static def(void, listDeps) {
-	Deps_scan(&this->deps);
+static def(void, listDeps, RdString basePath) {
+	Deps_scan(&this->deps, basePath);
 
 	Deps_Components *comps = Deps_getComponents(&this->deps);
 
@@ -152,11 +152,17 @@ def(bool, run, RdStringArray *args, RdString base) {
 
 		call(readConfig, args->buf[1]);
 
+		String fullPath = Path_Resolve(args->buf[1]);
+
+		RdString basePath = Path_GetDirectory(fullPath.rd, false);
+
 		if (action == ref(Action_Build)) {
-			call(build);
+			call(build, basePath);
 		} else if (action == ref(Action_ListDeps)) {
-			call(listDeps);
+			call(listDeps, basePath);
 		}
+
+		String_Destroy(&fullPath);
 	}
 
 	return true;

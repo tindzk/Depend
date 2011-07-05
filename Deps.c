@@ -347,10 +347,17 @@ def(void, addInclude, RdString value) {
 	StringArray_Push(&this->include, String_Clone(value));
 }
 
-def(void, scan) {
+def(void, scan, RdString basePath) {
 	if (this->main.len == 0) {
-		Logger_Error(this->logger, $("No main file set."));
-		return;
+		RdString dirName = Path_getDirectoryName(basePath);
+
+		if (dirName.len == 0) {
+			Logger_Error(this->logger, $("No main file set."));
+			return;
+		}
+
+		String_Append(&this->main, dirName);
+		String_Append(&this->main, $(".c"));
 	}
 
 	if (!Path_Exists(this->main.rd)) {

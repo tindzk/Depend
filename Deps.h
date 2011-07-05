@@ -49,7 +49,7 @@ def(void, add, RdString value);
 def(void, setMain, RdString s);
 def(RdString, getMain);
 def(void, addInclude, RdString s);
-def(void, scan);
+def(void, scan, RdString basePath);
 
 static alwaysInline def(StringArray *, getIncludes) {
 	return this->include;

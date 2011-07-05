@@ -1,5 +1,8 @@
 JIVAI_PATH ?= ../Jivai
 
+LIBFILES += -L/usr/lib/gcc/i686-pc-linux-gnu/4.6.1
+LIBFILES += -B/usr/lib/gcc/i686-pc-linux-gnu/4.6.1
+
 # Compile with Clang using the default configuration.
 CC = clang -include $(JIVAI_PATH)/config.h
 
@@ -24,7 +27,7 @@ LIBPATH = $(JIVAI_PATH)/src
 LIBFILES += -I.
 
 # Only build these modules.
-LIBFILES += $(LIBPATH)/{Main,Application,Channel,Signal,Memory,Directory,System,Kernel,Block,Process,Path,Char,String{,Stream,Reader},Backtrace,Integer,Exception,Tree,Terminal{,/Controller,/Prompt,/Buffer},Unicode,Ecriture{,/Parser},File,BufferedStream,FileStream,Hex,Logger,ELF,DWARF,Buffer,LEB128,Memory/{Map,Libc,Logger},Task,EventLoop,ChannelWatcher,EventQueue,SocketServer,SocketConnection,Socket,FPU,CPU}.c
+LIBFILES += $(LIBPATH)/{Main,Application,Channel,Signal,Memory,Directory,System,Kernel,Block,Process,Path,Char,String{,Stream,Reader},Backtrace,Integer,Exception,Tree,Terminal{,/Controller,/Prompt,/Buffer},Unicode,Ecriture{,/Parser},File,BufferedStream,FileStream,Hex,Logger,ELF,DWARF,Buffer,LEB128,Memory/{Map,Libc,Logger},Task,EventLoop,ChannelWatcher,EventQueue,SocketServer,SocketConnection,Socket,FPU,CPU,MemoryMappedFile,Locale,HashTable,MurmurHash3}.c
 
 # Set the library path.
 LIBFILES += -I$(LIBPATH)

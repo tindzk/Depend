@@ -12,21 +12,8 @@ static const char* codes[] = {
 	[Channel_UnknownError] = "UnknownError",
 	[Channel_WritingFailed] = "WritingFailed",
 	[Channel_WritingInterrupted] = "WritingInterrupted",
-	[File_AccessDenied] = "AccessDenied",
-	[File_AlreadyExists] = "AlreadyExists",
-	[File_AttributeNonExistent] = "AttributeNonExistent",
-	[File_BufferTooSmall] = "BufferTooSmall",
-	[File_CannotOpenFile] = "CannotOpenFile",
-	[File_GettingAttributeFailed] = "GettingAttributeFailed",
-	[File_InvalidFileDescriptor] = "InvalidFileDescriptor",
-	[File_InvalidParameter] = "InvalidParameter",
-	[File_IsDirectory] = "IsDirectory",
-	[File_NotFound] = "NotFound",
-	[File_NotWritable] = "NotWritable",
-	[File_SeekingFailed] = "SeekingFailed",
-	[File_SettingAttributeFailed] = "SettingAttributeFailed",
-	[File_StatFailed] = "StatFailed",
-	[File_TruncatingFailed] = "TruncatingFailed",
+	[MemoryMappedFile_InvalidFile] = "InvalidFile",
+	[MemoryMappedFile_UnknownError] = "UnknownError",
 	[ELF_InvalidFile] = "InvalidFile",
 	[ELF_UnknownError] = "UnknownError",
 	[Integer_Overflow] = "Overflow",
@@ -55,6 +42,21 @@ static const char* codes[] = {
 	[Path_StatFailed] = "StatFailed",
 	[Path_TruncatingFailed] = "TruncatingFailed",
 	[Exception_AssertFailed] = "AssertFailed",
+	[File_AccessDenied] = "AccessDenied",
+	[File_AlreadyExists] = "AlreadyExists",
+	[File_AttributeNonExistent] = "AttributeNonExistent",
+	[File_BufferTooSmall] = "BufferTooSmall",
+	[File_CannotOpenFile] = "CannotOpenFile",
+	[File_GettingAttributeFailed] = "GettingAttributeFailed",
+	[File_InvalidFileDescriptor] = "InvalidFileDescriptor",
+	[File_InvalidParameter] = "InvalidParameter",
+	[File_IsDirectory] = "IsDirectory",
+	[File_NotFound] = "NotFound",
+	[File_NotWritable] = "NotWritable",
+	[File_SeekingFailed] = "SeekingFailed",
+	[File_SettingAttributeFailed] = "SettingAttributeFailed",
+	[File_StatFailed] = "StatFailed",
+	[File_TruncatingFailed] = "TruncatingFailed",
 	[NetworkAddress_GetAddrInfoFailed] = "GetAddrInfoFailed",
 	[SocketConnection_ConnectionRefused] = "ConnectionRefused",
 	[SocketConnection_ConnectionReset] = "ConnectionReset",
@@ -82,6 +84,10 @@ static const char* codes[] = {
 	[Signal_InvalidMemoryAccess] = "InvalidMemoryAccess",
 	[Signal_Pipe] = "Pipe",
 	[Signal_UnknownError] = "UnknownError",
+	[HashTable_TableIsFull] = "TableIsFull",
+	[Locale_CorruptFile] = "CorruptFile",
+	[Locale_Duplicate] = "Duplicate",
+	[Locale_UnknownContext] = "UnknownContext",
 	[Terminal_IoctlFailed] = "IoctlFailed",
 	[Terminal_ElementMismatch] = "ElementMismatch",
 	[Directory_CannotOpenDirectory] = "CannotOpenDirectory",
@@ -115,8 +121,8 @@ const char* Manifest_ResolveName(int module) {
 			return "Channel";
 		case Modules_System ... Modules_System_Length:
 			return "System";
-		case Modules_File ... Modules_File_Length:
-			return "File";
+		case Modules_MemoryMappedFile ... Modules_MemoryMappedFile_Length:
+			return "MemoryMappedFile";
 		case Modules_ELF ... Modules_ELF_Length:
 			return "ELF";
 		case Modules_Hex ... Modules_Hex_Length:
@@ -137,6 +143,8 @@ const char* Manifest_ResolveName(int module) {
 			return "Exception";
 		case Modules_EventQueue ... Modules_EventQueue_Length:
 			return "EventQueue";
+		case Modules_File ... Modules_File_Length:
+			return "File";
 		case Modules_NetworkAddress ... Modules_NetworkAddress_Length:
 			return "NetworkAddress";
 		case Modules_SocketConnection ... Modules_SocketConnection_Length:
@@ -153,6 +161,10 @@ const char* Manifest_ResolveName(int module) {
 			return "Signal";
 		case Modules_FPU ... Modules_FPU_Length:
 			return "FPU";
+		case Modules_HashTable ... Modules_HashTable_Length:
+			return "HashTable";
+		case Modules_Locale ... Modules_Locale_Length:
+			return "Locale";
 		case Modules_Logger ... Modules_Logger_Length:
 			return "Logger";
 		case Modules_Terminal ... Modules_Terminal_Length:

@@ -71,7 +71,7 @@ def(bool, map, RdString value) {
 		goto error;
 	}
 
-	if (!Path_Exists(insert.dest.rd)) {
+	if (!Path_exists(insert.dest.rd)) {
 		Logger_Error(this->logger,
 			$("Destination path '%' does not exist."),
 			insert.dest.rd);
@@ -84,7 +84,7 @@ def(bool, map, RdString value) {
 		Terminal_Prompt_Destroy(&prompt);
 
 		if (isYes) {
-			Path_Create(insert.dest.rd, true);
+			Path_createFolder(insert.dest.rd, true);
 		} else {
 			goto error;
 		}
@@ -166,12 +166,11 @@ static def(String, shrinkPath, RdString path) {
 		if (String_BeginsWith(path, realPath.rd)) {
 			String res = String_New(0);
 
-			if (!String_Equals(shortPath, '.')) {
+			if (!String_Equals(shortPath, $("./"))) {
 				String_Append(&res, shortPath);
-				String_Append(&res, '/');
 			}
 
-			String_Append(&res, String_Slice(path, realPath.len + 1));
+			String_Append(&res, String_Slice(path, realPath.len));
 
 			String_Destroy(&realPath);
 
@@ -384,10 +383,9 @@ static def(void, enqueue) {
 	{
 		Queue_Item *item = Queue_getNext(&this->queue);
 
-		RdString create = Path_GetDirectory(item->output.rd);
-
-		if (!Path_Exists(create)) {
-			Path_Create(create, true);
+		RdString create = Path_getFolderPath(item->output.rd);
+		if (!Path_exists(create)) {
+			Path_createFolder(create, true);
 		}
 
 		String path = call(shrinkPath, item->source);
@@ -421,13 +419,35 @@ def(void, run) {
 		ManifestWriter_destroy(&manifest);
 	}
 
+	fwd(i, this->mappings->len) {
+		RdString path = this->mappings->buf[i].src.rd;
+
+		rpt(2) {
+			if (!Path_isFolderPath(path) || !Path_exists(path)) {
+				Logger_Error(this->logger,
+					$("Mapped path '%' is invalid. Trailing slash missing?"), path);
+				return;
+			}
+
+			path = this->mappings->buf[i].dest.rd;
+		}
+	}
+
+	if (!Path_isFolderPath(this->runtime.rd) || !Path_exists(this->runtime.rd)) {
+		Logger_Error(this->logger,
+			$("The runtime path '%' is invalid. Trailing slash missing?"),
+			this->runtime.rd);
+		return;
+	}
+
 	if (this->mappings->len == 0) {
+		Logger_Error(this->logger, $("No mappings defined."));
 		return;
 	}
 
 	if (this->output.len == 0) {
 		RdString main = Deps_getMain(this->deps);
-		RdString ext  = Path_GetExtension(main);
+		RdString ext  = Path_getFileExtension(main);
 
 		if (ext.len == 0) {
 			String_Copy(&this->output, $("a.out"));

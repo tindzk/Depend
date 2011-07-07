@@ -146,15 +146,19 @@ def(bool, run, RdStringArray *args, RdString base) {
 
 		/* System-wide settings. */
 		RdString sys = $("/Settings/Depend.cfg");
-		if (Path_Exists(sys)) {
+		if (Path_exists(sys)) {
 			call(readConfig, sys);
 		}
 
 		call(readConfig, args->buf[1]);
 
-		String fullPath = Path_expandFile(args->buf[1]);
+		String fullPath = String_New(0);
+		RdString basePath = args->buf[1];
 
-		RdString basePath = Path_GetDirectory(fullPath.rd, false);
+		if (Path_isFile(args->buf[1])) {
+			fullPath = Path_expandFile(args->buf[1]);
+			basePath = Path_getFolderPath(fullPath.rd);
+		}
 
 		if (action == ref(Action_Build)) {
 			call(build, basePath);

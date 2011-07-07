@@ -38,9 +38,10 @@ def(void, destroy) {
 }
 
 static def(bool, getLocalPath, RdString base, RdString file, String *path) {
-	String_Append(path, FmtString($("%/%"), base, file));
+	String_Append(path, base);
+	String_Append(path, file);
 
-	if (Path_Exists(path->rd)) {
+	if (Path_exists(path->rd)) {
 		return true;
 	}
 
@@ -52,10 +53,10 @@ static def(bool, getLocalPath, RdString base, RdString file, String *path) {
 /* Iterates over all include paths and uses the matching one. */
 static def(bool, getSystemPath, RdString file, String *path) {
 	fwd(i, this->include->len) {
-		String_Append(path, FmtString($("%/%"),
-			this->include->buf[i].rd, file));
+		String_Append(path, this->include->buf[i].rd);
+		String_Append(path, file);
 
-		if (Path_Exists(path->rd)) {
+		if (Path_exists(path->rd)) {
 			return true;
 		}
 
@@ -100,7 +101,7 @@ static def(size_t, addComponent, String absPath, bool source) {
 		src = absPath;
 		hdr = String_Format($("%h"), String_Slice(absPath.rd, 0, -1));
 
-		if (!Path_Exists(hdr.rd)) {
+		if (!Path_exists(hdr.rd)) {
 			Logger_Debug(this->logger,
 				$("'%' has no corresponding header file."), src.rd);
 			hdr.len = 0;
@@ -109,7 +110,7 @@ static def(size_t, addComponent, String absPath, bool source) {
 		src = String_Format($("%c"), String_Slice(absPath.rd, 0, -1));
 		hdr = absPath;
 
-		if (!Path_Exists(src.rd)) {
+		if (!Path_exists(src.rd)) {
 			Logger_Debug(this->logger,
 				$("'%' has no corresponding source file."), hdr.rd);
 			src.len = 0;
@@ -135,6 +136,7 @@ static def(String, resolve, RdString base, RdString file, ref(Type) deptype) {
 	}
 
 	String relPath = call(getFullPath, base, file, deptype);
+
 	String absPath = String_New(0);
 
 	if (relPath.len != 0) {
@@ -233,9 +235,7 @@ static def(void, scanFile, size_t ofs) {
 
 		Logger_Debug(this->logger, $("Resolving dependency '%'..."), dep);
 
-		String absPath = call(resolve,
-			Path_GetDirectory(path),
-			dep, deptype);
+		String absPath = call(resolve, Path_getFolderPath(path), dep, deptype);
 
 		if (absPath.len == 0) {
 			Logger_Debug(this->logger, $("Dependency not found."));
@@ -287,12 +287,12 @@ def(void, add, RdString value) {
 	ssize_t star = String_Find(value, '*');
 
 	if (star == String_NotFound) {
-		if (value.len > 0 && !Path_Exists(value)) {
+		if (value.len > 0 && !Path_exists(value)) {
 			Logger_Error(this->logger,
 				$("Manually added file '%' not found."),
 				value);
 		} else {
-			call(processSourceFile, $("."), value, ref(Type_Local));
+			call(processSourceFile, $("./"), value, ref(Type_Local));
 		}
 
 		return;
@@ -303,12 +303,12 @@ def(void, add, RdString value) {
 	RdString path, left;
 
 	if (slash == String_NotFound) {
-		path = $(".");
+		path = $("./");
 		left = String_Slice(value, 0, star);
 	} else {
 		slash += star;
 
-		path = String_Slice(value, 0, slash);
+		path = String_Slice(value, 0, slash + 1);
 		left = String_Slice(value, slash + 1, star - slash - 1);
 	}
 
@@ -349,7 +349,7 @@ def(void, addInclude, RdString value) {
 
 def(void, scan, RdString basePath) {
 	if (this->main.len == 0) {
-		RdString dirName = Path_getDirectoryName(basePath);
+		RdString dirName = Path_getFolderName(basePath);
 
 		if (dirName.len == 0) {
 			Logger_Error(this->logger, $("No main file set."));
@@ -360,11 +360,22 @@ def(void, scan, RdString basePath) {
 		String_Append(&this->main, $(".c"));
 	}
 
-	if (!Path_Exists(this->main.rd)) {
+	if (!Path_exists(this->main.rd)) {
 		Logger_Error(this->logger, $("Main file '%' not found."),
 			this->main.rd);
 		return;
 	}
 
-	call(processSourceFile, $("."), this->main.rd, ref(Type_Local));
+	fwd(i, this->include->len) {
+		if (!Path_isFolderPath(this->include->buf[i].rd) ||
+			!Path_exists(this->include->buf[i].rd))
+		{
+			Logger_Error(this->logger,
+				$("Include path '%' is invalid. Trailing slash missing?"),
+				this->include->buf[i].rd);
+			return;
+		}
+	}
+
+	call(processSourceFile, $("./"), this->main.rd, ref(Type_Local));
 }

@@ -32,7 +32,7 @@ static def(void, addToQueue, RdString source, String output) {
 }
 
 static def(String, getOutput, RdString path) {
-	size_t len = Path_GetExtension(path).len + 1;
+	size_t len = Path_getFileExtension(path).len + 1;
 
 	String out = String_New(0);
 	String realpath = Path_expand(path);
@@ -79,7 +79,7 @@ static def(bool, traverse, Deps_Component *comp) {
 		throw(RuntimeError);
 	}
 
-	if (!Path_Exists(output.rd)) {
+	if (!Path_exists(output.rd)) {
 		Logger_Debug(this->logger, $("Not built yet."));
 		goto build;
 	}

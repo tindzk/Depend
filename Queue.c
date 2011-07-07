@@ -59,6 +59,13 @@ static def(String, getOutput, RdString path) {
 	return out;
 }
 
+static sdef(bool, wasModified, RdString sourceFile, RdString outputFile) {
+	Stat64 src = Path_getMeta(sourceFile);
+	Stat64 out = Path_getMeta(outputFile);
+
+	return src.mtime.sec > out.mtime.sec;
+}
+
 static def(bool, traverse, Deps_Component *comp) {
 	RdString headerPath = comp->header.rd;
 	RdString sourcePath = comp->source.rd;
@@ -84,12 +91,12 @@ static def(bool, traverse, Deps_Component *comp) {
 		goto build;
 	}
 
-	if (File_IsModified(sourcePath, output.rd)) {
+	if (scall(wasModified, sourcePath, output.rd)) {
 		Logger_Debug(this->logger, $("Source modified."));
 		goto build;
 	}
 
-	if (headerPath.len != 0 && File_IsModified(headerPath, output.rd)) {
+	if (headerPath.len != 0 && scall(wasModified, headerPath, output.rd)) {
 		Logger_Debug(this->logger, $("Header modified."));
 		goto build;
 	}

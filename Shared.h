@@ -1,4 +1,3 @@
-#import <Path.h>
 #import <Array.h>
 #import <String.h>
 
@@ -8,5 +7,3 @@ record(DepsMapping) {
 };
 
 Array(DepsMapping, MappingArray);
-
-bool File_IsModified(RdString sourceFile, RdString outputFile);

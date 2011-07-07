@@ -1,7 +1,6 @@
 #import <Main.h>
 #import <Terminal/Controller.h>
 
-#import "Utils.h"
 #import "Interface.h"
 
 #define self Application

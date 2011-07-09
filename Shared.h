@@ -4,6 +4,7 @@
 record(DepsMapping) {
 	String src;
 	String dest;
+	String namespace;
 };
 
 Array(DepsMapping, MappingArray);

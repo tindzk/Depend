@@ -6,11 +6,10 @@
 
 #define self Queue
 
-exc(RuntimeError)
-
 record(ref(Item)) {
 	RdString source;
 	String   output;
+	RdString namespace;
 	bool     built;
 	pid_t    pid;
 };

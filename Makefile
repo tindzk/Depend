@@ -34,5 +34,10 @@ LIBFILES += -I$(LIBPATH)
 
 all:
 	if test -f Depend.exe; then ./update-manifest.sh; fi
-	bash -c "$(CC) -o Depend.tmp $(CFLAGS) *.c $(LIBFILES)"
+
+	bash -c '$(CC) -o Depend.tmp $(CFLAGS)   \
+		-DNamespace=\"main\" *.c -UNamespace \
+		-DNamespace=\"Jivai\"                \
+		$(LIBFILES)'
+
 	mv Depend.tmp Depend.exe

@@ -21,17 +21,18 @@ def(void, destroy) {
 	scall(Items_Free, this->queue);
 }
 
-static def(void, addToQueue, RdString source, String output) {
+static def(void, addToQueue, RdString source, String output, RdString namespace) {
 	ref(Item) item = {
 		.source = source,
 		.output = output,
-		.pid    = 0
+		.namespace = namespace,
+		.pid = 0
 	};
 
 	scall(Items_Push, &this->queue, item);
 }
 
-static def(String, getOutput, RdString path) {
+static def(String, getOutput, RdString path, RdString *namespace) {
 	size_t len = Path_getFileExtension(path).len + 1;
 
 	String out = String_New(0);
@@ -45,6 +46,10 @@ static def(String, getOutput, RdString path) {
 
 			out = String_Format($("%%.o"),
 				this->mappings->buf[i].dest.rd, path);
+
+			if (namespace != null) {
+				*namespace = this->mappings->buf[i].namespace.rd;
+			}
 		}
 
 		String_Destroy(&mapping);
@@ -66,24 +71,25 @@ static sdef(bool, wasModified, RdString sourceFile, RdString outputFile) {
 	return src.mtime.sec > out.mtime.sec;
 }
 
-static def(bool, traverse, Deps_Component *comp) {
+static def(bool, buildSource, Deps_Component *comp) {
 	RdString headerPath = comp->header.rd;
 	RdString sourcePath = comp->source.rd;
 
 	if (sourcePath.len == 0) {
-		Logger_Debug(this->logger, $("Skipping %..."), headerPath);
+		Logger_Debug(this->logger,
+			$("No source file found for %."), headerPath);
 		return false;
 	}
 
-	Logger_Debug(this->logger, $("Processing %..."), sourcePath);
+	Logger_Debug(this->logger, $("Processing source %..."), sourcePath);
 
-	String output = call(getOutput, sourcePath);
+	RdString namespace;
+
+	String output = call(getOutput, sourcePath, &namespace);
 
 	if (output.len == 0) {
-		Logger_Error(this->logger,
-			$("No output path is mapped for '%'."), sourcePath);
-		String_Destroy(&output);
-		throw(RuntimeError);
+		Logger_Debug(this->logger, $("No output path mapped."));
+		goto notBuilding;
 	}
 
 	if (!Path_exists(output.rd)) {
@@ -103,11 +109,12 @@ static def(bool, traverse, Deps_Component *comp) {
 
 	when(build) {
 		Logger_Debug(this->logger, $("Building %."), sourcePath);
-		call(addToQueue, sourcePath, output);
+		call(addToQueue, sourcePath, output, namespace);
 		comp->build = true;
 		return true;
 	}
 
+notBuilding:
 	Logger_Debug(this->logger, $("Not building."));
 	String_Destroy(&output);
 	return false;
@@ -131,9 +138,17 @@ static def(void, addDependants, Deps_Components *comps, size_t ofs) {
 			if (deps->buf[j] == ofs) {
 				Logger_Debug(this->logger, $("Pulling in dependant %..."),
 					sourcePath);
-				String output = call(getOutput, sourcePath);
-				call(addToQueue, sourcePath, output);
-				comps->buf[i].build = true;
+
+				RdString namespace;
+				String output = call(getOutput, sourcePath, &namespace);
+
+				if (output.len == 0) {
+					Logger_Debug(this->logger, $("No output path mapped."));
+				} else {
+					call(addToQueue, sourcePath, output, namespace);
+					comps->buf[i].build = true;
+				}
+
 				break;
 			}
 		}
@@ -148,7 +163,7 @@ def(void, create) {
 			continue;
 		}
 
-		if (call(traverse, &comps->buf[i])) {
+		if (call(buildSource, &comps->buf[i])) {
 			call(addDependants, comps, i);
 		}
 	}
@@ -199,9 +214,13 @@ def(StringArray *, getLinkingFiles) {
 		RdString src = comps->buf[i].source.rd;
 
 		if (src.len != 0) {
-			String path = call(getOutput, src);
-			assert(path.len != 0);
-			StringArray_Push(&files, path);
+			String path = call(getOutput, src, null);
+
+			if (path.len == 0) {
+				String_Destroy(&path);
+			} else {
+				StringArray_Push(&files, path);
+			}
 		}
 	}
 

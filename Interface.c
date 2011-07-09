@@ -55,6 +55,9 @@ static def(void, setOption, RdString name, RdString value) {
 		Builder_setRuntime(&this->builder, value);
 	} else if (String_Equals(name, $("linkpath"))) {
 		Builder_addLinkPath(&this->builder, value);
+	} else if (String_Equals(name, $("library"))) {
+		Builder_setLibrary(&this->builder,
+			String_Equals(value, $("yes")));
 	} else if (String_Equals(name, $("verbose"))) {
 		Builder_setVerbose(&this->builder,
 			String_Equals(value, $("yes")));

@@ -26,6 +26,7 @@ class {
 	String runtime;
 	String cc;
 	String inclhdr;
+	bool library;
 	bool dbgsym;
 	String std;
 	bool blocks;
@@ -43,6 +44,7 @@ class {
 rsdef(self, new, Terminal *term, Logger *logger, Deps *deps);
 def(void, destroy);
 def(bool, map, RdString value);
+def(void, setLibrary, bool value);
 def(void, setOutput, RdString value);
 def(void, setRuntime, RdString value);
 def(void, setCompiler, RdString value);

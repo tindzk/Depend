@@ -78,14 +78,12 @@ static const char* codes[] = {
 	[HashTable_TableIsFull] = "TableIsFull",
 	[Locale_CorruptFile] = "CorruptFile",
 	[Locale_Duplicate] = "Duplicate",
-	[Locale_UnknownContext] = "UnknownContext",
 	[Terminal_IoctlFailed] = "IoctlFailed",
 	[Terminal_ElementMismatch] = "ElementMismatch",
 	[Directory_CannotOpenDirectory] = "CannotOpenDirectory",
 	[Directory_ReadingFailed] = "ReadingFailed",
 	[Process_ForkFailed] = "ForkFailed",
 	[Process_SpawningProcessFailed] = "SpawningProcessFailed",
-	[Queue_RuntimeError] = "RuntimeError",
 };
 
 const char* Manifest_ResolveCode(unsigned int code) {
@@ -160,6 +158,8 @@ const char* Manifest_ResolveName(int module) {
 			return "Logger";
 		case Modules_Terminal ... Modules_Terminal_Length:
 			return "Terminal";
+		case Modules_Directory ... Modules_Directory_Length:
+			return "Directory";
 		case Modules_Memory_Map ... Modules_Memory_Map_Length:
 			return "Memory.Map";
 		case Modules_Memory_Libc ... Modules_Memory_Libc_Length:
@@ -178,8 +178,6 @@ const char* Manifest_ResolveName(int module) {
 			return "Terminal.Controller";
 		case Modules_Tree ... Modules_Tree_Length:
 			return "Tree";
-		case Modules_Directory ... Modules_Directory_Length:
-			return "Directory";
 		case Modules_Deps ... Modules_Deps_Length:
 			return "Deps";
 		case Modules_Process ... Modules_Process_Length:

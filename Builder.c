@@ -12,6 +12,7 @@ rsdef(self, new, Terminal *term, Logger *logger, Deps *deps) {
 		.inclhdr   = String_New(0),
 		.runtime   = String_New(0),
 		.manifest  = false,
+		.library   = false,
 		.dbgsym    = false,
 		.std       = String_Clone($("gnu99")),
 		.blocks    = true,
@@ -40,41 +41,33 @@ def(void, destroy) {
 	each(item, this->mappings) {
 		String_Destroy(&item->src);
 		String_Destroy(&item->dest);
+		String_Destroy(&item->namespace);
 	}
 
 	MappingArray_Free(this->mappings);
 }
 
 def(bool, map, RdString value) {
-	bool src = true;
-	RdString s = $("");
-	DepsMapping insert;
+	RdString src, dest, namespace;
 
-	while (String_Split(value, ':', &s)) {
-		if (src) {
-			insert.src = String_Clone(s);
-			src = false;
-		} else {
-			insert.dest = String_Clone(s);
-			break;
+	if (!String_Parse($("%:%:%"), value, &src, &dest, &namespace)) {
+		if (!String_Parse($("%:%"), value, &src, &dest)) {
+			Logger_Error(this->logger,
+				$("`map' requires two or three values separated by a colon."));
+			return false;
 		}
+
+		namespace = $("main");
 	}
 
-	if (src) {
-		Logger_Error(this->logger,
-			$("`map' requires two values separated by a colon."));
-		goto error;
-	}
-
-	if (insert.src.len == 0) {
+	if (src.len == 0) {
 		Logger_Error(this->logger, $("Invalid source path."));
-		goto error;
+		return false;
 	}
 
-	if (!Path_exists(insert.dest.rd)) {
+	if (!Path_exists(dest)) {
 		Logger_Error(this->logger,
-			$("Destination path '%' does not exist."),
-			insert.dest.rd);
+			$("Destination path '%' does not exist."), dest);
 
 		Terminal_Prompt prompt;
 		Terminal_Prompt_Init(&prompt, this->term);
@@ -84,21 +77,25 @@ def(bool, map, RdString value) {
 		Terminal_Prompt_Destroy(&prompt);
 
 		if (isYes) {
-			Path_createFolder(insert.dest.rd, true);
+			Path_createFolder(dest, true);
 		} else {
-			goto error;
+			return false;
 		}
 	}
+
+	DepsMapping insert = {
+		.src  = String_Clone(src),
+		.dest = String_Clone(dest),
+		.namespace = String_Clone(namespace)
+	};
 
 	MappingArray_Push(&this->mappings, insert);
 
 	return true;
+}
 
-error:
-	String_Destroy(&insert.dest);
-	String_Destroy(&insert.src);
-
-	return false;
+def(void, setLibrary, bool value) {
+	this->library = value;
 }
 
 def(void, setOutput, RdString value) {
@@ -190,6 +187,10 @@ def(void, onLinked, __unused pid_t pid, __unused int status) {
 static def(void, link, StringArray *files) {
 	Process proc = Process_new(this->cc.rd);
 
+	if (this->library) {
+		Process_addParameter(&proc, $("-shared"));
+	}
+
 	Process_addParameter(&proc, $("-o"));
 	Process_addParameter(&proc, this->output.rd);
 
@@ -266,14 +267,23 @@ def(void, onCompiled, pid_t pid, int status) {
 	}
 }
 
-static def(pid_t, compile, String src, String out) {
+static def(pid_t, compile, RdString namespace, RdString src, RdString out) {
 	Process proc = Process_new(this->cc.rd);
 
+	if (this->library) {
+		Process_addParameter(&proc, $("-fpic"));
+	}
+
 	Process_addParameter(&proc, $("-o"));
-	Process_addParameter(&proc, out.rd);
+	Process_addParameter(&proc, out);
+
+	assert(!String_Contains(namespace, ' '));
+	String namesp = String_Format($("-DNamespace=\"%\""), namespace);
+	Process_addParameter(&proc, namesp.rd);
+	String_Destroy(&namesp);
 
 	Process_addParameter(&proc, $("-c"));
-	Process_addParameter(&proc, src.rd);
+	Process_addParameter(&proc, src);
 
 	String std = String_Concat($("-std="), this->std.rd);
 	Process_addParameter(&proc, std.rd);
@@ -399,7 +409,10 @@ static def(void, enqueue) {
 		String_Destroy(&strCur);
 		String_Destroy(&strTotal);
 
-		pid_t pid = call(compile, path, item->output);
+		RdString namespace = item->namespace;
+		RdString output    = item->output.rd;
+
+		pid_t pid = call(compile, namespace, path.rd, output);
 		Queue_setBuilding(&this->queue, item, pid);
 
 		String_Destroy(&path);

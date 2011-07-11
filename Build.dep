@@ -1,0 +1,14 @@
+optimlevel=0
+dbgsym=yes
+
+manifest=yes
+
+include=./
+inclhdr=../Jivai/config.h
+include=../Jivai/src/
+
+map=./:build/
+map=../Jivai/src/:build/Jivai/:Jivai
+
+debug=yes
+verbose=yes

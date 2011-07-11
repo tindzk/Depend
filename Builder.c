@@ -188,6 +188,12 @@ static def(void, link, StringArray *files) {
 	Process proc = Process_new(this->cc.rd);
 
 	if (this->library) {
+		String soname =
+			String_Format($("-Wl,-soname,%"),
+				Path_getFileName(this->output.rd));
+		Process_addParameter(&proc, soname.rd);
+		String_Destroy(&soname);
+
 		Process_addParameter(&proc, $("-shared"));
 	}
 

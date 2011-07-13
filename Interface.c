@@ -67,7 +67,7 @@ static def(void, setOption, RdString name, RdString value) {
 }
 
 static def(void, readConfig, RdString path) {
-	String contents = File_GetContents(path);
+	String contents = File_getContents(path);
 
 	RdString iter = $("");
 	while (String_Split(contents.rd, '\n', &iter)) {

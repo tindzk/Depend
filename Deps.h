@@ -4,7 +4,7 @@
 #import <Array.h>
 #import <String.h>
 #import <Logger.h>
-#import <Directory.h>
+#import <Folder.h>
 
 #define self Deps
 

@@ -6,7 +6,7 @@ static const char* codes[] = {
 	[String_DoubleFree] = "DoubleFree",
 	[String_BufferOverflow] = "BufferOverflow",
 	[String_ElementMismatch] = "ElementMismatch",
-	[Channel_IsDirectory] = "IsDirectory",
+	[Channel_IsFolder] = "IsFolder",
 	[Channel_ReadingFailed] = "ReadingFailed",
 	[Channel_ReadingInterrupted] = "ReadingInterrupted",
 	[Channel_UnknownError] = "UnknownError",
@@ -32,7 +32,7 @@ static const char* codes[] = {
 	[Path_NotFolder] = "NotFolder",
 	[Path_PermissionDenied] = "PermissionDenied",
 	[Path_UnknownError] = "UnknownError",
-	[Exception_AssertFailed] = "AssertFailed",
+	[Exception_AssertionFailed] = "AssertionFailed",
 	[File_AccessDenied] = "AccessDenied",
 	[File_AlreadyExists] = "AlreadyExists",
 	[File_AttributeNonExistent] = "AttributeNonExistent",
@@ -41,7 +41,7 @@ static const char* codes[] = {
 	[File_GettingAttributeFailed] = "GettingAttributeFailed",
 	[File_InvalidFileDescriptor] = "InvalidFileDescriptor",
 	[File_InvalidParameter] = "InvalidParameter",
-	[File_IsDirectory] = "IsDirectory",
+	[File_IsFolder] = "IsFolder",
 	[File_NotFound] = "NotFound",
 	[File_NotWritable] = "NotWritable",
 	[File_SeekingFailed] = "SeekingFailed",
@@ -75,13 +75,13 @@ static const char* codes[] = {
 	[Signal_InvalidMemoryAccess] = "InvalidMemoryAccess",
 	[Signal_Pipe] = "Pipe",
 	[Signal_UnknownError] = "UnknownError",
+	[Folder_CannotOpenFolder] = "CannotOpenFolder",
+	[Folder_ReadingFailed] = "ReadingFailed",
 	[HashTable_TableIsFull] = "TableIsFull",
 	[Locale_CorruptFile] = "CorruptFile",
 	[Locale_Duplicate] = "Duplicate",
 	[Terminal_IoctlFailed] = "IoctlFailed",
 	[Terminal_ElementMismatch] = "ElementMismatch",
-	[Directory_CannotOpenDirectory] = "CannotOpenDirectory",
-	[Directory_ReadingFailed] = "ReadingFailed",
 	[Process_ForkFailed] = "ForkFailed",
 	[Process_SpawningProcessFailed] = "SpawningProcessFailed",
 };
@@ -150,6 +150,8 @@ const char* Manifest_ResolveName(int module) {
 			return "Signal";
 		case Modules_FPU ... Modules_FPU_Length:
 			return "FPU";
+		case Modules_Folder ... Modules_Folder_Length:
+			return "Folder";
 		case Modules_HashTable ... Modules_HashTable_Length:
 			return "HashTable";
 		case Modules_Locale ... Modules_Locale_Length:
@@ -158,8 +160,6 @@ const char* Manifest_ResolveName(int module) {
 			return "Logger";
 		case Modules_Terminal ... Modules_Terminal_Length:
 			return "Terminal";
-		case Modules_Directory ... Modules_Directory_Length:
-			return "Directory";
 		case Modules_Memory_Map ... Modules_Memory_Map_Length:
 			return "Memory.Map";
 		case Modules_Memory_Libc ... Modules_Memory_Libc_Length:

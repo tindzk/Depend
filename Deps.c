@@ -156,7 +156,7 @@ static def(void, scanFile, size_t ofs) {
 		: comp->source.rd;
 
 	String s = String_New(1024 * 15);
-	File_GetContents(path, &s);
+	File_getContents(path, &s);
 
 	ssize_t ofsModule = -1;
 
@@ -314,13 +314,13 @@ def(void, add, RdString value) {
 
 	RdString right = String_Slice(value, star + 1);
 
-	Directory_Entry item;
+	Folder_Entry item;
 
-	Directory dir = Directory_New(path);
+	Folder folder = Folder_new(path);
 
-	while (Directory_Read(&dir, &item)) {
-		if (item.type != Directory_ItemType_Symlink &&
-			item.type != Directory_ItemType_Regular)
+	while (Folder_read(&folder, &item)) {
+		if (item.type != Folder_ItemType_Symlink &&
+			item.type != Folder_ItemType_Regular)
 		{
 			continue;
 		}
@@ -332,7 +332,7 @@ def(void, add, RdString value) {
 		}
 	}
 
-	Directory_Destroy(&dir);
+	Folder_destroy(&folder);
 }
 
 def(void, setMain, RdString value) {
@@ -349,14 +349,14 @@ def(void, addInclude, RdString value) {
 
 def(void, scan, RdString basePath) {
 	if (this->main.len == 0) {
-		RdString dirName = Path_getFolderName(basePath);
+		RdString folderName = Path_getFolderName(basePath);
 
-		if (dirName.len == 0) {
+		if (folderName.len == 0) {
 			Logger_Error(this->logger, $("No main file set."));
 			return;
 		}
 
-		String_Append(&this->main, dirName);
+		String_Append(&this->main, folderName);
 		String_Append(&this->main, $(".c"));
 	}
 

@@ -12,55 +12,55 @@ rsdef(self, new, Logger *logger, Deps *deps) {
 def(void, destroy) { }
 
 static def(void, writeHeader, Deps_Modules *modules) {
-	File file = File_New($("Manifest.h"),
+	File file = File_new($("Manifest.h"),
 		FileStatus_Create    |
 		FileStatus_WriteOnly |
 		FileStatus_Truncate);
 
-	File_Write(&file, $("enum {\n"));
+	File_write(&file, $("enum {\n"));
 
 	each(module, modules) {
 		String fmt = String_Format($("\tModules_%,\n"), module->name.rd);
-		File_Write(&file, fmt.rd);
+		File_write(&file, fmt.rd);
 		String_Destroy(&fmt);
 
 		each(exc, module->exc) {
 			String fmt2 = String_Format($("\t%_%,\n"), module->name.rd, exc->rd);
-			File_Write(&file, fmt2.rd);
+			File_write(&file, fmt2.rd);
 			String_Destroy(&fmt2);
 		}
 
 		String fmt3 = String_Format($("\tModules_%_Length,\n"), module->name.rd);
-		File_Write(&file, fmt3.rd);
+		File_write(&file, fmt3.rd);
 		String_Destroy(&fmt3);
 	}
 
-	File_Write(&file, $("};\n\n"));
-	File_Write(&file, $("const char* Manifest_ResolveCode(unsigned int code);\n"));
-	File_Write(&file, $("const char* Manifest_ResolveName(int module);\n"));
+	File_write(&file, $("};\n\n"));
+	File_write(&file, $("const char* Manifest_ResolveCode(unsigned int code);\n"));
+	File_write(&file, $("const char* Manifest_ResolveName(int module);\n"));
 
-	File_Destroy(&file);
+	File_destroy(&file);
 }
 
 static def(void, writeSource, Deps_Modules *modules) {
-	File file = File_New($("Manifest.c"),
+	File file = File_new($("Manifest.c"),
 		FileStatus_Create    |
 		FileStatus_WriteOnly |
 		FileStatus_Truncate);
 
-	File_Write(&file, $("#import \"Manifest.h\"\n\n"));
-	File_Write(&file, $("static const char* codes[] = {\n"));
+	File_write(&file, $("#import \"Manifest.h\"\n\n"));
+	File_write(&file, $("static const char* codes[] = {\n"));
 
 	each(module, modules) {
 		each(exc, module->exc) {
 			String fmt = String_Format($("\t[%_%] = \"%\",\n"),
 				module->name.rd, exc->rd, exc->rd);
-			File_Write(&file, fmt.rd);
+			File_write(&file, fmt.rd);
 			String_Destroy(&fmt);
 		}
 	}
 
-	File_Write(&file, $(
+	File_write(&file, $(
 		"};\n"
 		"\n"
 		"const char* Manifest_ResolveCode(unsigned int code) {\n"
@@ -88,17 +88,17 @@ static def(void, writeSource, Deps_Modules *modules) {
 
 		CarrierString_Destroy(&readable);
 
-		File_Write(&file, fmt.rd);
+		File_write(&file, fmt.rd);
 		String_Destroy(&fmt);
 	}
 
-	File_Write(&file, $(
+	File_write(&file, $(
 		"\t}\n"
 		"\n"
 		"\treturn \"Unknown module\";\n"
 		"}\n"));
 
-	File_Destroy(&file);
+	File_destroy(&file);
 }
 
 def(void, create) {

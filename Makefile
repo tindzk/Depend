@@ -9,6 +9,11 @@ CC = clang -include $(JIVAI_PATH)/config.h
 # Enable warnings.
 CFLAGS = -W -Wall -pipe
 
+# As some SSE2 instructions are generated that are not 16-byte
+# aligned, the program will crash when SSE2 is enabled. A quick
+# solution may be to replace all MOVAPS- with MOVUPS instructions.
+CFLAGS += -march=i686
+
 # Include debugging symbols.
 # This will add file names and line numbers to your backtraces.
 CFLAGS += -g
@@ -27,7 +32,7 @@ LIBPATH = $(JIVAI_PATH)/src
 LIBFILES += -I.
 
 # Only build these modules.
-LIBFILES += $(LIBPATH)/{Main,Application,Channel,Signal,Memory,Directory,System,Kernel,Block,Process,Path,Char,String{,Stream,Reader},Backtrace,Integer,Exception,Tree,Terminal{,/Controller,/Prompt,/Buffer},Unicode,Ecriture{,/Parser},File,BufferedStream,FileStream,Hex,Logger,ELF,DWARF,Buffer,LEB128,Memory/{Map,Libc,Logger},Task,EventLoop,ChannelWatcher,EventQueue,SocketServer,SocketConnection,Socket,FPU,CPU,MemoryMappedFile,Locale,HashTable,MurmurHash3}.c
+LIBFILES += $(LIBPATH)/{Main,Application,Channel,Signal,Memory,Folder,System,Kernel,Block,Process,Path,Char,String{,Stream,Reader},Backtrace,Integer,Exception,Tree,Terminal{,/Controller,/Prompt,/Buffer},Unicode,Ecriture{,/Parser},File,BufferedStream,Hex,Logger,ELF,DWARF,Buffer,LEB128,Memory/{Map,Libc,Logger},Task,EventLoop,ChannelWatcher,EventQueue,SocketServer,SocketConnection,Socket,FPU,CPU,MemoryMappedFile,Locale,HashTable,MurmurHash3}.c
 
 # Set the library path.
 LIBFILES += -I$(LIBPATH)

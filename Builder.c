@@ -65,6 +65,12 @@ def(bool, map, RdString value) {
 		return false;
 	}
 
+	if (!Path_isFolderPath(dest)) {
+		Logger_Error(this->logger,
+			$("Destination path '%' is invalid."), dest);
+		return false;
+	}
+
 	if (!Path_exists(dest)) {
 		Logger_Error(this->logger,
 			$("Destination path '%' does not exist."), dest);

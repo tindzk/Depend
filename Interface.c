@@ -13,7 +13,7 @@ def(void, destroy) {
 	Deps_destroy(&this->deps);
 }
 
-static def(void, setOption, RdString name, RdString value) {
+static def(bool, setOption, RdString name, RdString value) {
 	if (String_Equals(name, $("debug"))) {
 		if (String_Equals(value, $("yes"))) {
 			BitMask_Set(this->logger->levels, Logger_Level_Debug);
@@ -29,7 +29,7 @@ static def(void, setOption, RdString name, RdString value) {
 	} else if (String_Equals(name, $("output"))) {
 		Builder_setOutput(&this->builder, value);
 	} else if (String_Equals(name, $("map"))) {
-		Builder_map(&this->builder, value);
+		Builder_map(&this->builder, value) || ret(false);
 	} else if (String_Equals(name, $("cc"))) {
 		Builder_setCompiler(&this->builder, value);
 	} else if (String_Equals(name, $("inclhdr"))) {
@@ -64,9 +64,12 @@ static def(void, setOption, RdString name, RdString value) {
 	} else {
 		Logger_Error(this->logger, $("Unrecognized option '%'"), name);
 	}
+
+	return true;
 }
 
-static def(void, readConfig, RdString path) {
+static def(bool, readConfig, RdString path) {
+	bool res = true;
 	String contents = File_getContents(path);
 
 	RdString iter = $("");
@@ -83,10 +86,15 @@ static def(void, readConfig, RdString path) {
 			continue;
 		}
 
-		call(setOption, name, value);
+		if (!call(setOption, name, value)) {
+			res = false;
+			break;
+		}
 	}
 
 	String_Destroy(&contents);
+
+	return res;
 }
 
 static def(ref(Action), getAction, RdString action) {
@@ -150,10 +158,10 @@ def(bool, run, RdStringArray *args, RdString base) {
 		/* System-wide settings. */
 		RdString sys = $("/Settings/Depend.cfg");
 		if (Path_exists(sys)) {
-			call(readConfig, sys);
+			call(readConfig, sys) || ret(false);
 		}
 
-		call(readConfig, args->buf[1]);
+		call(readConfig, args->buf[1]) || ret(false);
 
 		String fullPath = String_New(0);
 		RdString basePath = args->buf[1];

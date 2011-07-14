@@ -484,6 +484,18 @@ def(void, run) {
 
 	Logger_Info(this->logger, $("Writing to %."), this->output.rd);
 
+	if (!Path_isFilePath(this->output.rd)) {
+		Logger_Error(this->logger, $("Output path does not point to a file."));
+		return;
+	}
+
+	RdString outputPath = Path_getFolderPath(this->output.rd);
+
+	if (!Path_exists(outputPath) || !Path_isWritable(outputPath)) {
+		Logger_Error(this->logger, $("Output path is not writable."));
+		return;
+	}
+
 	this->queue = Queue_new(this->logger, this->deps, this->mappings);
 	Queue_create(&this->queue);
 

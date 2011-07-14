@@ -40,6 +40,7 @@ static alwaysInline def(size_t, getTotal) {
 rsdef(self, new, Logger *logger, Deps *deps, MappingArray *mappings);
 def(void, destroy);
 def(void, create);
+def(void, purge);
 def(bool, hasNext);
 def(ref(Item) *, getNext);
 def(void, setBuilding, ref(Item) *item, pid_t pid);

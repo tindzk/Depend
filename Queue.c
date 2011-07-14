@@ -174,6 +174,24 @@ def(void, create) {
 	}
 }
 
+/* Deletes already existing files which will be (re-)built anyway.
+ * If the user decided to kill Depend, this ensures that after
+ * restarting the process Depend will continue where the compilation
+ * stopped. Otherwise, some dependencies that were previously pulled
+ * in won't be built because their dependants might have already been
+ * compiled when the user interrupted the process.
+ */
+def(void, purge) {
+	Deps_Components *comps = Deps_getComponents(this->deps);
+
+	each(item, this->queue) {
+		if (Path_exists(item->output.rd)) {
+			Logger_Info(this->logger, $("Purging %..."), item->output.rd);
+			Path_deleteFile(item->output.rd);
+		}
+	}
+}
+
 def(bool, hasNext) {
 	return this->ofs < this->queue->len;
 }
@@ -185,7 +203,7 @@ def(ref(Item) *, getNext) {
 }
 
 def(void, setBuilding, ref(Item) *item, pid_t pid) {
-	assert(item != NULL);
+	assert(item != null);
 	item->pid = pid;
 	this->running++;
 }

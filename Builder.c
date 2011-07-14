@@ -497,7 +497,9 @@ def(void, run) {
 	}
 
 	this->queue = Queue_new(this->logger, this->deps, this->mappings);
+
 	Queue_create(&this->queue);
+	Queue_purge(&this->queue);
 
 	if (!Queue_hasNext(&this->queue)) {
 		Logger_Info(this->logger, $("Nothing to do."));

@@ -12,7 +12,7 @@ CFLAGS = -W -Wall -pipe
 # As some SSE2 instructions are generated that are not 16-byte
 # aligned, the program will crash when SSE2 is enabled. A quick
 # solution may be to replace all MOVAPS- with MOVUPS instructions.
-CFLAGS += -march=i686
+CFLAGS += -march=generic
 
 # Include debugging symbols.
 # This will add file names and line numbers to your backtraces.

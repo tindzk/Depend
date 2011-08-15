@@ -187,6 +187,7 @@ static def(String, shrinkPath, RdString path) {
 }
 
 def(void, onLinked, __unused pid_t pid, __unused int status) {
+	Process_suspend(pid);
 	EventLoop_Quit(EventLoop_GetInstance());
 }
 
@@ -258,6 +259,8 @@ static def(void, link, StringArray *files) {
 static def(void, enqueue);
 
 def(void, onCompiled, pid_t pid, int status) {
+	Process_suspend(pid);
+
 	Queue_setBuilt(&this->queue, pid);
 
 	if (status == ExitStatus_Failure) {

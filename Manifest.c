@@ -178,6 +178,8 @@ const char* Manifest_ResolveName(int module) {
 			return "Terminal.Controller";
 		case Modules_Tree ... Modules_Tree_Length:
 			return "Tree";
+		case Modules_Folder_Expander ... Modules_Folder_Expander_Length:
+			return "Folder.Expander";
 		case Modules_Deps ... Modules_Deps_Length:
 			return "Deps";
 		case Modules_Process ... Modules_Process_Length:

@@ -278,61 +278,25 @@ static def(void, processSourceFile, RdString base, RdString file, ref(Type) dept
 	}
 }
 
-/* Very simple glob() implementation. Only one placeholder is
- * allowed. Escaping and expanding (e.g. {a, b, c}) might be
- * implemented in the future. If so, this function should be
- * moved to the Jivai sources.
- */
-def(void, add, RdString value) {
-	ssize_t star = String_Find(value, '*');
+static def(void, onMatch, RdString path, RdString name) {
+	call(processSourceFile, path, name, ref(Type_Local));
+}
 
-	if (star == String_NotFound) {
-		if (value.len > 0 && !Path_exists(value)) {
+def(void, add, RdString pattern) {
+	Folder_Expander expander = Folder_Expander_new(
+		Folder_Expander_OnMatch_For(this, ref(onMatch)));
+
+	bool isPattern = Folder_Expander_scan(&expander, pattern);
+
+	if (!isPattern) {
+		if (pattern.len > 0 && !Path_exists(pattern)) {
 			Logger_Error(this->logger,
 				t("Manually added file '%' not found."),
-				value);
+				pattern);
 		} else {
-			call(processSourceFile, $("./"), value, ref(Type_Local));
-		}
-
-		return;
-	}
-
-	ssize_t slash = String_ReverseFind(String_Slice(value, star), '/');
-
-	RdString path, left;
-
-	if (slash == String_NotFound) {
-		path = $("./");
-		left = String_Slice(value, 0, star);
-	} else {
-		slash += star;
-
-		path = String_Slice(value, 0, slash + 1);
-		left = String_Slice(value, slash + 1, star - slash - 1);
-	}
-
-	RdString right = String_Slice(value, star + 1);
-
-	Folder_Entry item;
-
-	Folder folder = Folder_new(path);
-
-	while (Folder_read(&folder, &item)) {
-		if (item.type != Folder_ItemType_Symlink &&
-			item.type != Folder_ItemType_Regular)
-		{
-			continue;
-		}
-
-		if (String_BeginsWith(item.name, left) &&
-			String_EndsWith(item.name, right))
-		{
-			call(processSourceFile, path, item.name, ref(Type_Local));
+			call(processSourceFile, $("./"), pattern, ref(Type_Local));
 		}
 	}
-
-	Folder_destroy(&folder);
 }
 
 def(void, setMain, RdString value) {

@@ -162,6 +162,8 @@ enum {
 	Modules_Terminal_Controller_Length,
 	Modules_Tree,
 	Modules_Tree_Length,
+	Modules_Folder_Expander,
+	Modules_Folder_Expander_Length,
 	Modules_Deps,
 	Modules_Deps_Length,
 	Modules_Process,

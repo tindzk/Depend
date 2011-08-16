@@ -5,6 +5,7 @@
 #import <String.h>
 #import <Logger.h>
 #import <Folder.h>
+#import <Folder/Expander.h>
 
 #define self Deps
 

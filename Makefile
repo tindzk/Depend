@@ -35,7 +35,7 @@ CFLAGS += -I.
 CFLAGS += -I$(LIBPATH)
 
 # Only build these modules.
-LIBFILES += $(LIBPATH)/{Main,Application,Channel,Signal,Memory,Folder,System,Kernel,Block,Process,Path,Char,String{,Stream,Reader},Backtrace,Integer,Exception,Tree,Terminal{,/Controller,/Prompt,/Buffer},Unicode,Ecriture{,/Parser},File,BufferedStream,Hex,Logger,ELF,DWARF,Buffer,LEB128,Memory/{Map,Libc,Logger},Task,EventLoop,ChannelWatcher,EventQueue,SocketServer,SocketConnection,Socket,FPU,CPU,MemoryMappedFile,Locale,HashTable,MurmurHash3}.c
+LIBFILES += $(LIBPATH)/{Main,Application,Channel,Signal,Memory,Folder{,/Expander},System,Kernel,Block,Process,Path,Char,String{,Stream,Reader},Backtrace,Integer,Exception,Tree,Terminal{,/Controller,/Prompt,/Buffer},Unicode,Ecriture{,/Parser},File,BufferedStream,Hex,Logger,ELF,DWARF,Buffer,LEB128,Memory/{Map,Libc,Logger},Task,EventLoop,ChannelWatcher,EventQueue,SocketServer,SocketConnection,Socket,FPU,CPU,MemoryMappedFile,Locale,HashTable,MurmurHash3}.c
 
 all:
 	if test -f Depend.exe; then ./update-manifest.sh; fi

@@ -103,7 +103,7 @@ static def(size_t, addComponent, String absPath, bool source) {
 
 		if (!Path_exists(hdr.rd)) {
 			Logger_Debug(this->logger,
-				$("'%' has no corresponding header file."), src.rd);
+				t("'%' has no corresponding header file."), src.rd);
 			hdr.len = 0;
 		}
 	} else {
@@ -112,7 +112,7 @@ static def(size_t, addComponent, String absPath, bool source) {
 
 		if (!Path_exists(src.rd)) {
 			Logger_Debug(this->logger,
-				$("'%' has no corresponding source file."), hdr.rd);
+				t("'%' has no corresponding source file."), hdr.rd);
 			src.len = 0;
 		}
 	}
@@ -169,9 +169,9 @@ static def(void, scanFile, size_t ofs) {
 			name = String_Trim(name);
 
 			if (ofsModule == -1) {
-				Logger_Error(this->logger, $("Ignored exception '%'."), name);
+				Logger_Error(this->logger, t("Ignored exception '%'."), name);
 			} else {
-				Logger_Debug(this->logger, $("Found exception %."), name);
+				Logger_Debug(this->logger, t("Found exception %."), name);
 				StringArray_Push(&this->modules->buf[ofsModule].exc, String_Clone(name));
 			}
 
@@ -198,7 +198,7 @@ static def(void, scanFile, size_t ofs) {
 				);
 
 				ofsModule = this->modules->len - 1;
-				Logger_Debug(this->logger, $("Found module %."), name);
+				Logger_Debug(this->logger, t("Found module %."), name);
 			}
 
 			scall(ModuleOffsets_Push, &comp->modules, ofsModule);
@@ -223,7 +223,7 @@ static def(void, scanFile, size_t ofs) {
 			quotes = true;
 			String_Between(line, $("\""), $("\""), &header);
 		} else {
-			Logger_Error(this->logger, $("Line '%' not understood."), line);
+			Logger_Error(this->logger, t("Line '%' not understood."), line);
 			continue;
 		}
 
@@ -233,21 +233,21 @@ static def(void, scanFile, size_t ofs) {
 			? ref(Type_Local)
 			: ref(Type_System);
 
-		Logger_Debug(this->logger, $("Resolving dependency '%'..."), dep);
+		Logger_Debug(this->logger, t("Resolving dependency '%'..."), dep);
 
 		String absPath = call(resolve, Path_getFolderPath(path), dep, deptype);
 
 		if (absPath.len == 0) {
-			Logger_Debug(this->logger, $("Dependency not found."));
+			Logger_Debug(this->logger, t("Dependency not found."));
 		} else {
-			Logger_Debug(this->logger, $("Absolute path is '%'."), absPath.rd);
+			Logger_Debug(this->logger, t("Absolute path is '%'."), absPath.rd);
 
 			/* Dependency offset. */
 			ssize_t depOfs = call(getComponentOffset, absPath.rd);
 
 			if (depOfs == -1) {
 				depOfs = call(addComponent, absPath, false);
-				Logger_Debug(this->logger, $("Scanning dependency..."));
+				Logger_Debug(this->logger, t("Scanning dependency..."));
 				call(scanFile, depOfs);
 			} else {
 				String_Destroy(&absPath);
@@ -269,7 +269,7 @@ static def(void, processSourceFile, RdString base, RdString file, ref(Type) dept
 	String absPath = call(resolve, base, file, deptype);
 
 	if (absPath.len != 0 && call(getComponentOffset, absPath.rd) == -1) {
-		Logger_Debug(this->logger, $("Adding '%'..."), absPath.rd);
+		Logger_Debug(this->logger, t("Adding '%'..."), absPath.rd);
 
 		size_t pos = call(addComponent, absPath, true);
 		call(scanFile, pos);
@@ -289,7 +289,7 @@ def(void, add, RdString value) {
 	if (star == String_NotFound) {
 		if (value.len > 0 && !Path_exists(value)) {
 			Logger_Error(this->logger,
-				$("Manually added file '%' not found."),
+				t("Manually added file '%' not found."),
 				value);
 		} else {
 			call(processSourceFile, $("./"), value, ref(Type_Local));
@@ -352,7 +352,7 @@ def(void, scan, RdString basePath) {
 		RdString folderName = Path_getFolderName(basePath);
 
 		if (folderName.len == 0) {
-			Logger_Error(this->logger, $("No main file set."));
+			Logger_Error(this->logger, t("No main file set."));
 			return;
 		}
 
@@ -361,7 +361,7 @@ def(void, scan, RdString basePath) {
 	}
 
 	if (!Path_exists(this->main.rd)) {
-		Logger_Error(this->logger, $("Main file '%' not found."),
+		Logger_Error(this->logger, t("Main file '%' not found."),
 			this->main.rd);
 		return;
 	}
@@ -371,7 +371,7 @@ def(void, scan, RdString basePath) {
 			!Path_exists(this->include->buf[i].rd))
 		{
 			Logger_Error(this->logger,
-				$("Include path '%' is invalid. Trailing slash missing?"),
+				t("Include path '%' is invalid. Trailing slash missing?"),
 				this->include->buf[i].rd);
 			return;
 		}

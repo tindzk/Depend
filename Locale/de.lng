@@ -1,0 +1,140 @@
+Action missing. Run `% help' for more information.
+Aktion fehlt. Fuer mehr Informationen fuehre `% help' aus.
+
+Unknown action.
+Unbekannte Aktion.
+
+Filename missing.
+Dateiname fehlt.
+
+Source: %  Header: %
+Quelldatei: %  Header-Datei: %
+
+Invalid line '%'
+Ungueltige Zeile '%'
+
+Unrecognized option '%'
+Unbekannte Option '%'
+
+Usage: % action [file]
+Verwendung: % Aktion [Datei]
+
+Supported actions are: build, deps, help.
+Unterstuetzte Aktionen sind: build, deps, help.
+
+`map' requires two or three values separated by a colon.
+`map' erfordert zwei oder drei Werte, die von einem Komma getrennt sind.
+
+Invalid source path.
+Ungueltiger Quellpfad.
+
+Destination path '%' is invalid.
+Zielpfad '%' ist ungueltig.
+
+Destination path '%' does not exist.
+Zielpfad '%' existiert nicht.
+
+Early exit.
+Programm wird beendet.
+
+Mapped path '%' is invalid. Trailing slash missing?
+Der zugewiesene Pfad '%' ist ungueltig. Fehlt der abschliessende Schraegstrich?
+
+The runtime path '%' is invalid. Trailing slash missing?
+Der Laufzeitpfad '%' ist ungueltig. Fehlt der abschliessende Schraegstrich?
+
+No mappings defined.
+Keine Zuweisungen definiert.
+
+Writing to %.
+Ausgabedatei ist %.
+
+Output path does not point to a file.
+Ausgabepfad zeigt nicht auf eine Datei.
+
+Output path is not writable.
+Ausgabepfad ist nicht schreibbar.
+
+Nothing to do.
+Nichts zu tun.
+
+Using % worker(s).
+Verwende % parallele(n) Arbeiter.
+
+Compiling %... [%/%]
+Kompiliere %... [%/%]
+
+Manually added file '%' not found.
+Manuell hinzugefuegte Datei '%' nicht gefunden.
+
+No main file set.
+Keine Hauptdatei gesetzt.
+
+Main file '%' not found.
+Hauptdatei '%' nicht gefunden.
+
+Include path '%' is invalid. Trailing slash missing?
+Include-Pfad '%' ist ungueltig. Fehlt der abschliessende Schraegstrich?
+
+Adding '%'...
+Fuege '%' hinzu...
+
+Ignored exception '%'.
+Ignoriere Exception '%'.
+
+Found exception %.
+Exception % gefunden.
+
+Found module %.
+Modul % gefunden.
+
+Line '%' not understood.
+Zeile '%' nicht verstanden.
+
+Resolving dependency '%'...
+Loese Abhaengigkeit '%' auf...
+
+Dependency not found.
+Abhaengigkeit nicht gefunden.
+
+Absolute path is '%'.
+Absoluter Pfad ist '%'.
+
+Scanning dependency...
+Suche Abhaengigkeit...
+
+'%' has no corresponding header file.
+'%' hat keine entsprechende Header-Datei.
+
+'%' has no corresponding source file.
+'%' hat keine entsprechende Quelldatei.
+
+Purging %...
+Loesche %...
+
+Pulling in dependant %...
+Beziehe Abhaengigkeit % ein...
+
+No output path mapped.
+Kein Ausgabepfad zugewiesen.
+
+No source file found for %.
+Keine Quelldatei fuer % gefunden.
+
+Processing source %...
+Verarbeite Quelldatei %...
+
+Not built yet.
+Noch nicht gebaut.
+
+Source modified.
+Quelldatei geaendert.
+
+Header modified.
+Headerdatei geaendert.
+
+Building %.
+Baue %.
+
+Not building.
+Wird nicht gebaut.

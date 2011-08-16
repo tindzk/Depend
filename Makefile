@@ -1,7 +1,7 @@
 JIVAI_PATH ?= ../Jivai
 
-LIBFILES += -L/usr/lib/gcc/i686-pc-linux-gnu/4.6.1
-LIBFILES += -B/usr/lib/gcc/i686-pc-linux-gnu/4.6.1
+# Define the library path.
+LIBPATH = $(JIVAI_PATH)/src
 
 # Compile with Clang using the default configuration.
 CC = clang -include $(JIVAI_PATH)/config.h
@@ -25,24 +25,23 @@ CFLAGS += -O0
 # are necessary.
 CFLAGS += -std=gnu99 -fblocks
 
-# Define the library path.
-LIBPATH = $(JIVAI_PATH)/src
+CFLAGS += -L/usr/lib/gcc/i686-pc-linux-gnu/4.6.1
+CFLAGS += -B/usr/lib/gcc/i686-pc-linux-gnu/4.6.1
 
 # Needed so that Jivai libraries know where to find the manifest file.
-LIBFILES += -I.
+CFLAGS += -I.
+
+# Set the library path.
+CFLAGS += -I$(LIBPATH)
 
 # Only build these modules.
 LIBFILES += $(LIBPATH)/{Main,Application,Channel,Signal,Memory,Folder,System,Kernel,Block,Process,Path,Char,String{,Stream,Reader},Backtrace,Integer,Exception,Tree,Terminal{,/Controller,/Prompt,/Buffer},Unicode,Ecriture{,/Parser},File,BufferedStream,Hex,Logger,ELF,DWARF,Buffer,LEB128,Memory/{Map,Libc,Logger},Task,EventLoop,ChannelWatcher,EventQueue,SocketServer,SocketConnection,Socket,FPU,CPU,MemoryMappedFile,Locale,HashTable,MurmurHash3}.c
 
-# Set the library path.
-LIBFILES += -I$(LIBPATH)
-
 all:
 	if test -f Depend.exe; then ./update-manifest.sh; fi
 
-	bash -c '$(CC) -o Depend.tmp $(CFLAGS)   \
-		-DNamespace=\"main\" *.c -UNamespace \
-		-DNamespace=\"Jivai\"                \
-		$(LIBFILES)'
+	bash -c '$(CC) -o Depend.tmp $(CFLAGS) \
+		-DNamespace=\"Jivai\" $(LIBFILES) -UNamespace \
+		-DNamespace=\"main\" *.c'
 
 	mv Depend.tmp Depend.exe

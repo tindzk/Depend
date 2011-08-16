@@ -53,7 +53,7 @@ def(bool, map, RdString value) {
 	if (!String_Parse($("%:%:%"), value, &src, &dest, &namespace)) {
 		if (!String_Parse($("%:%"), value, &src, &dest)) {
 			Logger_Error(this->logger,
-				$("`map' requires two or three values separated by a colon."));
+				t("`map' requires two or three values separated by a colon."));
 			return false;
 		}
 
@@ -61,19 +61,19 @@ def(bool, map, RdString value) {
 	}
 
 	if (src.len == 0) {
-		Logger_Error(this->logger, $("Invalid source path."));
+		Logger_Error(this->logger, t("Invalid source path."));
 		return false;
 	}
 
 	if (!Path_isFolderPath(dest)) {
 		Logger_Error(this->logger,
-			$("Destination path '%' is invalid."), dest);
+			t("Destination path '%' is invalid."), dest);
 		return false;
 	}
 
 	if (!Path_exists(dest)) {
 		Logger_Error(this->logger,
-			$("Destination path '%' does not exist."), dest);
+			t("Destination path '%' does not exist."), dest);
 
 		Terminal_Prompt prompt;
 		Terminal_Prompt_Init(&prompt, this->term);
@@ -418,7 +418,7 @@ static def(void, enqueue) {
 		String strCur   = Integer_ToString(Queue_getOffset(&this->queue));
 		String strTotal = Integer_ToString(Queue_getTotal(&this->queue));
 
-		Logger_Info(this->logger, $("Compiling %... [%/%]"),
+		Logger_Info(this->logger, t("Compiling %... [%/%]"),
 			path.rd, strCur.rd, strTotal.rd);
 
 		String_Destroy(&strCur);
@@ -435,7 +435,7 @@ static def(void, enqueue) {
 }
 
 def(void, exit, __unused Signal_Type type) {
-	Logger_Info(this->logger, $("Early exit."));
+	Logger_Info(this->logger, t("Early exit."));
 	EventLoop_Quit(EventLoop_GetInstance());
 }
 
@@ -453,7 +453,7 @@ def(void, run) {
 		rpt(2) {
 			if (!Path_isFolderPath(path) || !Path_exists(path)) {
 				Logger_Error(this->logger,
-					$("Mapped path '%' is invalid. Trailing slash missing?"), path);
+					t("Mapped path '%' is invalid. Trailing slash missing?"), path);
 				return;
 			}
 
@@ -463,13 +463,13 @@ def(void, run) {
 
 	if (!Path_isFolderPath(this->runtime.rd) || !Path_exists(this->runtime.rd)) {
 		Logger_Error(this->logger,
-			$("The runtime path '%' is invalid. Trailing slash missing?"),
+			t("The runtime path '%' is invalid. Trailing slash missing?"),
 			this->runtime.rd);
 		return;
 	}
 
 	if (this->mappings->len == 0) {
-		Logger_Error(this->logger, $("No mappings defined."));
+		Logger_Error(this->logger, t("No mappings defined."));
 		return;
 	}
 
@@ -485,17 +485,17 @@ def(void, run) {
 		}
 	}
 
-	Logger_Info(this->logger, $("Writing to %."), this->output.rd);
+	Logger_Info(this->logger, t("Writing to %."), this->output.rd);
 
 	if (!Path_isFilePath(this->output.rd)) {
-		Logger_Error(this->logger, $("Output path does not point to a file."));
+		Logger_Error(this->logger, t("Output path does not point to a file."));
 		return;
 	}
 
 	RdString outputPath = Path_getFolderPath(this->output.rd);
 
 	if (!Path_exists(outputPath) || !Path_isWritable(outputPath)) {
-		Logger_Error(this->logger, $("Output path is not writable."));
+		Logger_Error(this->logger, t("Output path is not writable."));
 		return;
 	}
 
@@ -505,12 +505,12 @@ def(void, run) {
 	Queue_purge(&this->queue);
 
 	if (!Queue_hasNext(&this->queue)) {
-		Logger_Info(this->logger, $("Nothing to do."));
+		Logger_Info(this->logger, t("Nothing to do."));
 		return;
 	}
 
 	String workers = Integer_ToString(this->workers);
-	Logger_Info(this->logger, $("Using % worker(s)."), workers.rd);
+	Logger_Info(this->logger, t("Using % worker(s)."), workers.rd);
 	String_Destroy(&workers);
 
 	Signal_listen(Signal_GetInstance());

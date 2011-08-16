@@ -77,45 +77,45 @@ static def(bool, buildSource, Deps_Component *comp) {
 
 	if (sourcePath.len == 0) {
 		Logger_Debug(this->logger,
-			$("No source file found for %."), headerPath);
+			t("No source file found for %."), headerPath);
 		return false;
 	}
 
-	Logger_Debug(this->logger, $("Processing source %..."), sourcePath);
+	Logger_Debug(this->logger, t("Processing source %..."), sourcePath);
 
 	RdString namespace;
 
 	String output = call(getOutput, sourcePath, &namespace);
 
 	if (output.len == 0) {
-		Logger_Debug(this->logger, $("No output path mapped."));
+		Logger_Debug(this->logger, t("No output path mapped."));
 		goto notBuilding;
 	}
 
 	if (!Path_exists(output.rd)) {
-		Logger_Debug(this->logger, $("Not built yet."));
+		Logger_Debug(this->logger, t("Not built yet."));
 		goto build;
 	}
 
 	if (scall(wasModified, sourcePath, output.rd)) {
-		Logger_Debug(this->logger, $("Source modified."));
+		Logger_Debug(this->logger, t("Source modified."));
 		goto build;
 	}
 
 	if (headerPath.len != 0 && scall(wasModified, headerPath, output.rd)) {
-		Logger_Debug(this->logger, $("Header modified."));
+		Logger_Debug(this->logger, t("Header modified."));
 		goto build;
 	}
 
 	when(build) {
-		Logger_Debug(this->logger, $("Building %."), sourcePath);
+		Logger_Debug(this->logger, t("Building %."), sourcePath);
 		call(addToQueue, sourcePath, output, namespace);
 		comp->build = true;
 		return true;
 	}
 
 notBuilding:
-	Logger_Debug(this->logger, $("Not building."));
+	Logger_Debug(this->logger, t("Not building."));
 	String_Destroy(&output);
 	return false;
 }
@@ -136,14 +136,14 @@ static def(void, addDependants, Deps_Components *comps, size_t ofs) {
 
 		fwd (j, deps->len) {
 			if (deps->buf[j] == ofs) {
-				Logger_Debug(this->logger, $("Pulling in dependant %..."),
+				Logger_Debug(this->logger, t("Pulling in dependant %..."),
 					sourcePath);
 
 				RdString namespace;
 				String output = call(getOutput, sourcePath, &namespace);
 
 				if (output.len == 0) {
-					Logger_Debug(this->logger, $("No output path mapped."));
+					Logger_Debug(this->logger, t("No output path mapped."));
 				} else {
 					call(addToQueue, sourcePath, output, namespace);
 					comps->buf[i].build = true;
@@ -186,7 +186,7 @@ def(void, purge) {
 
 	each(item, this->queue) {
 		if (Path_exists(item->output.rd)) {
-			Logger_Info(this->logger, $("Purging %..."), item->output.rd);
+			Logger_Info(this->logger, t("Purging %..."), item->output.rd);
 			Path_deleteFile(item->output.rd);
 		}
 	}

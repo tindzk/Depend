@@ -62,7 +62,7 @@ static def(bool, setOption, RdString name, RdString value) {
 		Builder_setVerbose(&this->builder,
 			String_Equals(value, $("yes")));
 	} else {
-		Logger_Error(this->logger, $("Unrecognized option '%'"), name);
+		Logger_Error(this->logger, t("Unrecognized option '%'"), name);
 	}
 
 	return true;
@@ -82,7 +82,7 @@ static def(bool, readConfig, RdString path) {
 
 		RdString name, value;
 		if (!String_Parse($("%=%"), line, &name, &value)) {
-			Logger_Error(this->logger, $("Invalid line '%'"), line);
+			Logger_Error(this->logger, t("Invalid line '%'"), line);
 			continue;
 		}
 
@@ -110,9 +110,9 @@ static def(ref(Action), getAction, RdString action) {
 }
 
 static def(void, printHelp, RdString base) {
-	Logger_Info(this->logger, $("Usage: % action [file]"), base);
+	Logger_Info(this->logger, t("Usage: % action [file]"), base);
 	Logger_Info(this->logger,
-		$("Supported actions are: build, deps, help."));
+		t("Supported actions are: build, deps, help."));
 }
 
 static def(void, build, RdString basePath) {
@@ -126,14 +126,14 @@ static def(void, listDeps, RdString basePath) {
 	Deps_Components *comps = Deps_getComponents(&this->deps);
 
 	fwd(i, comps->len) {
-		Logger_Info(this->logger, $("Source: %  Header: %"),
+		Logger_Info(this->logger, t("Source: %  Header: %"),
 			comps->buf[i].source.rd, comps->buf[i].header.rd);
 	}
 }
 
 def(bool, run, RdStringArray *args, RdString base) {
 	if (args->len < 1) {
-		Logger_Error(this->logger, $(
+		Logger_Error(this->logger, t(
 			"Action missing. "
 			"Run `% help' for more information."), base);
 
@@ -143,7 +143,7 @@ def(bool, run, RdStringArray *args, RdString base) {
 	ref(Action) action = call(getAction, args->buf[0]);
 
 	if (action == ref(Action_Unknown)) {
-		Logger_Error(this->logger, $("Unknown action."));
+		Logger_Error(this->logger, t("Unknown action."));
 		return false;
 	}
 
@@ -151,7 +151,7 @@ def(bool, run, RdStringArray *args, RdString base) {
 		call(printHelp, base);
 	} else {
 		if (args->len < 2) {
-			Logger_Error(this->logger, $("Filename missing."));
+			Logger_Error(this->logger, t("Filename missing."));
 			return false;
 		}
 

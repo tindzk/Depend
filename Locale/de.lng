@@ -1,5 +1,5 @@
 Action missing. Run `% help' for more information.
-Aktion fehlt. Fuer mehr Informationen fuehre `% help' aus.
+Aktion fehlt. Für mehr Informationen führe `% help' aus.
 
 Unknown action.
 Unbekannte Aktion.
@@ -11,7 +11,7 @@ Source: %  Header: %
 Quelldatei: %  Header-Datei: %
 
 Invalid line '%'
-Ungueltige Zeile '%'
+Ungültige Zeile '%'
 
 Unrecognized option '%'
 Unbekannte Option '%'
@@ -20,16 +20,16 @@ Usage: % action [file]
 Verwendung: % Aktion [Datei]
 
 Supported actions are: build, deps, help.
-Unterstuetzte Aktionen sind: build, deps, help.
+Unterstützte Aktionen sind: build, deps, help.
 
 `map' requires two or three values separated by a colon.
 `map' erfordert zwei oder drei Werte, die von einem Komma getrennt sind.
 
 Invalid source path.
-Ungueltiger Quellpfad.
+Ungültiger Quellpfad.
 
 Destination path '%' is invalid.
-Zielpfad '%' ist ungueltig.
+Zielpfad '%' ist ungültig.
 
 Destination path '%' does not exist.
 Zielpfad '%' existiert nicht.
@@ -38,10 +38,10 @@ Early exit.
 Programm wird beendet.
 
 Mapped path '%' is invalid. Trailing slash missing?
-Der zugewiesene Pfad '%' ist ungueltig. Fehlt der abschliessende Schraegstrich?
+Der zugewiesene Pfad '%' ist ungültig. Fehlt der abschließende Schrägstrich?
 
 The runtime path '%' is invalid. Trailing slash missing?
-Der Laufzeitpfad '%' ist ungueltig. Fehlt der abschliessende Schraegstrich?
+Der Laufzeitpfad '%' ist ungültig. Fehlt der abschließende Schrägstrich?
 
 No mappings defined.
 Keine Zuweisungen definiert.
@@ -65,7 +65,7 @@ Compiling %... [%/%]
 Kompiliere %... [%/%]
 
 Manually added file '%' not found.
-Manuell hinzugefuegte Datei '%' nicht gefunden.
+Manuell hinzugefügte Datei '%' nicht gefunden.
 
 No main file set.
 Keine Hauptdatei gesetzt.
@@ -74,10 +74,10 @@ Main file '%' not found.
 Hauptdatei '%' nicht gefunden.
 
 Include path '%' is invalid. Trailing slash missing?
-Include-Pfad '%' ist ungueltig. Fehlt der abschliessende Schraegstrich?
+Include-Pfad '%' ist ungültig. Fehlt der abschließende Schrägstrich?
 
 Adding '%'...
-Fuege '%' hinzu...
+Füge '%' hinzu...
 
 Ignored exception '%'.
 Ignoriere Exception '%'.
@@ -92,16 +92,16 @@ Line '%' not understood.
 Zeile '%' nicht verstanden.
 
 Resolving dependency '%'...
-Loese Abhaengigkeit '%' auf...
+Löse Abhängigkeit '%' auf...
 
 Dependency not found.
-Abhaengigkeit nicht gefunden.
+Abhängigkeit nicht gefunden.
 
 Absolute path is '%'.
 Absoluter Pfad ist '%'.
 
 Scanning dependency...
-Suche Abhaengigkeit...
+Suche Abhängigkeit...
 
 '%' has no corresponding header file.
 '%' hat keine entsprechende Header-Datei.
@@ -110,16 +110,16 @@ Suche Abhaengigkeit...
 '%' hat keine entsprechende Quelldatei.
 
 Purging %...
-Loesche %...
+Lösche %...
 
 Pulling in dependant %...
-Beziehe Abhaengigkeit % ein...
+Beziehe Abhängigkeit % ein...
 
 No output path mapped.
 Kein Ausgabepfad zugewiesen.
 
 No source file found for %.
-Keine Quelldatei fuer % gefunden.
+Keine Quelldatei für % gefunden.
 
 Processing source %...
 Verarbeite Quelldatei %...
@@ -128,10 +128,10 @@ Not built yet.
 Noch nicht gebaut.
 
 Source modified.
-Quelldatei geaendert.
+Quelldatei geändert.
 
 Header modified.
-Headerdatei geaendert.
+Headerdatei geändert.
 
 Building %.
 Baue %.

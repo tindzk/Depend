@@ -33,35 +33,6 @@ static const char* codes[] = {
 	[Path_PermissionDenied] = "PermissionDenied",
 	[Path_UnknownError] = "UnknownError",
 	[Exception_AssertionFailed] = "AssertionFailed",
-	[File_AccessDenied] = "AccessDenied",
-	[File_AlreadyExists] = "AlreadyExists",
-	[File_AttributeNonExistent] = "AttributeNonExistent",
-	[File_BufferTooSmall] = "BufferTooSmall",
-	[File_CannotOpenFile] = "CannotOpenFile",
-	[File_GettingAttributeFailed] = "GettingAttributeFailed",
-	[File_InvalidFileDescriptor] = "InvalidFileDescriptor",
-	[File_InvalidParameter] = "InvalidParameter",
-	[File_IsFolder] = "IsFolder",
-	[File_NotFound] = "NotFound",
-	[File_NotWritable] = "NotWritable",
-	[File_SeekingFailed] = "SeekingFailed",
-	[File_SettingAttributeFailed] = "SettingAttributeFailed",
-	[File_StatFailed] = "StatFailed",
-	[File_TruncatingFailed] = "TruncatingFailed",
-	[NetworkAddress_GetAddrInfoFailed] = "GetAddrInfoFailed",
-	[SocketConnection_ConnectionRefused] = "ConnectionRefused",
-	[SocketConnection_ConnectionReset] = "ConnectionReset",
-	[SocketConnection_FileDescriptorUnusable] = "FileDescriptorUnusable",
-	[SocketConnection_InvalidFileDescriptor] = "InvalidFileDescriptor",
-	[SocketConnection_NotConnected] = "NotConnected",
-	[SocketConnection_UnknownError] = "UnknownError",
-	[Socket_SetSocketOption] = "SetSocketOption",
-	[Socket_SocketFailed] = "SocketFailed",
-	[SocketServer_AddressInUse] = "AddressInUse",
-	[SocketServer_AcceptFailed] = "AcceptFailed",
-	[SocketServer_BindFailed] = "BindFailed",
-	[SocketServer_ListenFailed] = "ListenFailed",
-	[SocketServer_SetSocketOption] = "SetSocketOption",
 	[ChannelWatcher_ChannelAlreadyAdded] = "ChannelAlreadyAdded",
 	[ChannelWatcher_ChannelNotSupported] = "ChannelNotSupported",
 	[ChannelWatcher_InvalidChannel] = "InvalidChannel",
@@ -77,6 +48,22 @@ static const char* codes[] = {
 	[Signal_UnknownError] = "UnknownError",
 	[Folder_CannotOpenFolder] = "CannotOpenFolder",
 	[Folder_ReadingFailed] = "ReadingFailed",
+	[Folder_SeekingFailed] = "SeekingFailed",
+	[File_AccessDenied] = "AccessDenied",
+	[File_AlreadyExists] = "AlreadyExists",
+	[File_AttributeNonExistent] = "AttributeNonExistent",
+	[File_BufferTooSmall] = "BufferTooSmall",
+	[File_CannotOpenFile] = "CannotOpenFile",
+	[File_GettingAttributeFailed] = "GettingAttributeFailed",
+	[File_InvalidFileDescriptor] = "InvalidFileDescriptor",
+	[File_InvalidParameter] = "InvalidParameter",
+	[File_IsFolder] = "IsFolder",
+	[File_NotFound] = "NotFound",
+	[File_NotWritable] = "NotWritable",
+	[File_SeekingFailed] = "SeekingFailed",
+	[File_SettingAttributeFailed] = "SettingAttributeFailed",
+	[File_StatFailed] = "StatFailed",
+	[File_TruncatingFailed] = "TruncatingFailed",
 	[HashTable_TableIsFull] = "TableIsFull",
 	[Locale_CorruptFile] = "CorruptFile",
 	[Locale_Duplicate] = "Duplicate",
@@ -132,16 +119,6 @@ const char* Manifest_ResolveName(int module) {
 			return "Exception";
 		case Modules_EventQueue ... Modules_EventQueue_Length:
 			return "EventQueue";
-		case Modules_File ... Modules_File_Length:
-			return "File";
-		case Modules_NetworkAddress ... Modules_NetworkAddress_Length:
-			return "NetworkAddress";
-		case Modules_SocketConnection ... Modules_SocketConnection_Length:
-			return "SocketConnection";
-		case Modules_Socket ... Modules_Socket_Length:
-			return "Socket";
-		case Modules_SocketServer ... Modules_SocketServer_Length:
-			return "SocketServer";
 		case Modules_ChannelWatcher ... Modules_ChannelWatcher_Length:
 			return "ChannelWatcher";
 		case Modules_EventLoop ... Modules_EventLoop_Length:
@@ -152,6 +129,8 @@ const char* Manifest_ResolveName(int module) {
 			return "FPU";
 		case Modules_Folder ... Modules_Folder_Length:
 			return "Folder";
+		case Modules_File ... Modules_File_Length:
+			return "File";
 		case Modules_HashTable ... Modules_HashTable_Length:
 			return "HashTable";
 		case Modules_Locale ... Modules_Locale_Length:

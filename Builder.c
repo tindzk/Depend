@@ -188,7 +188,7 @@ static def(String, shrinkPath, RdString path) {
 
 def(void, onLinked, __unused pid_t pid, __unused int status) {
 	Process_suspend(pid);
-	EventLoop_Quit(EventLoop_GetInstance());
+	EventLoop_quit(EventLoop_GetInstance());
 }
 
 static def(void, link, StringArray *files) {
@@ -264,7 +264,7 @@ def(void, onCompiled, pid_t pid, int status) {
 	Queue_setBuilt(&this->queue, pid);
 
 	if (status == ExitStatus_Failure) {
-		EventLoop_Quit(EventLoop_GetInstance());
+		EventLoop_quit(EventLoop_GetInstance());
 		return;
 	}
 
@@ -278,7 +278,7 @@ def(void, onCompiled, pid_t pid, int status) {
 		StringArray_Destroy(files);
 		StringArray_Free(files);
 
-		EventLoop_Quit(EventLoop_GetInstance());
+		EventLoop_quit(EventLoop_GetInstance());
 	}
 }
 
@@ -436,7 +436,7 @@ static def(void, enqueue) {
 
 def(void, exit, __unused Signal_Type type) {
 	Logger_Info(this->logger, t("Early exit."));
-	EventLoop_Quit(EventLoop_GetInstance());
+	EventLoop_quit(EventLoop_GetInstance());
 }
 
 def(void, run) {
@@ -520,7 +520,7 @@ def(void, run) {
 
 	call(enqueue);
 
-	EventLoop_Run(EventLoop_GetInstance());
+	EventLoop_run(EventLoop_GetInstance());
 
 	Queue_destroy(&this->queue);
 }
